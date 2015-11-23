@@ -1,12 +1,12 @@
 # Target  name
-TARGET = rpc 
+TARGET = ipc 
 
 # Directories
 OBJDIR = obj
 SRCDIR = src
 
 # Libraries
-INC += -I$(PROJBASE)
+INC += -I$(PROJBASE)/cm/inc
 LIBS = 
 
 # Files and folders
@@ -16,7 +16,7 @@ LIBS =
 SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)
 OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
 
-include rpc.mk
+include ipc.mk
 
 all: $(TARGET)
 exe: $(TARGET)
