@@ -23,6 +23,21 @@ mDirection(P_READ_WRITE)
 
 }
 
+JPipe::JPipe(int readFd, int writeFd)
+:
+mReadFd(readFd),
+mWriteFd(writeFd)
+{
+    mDirection = 0;
+    if (0 != readFd) {
+        mDirection = mDirection | P_READ;
+    }
+
+    if (0 != writeFd) {
+        mDirection = mDirection | P_WRITE;
+    }
+}
+
 JPipe::~JPipe() {
 
 }
@@ -37,30 +52,30 @@ int JPipe::init() {
 
     mReadFd = fd[0];
     mWriteFd = fd[1];
-    cout << "Create pipe success." << endl;
+    cout << "Create pipe success: " << fd[0] << ", " << fd[1] << endl;
     return JSUCCESS;
 }
 
 void JPipe::setRead() {
-    if (P_READ_WRITE == mDirection) {
+    if (isWrite()) {
         close(mWriteFd);
-        mDirection = P_READ;
+        mDirection = mDirection & (~P_WRITE);
     }
 }
 
 void JPipe::setWrite() {
-    if(P_READ_WRITE == mDirection) {
+    if(isRead()) {
         close(mReadFd);
-        mDirection = P_WRITE;
+        mDirection = mDirection & (~P_READ);
     }
 }
 
 bool JPipe::isRead() {
-    return !((P_WRITE == mDirection) ? true : false);
+    return ((mDirection & P_READ) != 0);
 }
 
 bool JPipe::isWrite() {
-    return !((P_READ == mDirection) ? true : false);
+    return ((mDirection & P_WRITE) != 0);
 }
 
 void JPipe::closeAll() {
@@ -68,10 +83,24 @@ void JPipe::closeAll() {
     close(mWriteFd);
 }
 
+int JPipe::getReadFd() {
+    return this->mReadFd;
+}
+
+int JPipe::getWriteFd() {
+    return this->mWriteFd;
+}
+
 // return actual number of bytes sent if success
 // return JERROR if error
 int JPipe::send(char* buff) {
     cout << "JPipe write data: " << buff << endl;
+    
+    if (!isWrite()) {
+        cout << "Not allow to write data." << endl;
+        return JERROR;
+    }
+
     if (NULL == buff) {
         return JERROR;
     }
@@ -92,6 +121,11 @@ int JPipe::send(char* buff) {
 // return JSUCCESS if read data success, number of byte read is strlen(buff)
 // return JERROR if error happen
 int JPipe::recv(char* buff, int buffLen) {
+    if (!isRead()) {
+        cout << "Not allow to read data." << endl;
+        return JERROR;
+    }
+
     if (NULL == buff) {
         return JERROR;
     }

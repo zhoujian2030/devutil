@@ -12,6 +12,7 @@ namespace ipc
     class JPipe {
         public:
             JPipe();
+            JPipe(int readFd, int writeFd);
             ~JPipe();
 
             int init();
@@ -23,9 +24,12 @@ namespace ipc
             bool isRead();
             bool isWrite();
 
+            int getReadFd();
+            int getWriteFd();
+
             void closeAll(); // for test
 
-            enum{P_READ_WRITE = 0, P_READ = 1, P_WRITE = 2};
+            enum{P_READ = 1, P_WRITE = 2, P_READ_WRITE = 3};
 
         protected:
             int mReadFd;
