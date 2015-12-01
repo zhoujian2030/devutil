@@ -1,23 +1,34 @@
 /*
- * JPipe.h
+ * Pipe.h
  *
  *  Created on: Nov 19, 2015
  *      Author: z.j
  */
-#ifndef _JPIPE_H_
-#define _JPIPE_H_
+#ifndef _PIPE_H_
+#define _PIPE_H_
 
 namespace ipc 
 {
-    class JPipe {
+    class Pipe {
         public:
-            JPipe();
-            JPipe(int readFd, int writeFd);
-            ~JPipe();
+            Pipe();
+            Pipe(int readFd, int writeFd);
+            ~Pipe();
 
+            // Create pipe
             int init();
+
+            // Write data to pipe
             int send(char* buff);
+
+            // Read data from pipe
             int recv(char* buff, int buffLen);
+
+            void setReadNonBlock();
+            void setReadBlock();
+
+            void setWriteNonBlock();
+            void setWriteBlock();
 
             void setRead();
             void setWrite();

@@ -20,8 +20,8 @@ all: $(TARGET)
 # Targets
 $(TARGET): buildrepo $(OBJS)
 #	@echo "OBJS = $(OBJS)"
-	@cp $(PROJBASE)/ipc/obj/JPipe.o $(OBJDIR)
-	$(CXX) $(OBJS) $(OBJDIR)/JPipe.o $(LIBS) -o $@
+	@cp $(PROJBASE)/ipc/obj/Pipe.o $(OBJDIR)
+	$(CXX) $(OBJS) $(OBJDIR)/Pipe.o $(LIBS) -o $@
 	@mv $(TARGET) $(OBJDIR)
 
 clean:

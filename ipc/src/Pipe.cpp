@@ -1,5 +1,5 @@
 /*
- * JPipe.cpp
+ * Pipe.cpp
  *
  *  Created on: Nov 19, 2015
  *      Author: z.j
@@ -7,14 +7,15 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+#include <fcntl.h> 
 #include <iostream>
 #include "common.h"
-#include "JPipe.h"
+#include "Pipe.h"
 
 using namespace std;
 using namespace ipc;
 
-JPipe::JPipe()
+Pipe::Pipe()
 : 
 mReadFd(0),
 mWriteFd(0),
@@ -23,7 +24,7 @@ mDirection(P_READ_WRITE)
 
 }
 
-JPipe::JPipe(int readFd, int writeFd)
+Pipe::Pipe(int readFd, int writeFd)
 :
 mReadFd(readFd),
 mWriteFd(writeFd)
@@ -38,11 +39,11 @@ mWriteFd(writeFd)
     }
 }
 
-JPipe::~JPipe() {
+Pipe::~Pipe() {
 
 }
 
-int JPipe::init() {
+int Pipe::init() {
     int fd[2];
     int result = pipe(fd);
     if (-1 == result) {
@@ -56,45 +57,47 @@ int JPipe::init() {
     return JSUCCESS;
 }
 
-void JPipe::setRead() {
+void Pipe::setRead() {
     if (isWrite()) {
+        cout << "Close write fd: " << mWriteFd << endl;
         close(mWriteFd);
         mDirection = mDirection & (~P_WRITE);
     }
 }
 
-void JPipe::setWrite() {
+void Pipe::setWrite() {
     if(isRead()) {
+        cout << "Close read fd: " << mReadFd << endl;
         close(mReadFd);
         mDirection = mDirection & (~P_READ);
     }
 }
 
-bool JPipe::isRead() {
+bool Pipe::isRead() {
     return ((mDirection & P_READ) != 0);
 }
 
-bool JPipe::isWrite() {
+bool Pipe::isWrite() {
     return ((mDirection & P_WRITE) != 0);
 }
 
-void JPipe::closeAll() {
+void Pipe::closeAll() {
     close(mReadFd);
     close(mWriteFd);
 }
 
-int JPipe::getReadFd() {
+int Pipe::getReadFd() {
     return this->mReadFd;
 }
 
-int JPipe::getWriteFd() {
+int Pipe::getWriteFd() {
     return this->mWriteFd;
 }
 
 // return actual number of bytes sent if success
 // return JERROR if error
-int JPipe::send(char* buff) {
-    cout << "JPipe write data: " << buff << endl;
+int Pipe::send(char* buff) {
+    cout << "Pipe write data: " << buff << endl;
     
     if (!isWrite()) {
         cout << "Not allow to write data." << endl;
@@ -120,7 +123,7 @@ int JPipe::send(char* buff) {
 // return JPIPE_NOT_EMPTY if there are still data in pipe
 // return JSUCCESS if read data success, number of byte read is strlen(buff)
 // return JERROR if error happen
-int JPipe::recv(char* buff, int buffLen) {
+int Pipe::recv(char* buff, int buffLen) {
     if (!isRead()) {
         cout << "Not allow to read data." << endl;
         return JERROR;
@@ -149,10 +152,50 @@ int JPipe::recv(char* buff, int buffLen) {
                 result = JPIPE_NOT_EMPTY;
             }
 
-            cout << "JPipe read message: " << buff << endl;
+            cout << "Pipe read message: " << buff << endl;
         }
     }
 
     return result;
 }
 
+
+void Pipe::setReadNonBlock() {
+    cout << "Pipe::setReadNonBlock()" << endl;
+
+    int flags = fcntl(this->mReadFd, F_GETFL);
+    fcntl(this->mReadFd,F_SETFL,flags | O_NONBLOCK);
+
+    cout << "original flags: " << flags << endl;
+    cout << "current flags: " << fcntl(this->mReadFd, F_GETFL) << endl;
+}
+
+void Pipe::setReadBlock() {
+    cout << "Pipe::setReadBlock()" << endl;
+
+    int flags = fcntl(this->mReadFd, F_GETFL);
+    fcntl(this->mReadFd,F_SETFL,flags & (~O_NONBLOCK));
+
+    cout << "original flags: " << flags << endl;
+    cout << "current flags: " << fcntl(this->mReadFd, F_GETFL) << endl;
+}
+
+void Pipe::setWriteNonBlock() {
+    cout << "Pipe::setWriteNonBlock()" << endl;
+
+    int flags = fcntl(this->mWriteFd, F_GETFL);
+    fcntl(this->mWriteFd,F_SETFL,flags | O_NONBLOCK);
+
+    cout << "original flags: " << flags << endl;
+    cout << "current flags: " << fcntl(this->mWriteFd, F_GETFL) << endl;
+}
+
+void Pipe::setWriteBlock() {
+    cout << "Pipe::setWriteBlock()" << endl;
+
+    int flags = fcntl(this->mWriteFd, F_GETFL);
+    fcntl(this->mWriteFd,F_SETFL,flags & (~O_NONBLOCK));
+
+    cout << "original flags: " << flags << endl;
+    cout << "current flags: " << fcntl(this->mWriteFd, F_GETFL) << endl;
+}

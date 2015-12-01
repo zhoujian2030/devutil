@@ -8,7 +8,7 @@
 #include <string.h>
 #include <signal.h>
 #include <iostream>
-#include "JPipe.h"
+#include "Pipe.h"
 
 using namespace std;
 using namespace ipc;
@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
         cout << "Read fd: " << readFd << ", Write fd: " << writeFd << endl;
     }
 
-    JPipe* pPipe = new JPipe(readFd, writeFd);
+    Pipe* pPipe = new Pipe(readFd, writeFd);
 
     char sendBuff[] = "123456789012345";
     pPipe->send(sendBuff);
