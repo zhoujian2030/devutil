@@ -6,7 +6,7 @@ OBJDIR = obj
 SRCDIR = src
 
 # Libraries
-INC += -I$(PROJBASE)/cm/inc
+INC += -I$(PROJBASE)/cm/inc -I$(PROJBASE)/log/inc
 LIBS = 
 
 # Files and folders
@@ -16,7 +16,7 @@ LIBS =
 SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)
 OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
 
-include ipc.mk
+include ../cm/global.mk
 
 all: $(TARGET)
 exe: $(TARGET)

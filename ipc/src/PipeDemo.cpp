@@ -32,10 +32,11 @@ void PipeDemo::demoPWCR() {
 
     int n = 1;
     pid_t parentPid = getpid();
-    cout << "[Parent: " << parentPid << "]" << n++ << " Create a pipe with default blocking mode"<< endl;
+    cout << "[Parent: " << parentPid << "]" << n++ << " Create a pipe with default block mode"<< endl;
     mP2CPipe = new Pipe();
     mP2CPipe->init();
 
+    cout << "[Parent: " << parentPid << "]" << n++ << " Fork a child process"<< endl;
     pid_t pid = fork();
 
     // Return 0 for child process, return actual pid of child process for parent process
