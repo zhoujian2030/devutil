@@ -4,21 +4,18 @@
 #include <log4cplus/loggingmacros.h>
 #include <iostream>
 
-using namespace std;
 using namespace log4cplus;
 using namespace log4cplus::helpers;
 
 int main()
 {
-    cout << "test log4cplus"<< endl;
+    std::cout << "test log4cplus"<< std::endl;
     /* step 1: Instantiate an appender object */
     SharedObjectPtr<Appender> _append (new ConsoleAppender());
     _append->setName("append for  test");
 
     /* step 2: Instantiate a layout object */
-    //std::string pattern = "[%D{%Y-%m-%d %H:%M:%S}] [%p] [%t] [%l] %m %n";
-    //std::auto_ptr<Layout> _layout(new PatternLayout(pattern));
-    std::string pattern = "%d{%m/%d/%y  %H:%M:%S} - %m [%l]%n";
+    std::string pattern = "[%D{%Y-%m-%d %H:%M:%S.%q}] [%-5p] [%c] [%t] - %m [%l] %n";
     std::auto_ptr<Layout> _layout(new PatternLayout(pattern));
 
     /* step 3: Attach the layout object to the appender */
@@ -34,9 +31,10 @@ int main()
     _logger.setLogLevel(ALL_LOG_LEVEL);
 
     /* log activity */
-    LOG4CPLUS_DEBUG(_logger, "This is the  FIRST log message...");
+    int n = 100;
+    LOG4CPLUS_DEBUG(_logger, "This is the  FIRST log message..." << n++ );
     sleep(1);
-    LOG4CPLUS_WARN(_logger, "This is the  SECOND log message...");
+    LOG4CPLUS_WARN(_logger, "This is the  SECOND log message..." << " test " << n++);
     return 0;
 
 }
