@@ -1,10 +1,11 @@
 # Target  name
-TARGET=log
+TARGET=
 LIBA = liblog.a
 
 # Directories
 OBJDIR = obj
 SRCDIR = src
+LIBOBJDIR = liblog4cplus
 
 # Libraries
 INC += -I$(PROJBASE)/cm/inc
@@ -16,21 +17,19 @@ OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
 
 include ../cm/global.mk
 
-all: $(LIBA) $(TARGET)
-
-# use static lib (*.a) by adding -lrt xxx.a in end of the line
-$(TARGET): 
-	$(CXX) $(OBJS) -o $@ -lrt $(LIBS)
-	@mv $(TARGET) $(OBJDIR)
+all: $(LIBA)
 
 # Targets
 $(LIBA): buildrepo $(OBJS)
-	ar q $@ $(OBJS) 
+	@mkdir -p $(LIBOBJDIR)
+	ar x $(LIBS) 
+	@mv *.o $(LIBOBJDIR)
+	ar q $@ $(OBJS) $(LIBOBJDIR)/*.o
 	@mv $(LIBA) ./lib
 	@cp $(SRCDIR)/*.h ./inc/
 
 clean:
-	rm -rf ./lib/* $(OBJDIR) $(SRCDIR)/*.o
+	rm -rf ./lib/* ./inc/* $(OBJDIR) $(LIBOBJDIR) $(SRCDIR)/*.o
 	
 buildrepo:
 	@$(call make-repo)
