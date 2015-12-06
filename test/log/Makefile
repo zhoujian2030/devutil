@@ -14,7 +14,7 @@ LIBS = $(PROJBASE)/log/lib/liblog.a
 SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)
 OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
 
-include $(PROJBASE)/cm/global.mk
+include ../../cm/global.mk
 
 all: $(TARGET)
 

@@ -9,7 +9,7 @@
 using namespace std;
 using namespace log4cplus;
 using namespace log4cplus::helpers;
-using namespace cpplog;
+using namespace logcpp;
 
 Logger CPPLogger::getLogger(const tstring& loggerName) {
     return Logger::getInstance(loggerName);
@@ -25,7 +25,7 @@ void CPPLogger::initConsoleLog(const tstring& loggerName) {
     logger.addAppender(appender);
     logger.setLogLevel(ALL_LOG_LEVEL);
 
-    LOG4CPLUS_INFO(logger, "Init console logger complete.");
+    LOG4CPLUS_INFO(logger, "Init console logger complete.");  
 }
 
 void CPPLogger::initConsoleLog(Logger& logger) {
@@ -37,7 +37,7 @@ void CPPLogger::initConsoleLog(Logger& logger) {
     logger.addAppender(appender);
     logger.setLogLevel(ALL_LOG_LEVEL);
 
-    LOG4CPLUS_INFO(logger, "Init console logger complete.");    
+    LOG4CPLUS_INFO(logger, "Init console logger complete.");   
 }
 
 void CPPLogger::setLogLevel(const tstring& loggerName, LogLevel level) {

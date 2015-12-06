@@ -11,12 +11,16 @@
 #include <signal.h>
 #include <unistd.h>
 #include <iostream>
+#include "IPCLogger.h"
 #include "PipeDemo.h"
 
 using namespace ipc;
-using namespace std;
+using namespace logcpp;
+
 
 PipeDemo::PipeDemo() {
+    IPCLogger::initConsoleLog();
+    IPCLogger::setLogLevel(DEBUG);
     //mC2PPipe = new Pipe();
     //c2pPipe->init();
 }
@@ -26,53 +30,58 @@ PipeDemo::~PipeDemo() {
 }
 
 void PipeDemo::demoPWCR() {
-    cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
-    cout << "Demo Start: \n\tParent write to pipe \n\tChild read from pipe\n\tBlock mode" << endl;
-    cout << endl;
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "Demo Start: Parent write pipe, Child read pipe, Block mode");
 
     int n = 1;
     pid_t parentPid = getpid();
-    cout << "[Parent: " << parentPid << "]" << n++ << " Create a pipe with default block mode"<< endl;
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": " << n++ 
+        << " Create a pipe with default block mode");
     mP2CPipe = new Pipe();
     mP2CPipe->init();
 
-    cout << "[Parent: " << parentPid << "]" << n++ << " Fork a child process"<< endl;
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": " << n++ << " Fork a child process");
     pid_t pid = fork();
 
     // Return 0 for child process, return actual pid of child process for parent process
     if (-1 == pid) {
-        cout << "Fail to fork." << endl;
+        LOG4CPLUS_ERROR(_IPC_LOGGER_, "Fail to fork().");
     } else if (0 == pid) {
         pid_t childPid = getpid();
-        cout << "[Child: " << childPid << "]" << n++ << " pid return from fork() should be 0"<< endl;
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": " << n++ 
+            << " pid return from fork() should be 0");
 
         char recvBuff[256];
-        cout << "[Child: " << childPid << "]" << n++ << " Close write fd"<< endl;
         mP2CPipe->setRead();
-        cout << "[Child: " << childPid << "]" << n++ << " Block on reading from pipe"<< endl;
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": " << n++ 
+            << " Block on reading from pipe");
+        
         int result = mP2CPipe->recv(recvBuff, sizeof(recvBuff));
-        cout << "[Child: " << childPid << "]" << n++ << " Read data: " << recvBuff << endl;
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": " << n++ << " Read data: " << recvBuff);
 
-        cout << "[Child: " << childPid << "]" << n++ << " Close all fds"<< endl;
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": " << n++ 
+            << " Read data complete, close all fds.");
         mP2CPipe->closeAll();
         delete mP2CPipe;
         mP2CPipe = NULL;
 
         // TODO 子进程应该怎么正常退出？
-        cout << "[Child: " << childPid << "]" << n++ << " _exit(0). All fds wil be closed even they are not close mannually."<< endl;
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": " << n++ 
+            << " _exit(0). All fds in this process be closed even not closed mannually.");
         _exit(0);
     } else {
-        cout << "[Parent: " << parentPid << "]" << n++ << " pid return from fork() should be child pid "<< pid << endl;
-
-        cout << "[Parent: " << parentPid << "]" << n++ << " Close read fd"<< endl;
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": " << n++ 
+            << " pid return from fork() should be child pid.");
         mP2CPipe->setWrite();
 
         char sendBuff[] = "**2b2b2b2b2b2b2b2b2b2b2b2b**";
-        cout << "[Parent: " << parentPid << "]" << n++ << " Delay 2s then write data: " << sendBuff << endl;
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": " << n++ 
+            << " Delay 2s and then write data: " << sendBuff);
         sleep(2);
         mP2CPipe->send(sendBuff);
 
-        cout << "[Parent: " << parentPid << "]" << n++ << " Close all fds" << endl;
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": " << n++ 
+            << " Write complete, close all fds.");
         mP2CPipe->closeAll();
         delete mP2CPipe;
         mP2CPipe = NULL;
@@ -80,5 +89,5 @@ void PipeDemo::demoPWCR() {
         sleep(1);
     }
 
-    cout << "\nDemo End: " << getpid() << endl;
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "Demo End: " << getpid());
 }

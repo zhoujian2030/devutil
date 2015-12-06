@@ -10,10 +10,11 @@
 #include <fcntl.h> 
 #include <iostream>
 #include "common.h"
+#include "IPCLogger.h"
 #include "Pipe.h"
 
-using namespace std;
 using namespace ipc;
+using namespace logcpp;
 
 Pipe::Pipe()
 : 
@@ -21,7 +22,7 @@ mReadFd(0),
 mWriteFd(0),
 mDirection(P_READ_WRITE)
 {
-
+    IPCLogger::initConsoleLog();
 }
 
 Pipe::Pipe(int readFd, int writeFd)
@@ -29,6 +30,8 @@ Pipe::Pipe(int readFd, int writeFd)
 mReadFd(readFd),
 mWriteFd(writeFd)
 {
+    IPCLogger::initConsoleLog();
+
     mDirection = 0;
     if (0 != readFd) {
         mDirection = mDirection | P_READ;
@@ -44,30 +47,36 @@ Pipe::~Pipe() {
 }
 
 int Pipe::init() {
+    LOG4CPLUS_TRACE(_IPC_LOGGER_, "Pipe::init()");
+
     int fd[2];
     int result = pipe(fd);
     if (-1 == result) {
-        cout << "Fail to create pipe." << endl;
+        LOG4CPLUS_ERROR(_IPC_LOGGER_, "Fail to create pipe.");
         return JERROR;
     }
 
     mReadFd = fd[0];
     mWriteFd = fd[1];
-    cout << "Create pipe success: " << fd[0] << ", " << fd[1] << endl;
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "Create pipe success: fd[0] = " << fd[0] << ", fd[1] = " << fd[1]);
     return JSUCCESS;
 }
 
 void Pipe::setRead() {
+    LOG4CPLUS_TRACE(_IPC_LOGGER_, "Pipe::setRead()");
+
     if (isWrite()) {
-        cout << "Close write fd: " << mWriteFd << endl;
+        LOG4CPLUS_DEBUG(_IPC_LOGGER_, "Close write fd: " << mWriteFd);
         close(mWriteFd);
         mDirection = mDirection & (~P_WRITE);
     }
 }
 
 void Pipe::setWrite() {
+    LOG4CPLUS_TRACE(_IPC_LOGGER_, "Pipe::setWrite()");
+
     if(isRead()) {
-        cout << "Close read fd: " << mReadFd << endl;
+        LOG4CPLUS_DEBUG(_IPC_LOGGER_, "Close read fd: " << mReadFd);
         close(mReadFd);
         mDirection = mDirection & (~P_READ);
     }
@@ -82,6 +91,7 @@ bool Pipe::isWrite() {
 }
 
 void Pipe::closeAll() {
+    LOG4CPLUS_DEBUG(_IPC_LOGGER_, "Close all fd.");
     close(mReadFd);
     close(mWriteFd);
 }
@@ -97,25 +107,25 @@ int Pipe::getWriteFd() {
 // return actual number of bytes sent if success
 // return JERROR if error
 int Pipe::send(char* buff) {
-    cout << "Pipe write data: " << buff << endl;
-    
-    if (!isWrite()) {
-        cout << "Not allow to write data." << endl;
+    if (NULL == buff) {
+        LOG4CPLUS_ERROR(_IPC_LOGGER_, "null buff.");
         return JERROR;
     }
 
-    if (NULL == buff) {
+    LOG4CPLUS_DEBUG(_IPC_LOGGER_, "Write data to Pipe: " << buff);
+    
+    if (!isWrite()) {
+        LOG4CPLUS_WARN(_IPC_LOGGER_, "Not allow to write data as write fd is closed.");
         return JERROR;
     }
 
     int result = write(mWriteFd, buff, strlen(buff));
     if (-1 == result) {
-        cout << "Write data to pipe failed." << endl;
-        cout << "errno = " << errno << ", " << strerror(errno) << endl;
+        LOG4CPLUS_ERROR(_IPC_LOGGER_, "Write data to pipe failed. " << errno << ": " << strerror(errno));
         return JERROR;
     }
 
-    cout << "Write data success" << endl;
+    LOG4CPLUS_DEBUG(_IPC_LOGGER_, "Write data success");
 
     return result;
 }
@@ -124,35 +134,35 @@ int Pipe::send(char* buff) {
 // return JSUCCESS if read data success, number of byte read is strlen(buff)
 // return JERROR if error happen
 int Pipe::recv(char* buff, int buffLen) {
-    if (!isRead()) {
-        cout << "Not allow to read data." << endl;
+    if (NULL == buff) {
+        LOG4CPLUS_ERROR(_IPC_LOGGER_, "null buff.");
         return JERROR;
     }
 
-    if (NULL == buff) {
+    if (!isRead()) {
+        LOG4CPLUS_ERROR(_IPC_LOGGER_, "Not allow to read data as read fd is closed.");
         return JERROR;
     }
 
     int result = JSUCCESS;
     int recvLen = read(mReadFd, buff, buffLen);
     if (-1 == recvLen) {
-        cout << "Read from pipe failed." << endl;
-        cout << "errno = " << errno << ", " << strerror(errno) << endl;
+        LOG4CPLUS_ERROR(_IPC_LOGGER_, "Read data from pipe failed. " << errno << ": " << strerror(errno));
         result = JERROR;
     } else {   
         // if the write fd is close, return 0 without blocking
         if (0 == recvLen) {
-            cout << "The write fd of pipe is closed." << endl;
+            LOG4CPLUS_ERROR(_IPC_LOGGER_, "The write fd of pipe is closed, no data read.");
             result = JERROR;
         } else {
             buff[recvLen] = '\0';
             // if data received in the buff is full, it indicats that there may be more data available in pipe
             if (recvLen == buffLen) {
-                cout << "More data might available in pipe." << endl;
+                LOG4CPLUS_INFO(_IPC_LOGGER_, "More data might available in pipe.");
                 result = JPIPE_NOT_EMPTY;
             }
 
-            cout << "Pipe read message: " << buff << endl;
+            LOG4CPLUS_DEBUG(_IPC_LOGGER_, "Read data from Pipe success: " << buff);
         }
     }
 
@@ -161,41 +171,41 @@ int Pipe::recv(char* buff, int buffLen) {
 
 
 void Pipe::setReadNonBlock() {
-    cout << "Pipe::setReadNonBlock()" << endl;
+    LOG4CPLUS_TRACE(_IPC_LOGGER_, "Pipe::setReadNonBlock()");
 
     int flags = fcntl(this->mReadFd, F_GETFL);
     fcntl(this->mReadFd,F_SETFL,flags | O_NONBLOCK);
 
-    cout << "original flags: " << flags << endl;
-    cout << "current flags: " << fcntl(this->mReadFd, F_GETFL) << endl;
+    LOG4CPLUS_DEBUG(_IPC_LOGGER_, "Original flags: " << flags);
+    LOG4CPLUS_DEBUG(_IPC_LOGGER_, "Current flags: " << fcntl(this->mReadFd, F_GETFL));
 }
 
 void Pipe::setReadBlock() {
-    cout << "Pipe::setReadBlock()" << endl;
+    LOG4CPLUS_TRACE(_IPC_LOGGER_, "Pipe::setReadBlock()");
 
     int flags = fcntl(this->mReadFd, F_GETFL);
     fcntl(this->mReadFd,F_SETFL,flags & (~O_NONBLOCK));
 
-    cout << "original flags: " << flags << endl;
-    cout << "current flags: " << fcntl(this->mReadFd, F_GETFL) << endl;
+    LOG4CPLUS_DEBUG(_IPC_LOGGER_, "Original flags: " << flags);
+    LOG4CPLUS_DEBUG(_IPC_LOGGER_, "Current flags: " << fcntl(this->mReadFd, F_GETFL));
 }
 
 void Pipe::setWriteNonBlock() {
-    cout << "Pipe::setWriteNonBlock()" << endl;
+    LOG4CPLUS_TRACE(_IPC_LOGGER_, "Pipe::setWriteNonBlock()");
 
     int flags = fcntl(this->mWriteFd, F_GETFL);
     fcntl(this->mWriteFd,F_SETFL,flags | O_NONBLOCK);
 
-    cout << "original flags: " << flags << endl;
-    cout << "current flags: " << fcntl(this->mWriteFd, F_GETFL) << endl;
+    LOG4CPLUS_DEBUG(_IPC_LOGGER_, "Original flags: " << flags);
+    LOG4CPLUS_DEBUG(_IPC_LOGGER_, "Current flags: " << fcntl(this->mWriteFd, F_GETFL));
 }
 
 void Pipe::setWriteBlock() {
-    cout << "Pipe::setWriteBlock()" << endl;
+    LOG4CPLUS_TRACE(_IPC_LOGGER_, "Pipe::setWriteBlock()");
 
     int flags = fcntl(this->mWriteFd, F_GETFL);
     fcntl(this->mWriteFd,F_SETFL,flags & (~O_NONBLOCK));
 
-    cout << "original flags: " << flags << endl;
-    cout << "current flags: " << fcntl(this->mWriteFd, F_GETFL) << endl;
+    LOG4CPLUS_DEBUG(_IPC_LOGGER_, "Original flags: " << flags);
+    LOG4CPLUS_DEBUG(_IPC_LOGGER_, "Current flags: " << fcntl(this->mWriteFd, F_GETFL));
 }

@@ -1,7 +1,7 @@
 #include "CPPLogger.h"
 
 using namespace std;
-using namespace cpplog;
+using namespace logcpp;
 
 int main() {
     log4cplus::Logger logger_1 = CPPLogger::getLogger("TestLogger_1");

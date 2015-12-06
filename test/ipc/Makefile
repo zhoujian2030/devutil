@@ -4,10 +4,11 @@ TARGET = pipesimulator
 # Directories
 OBJDIR = obj
 SRCDIR = src
+DEPDIR = dep
 
 # Libraries
 INC += -I$(PROJBASE)/cm/inc -I$(PROJBASE)/ipc/src
-LIBS = 
+LIBS = $(PROJBASE)/log/lib/liblog.a
 
 # Files and folders
 SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)
@@ -20,8 +21,10 @@ all: $(TARGET)
 # Targets
 $(TARGET): buildrepo $(OBJS)
 #	@echo "OBJS = $(OBJS)"
-	@cp $(PROJBASE)/ipc/obj/Pipe.o $(OBJDIR)
-	$(CXX) $(OBJS) $(OBJDIR)/Pipe.o $(LIBS) -o $@
+	@mkdir -p $(DEPDIR)
+	@cp $(PROJBASE)/ipc/obj/Pipe.o $(DEPDIR)
+	@cp $(PROJBASE)/ipc/obj/IPCLogger.o $(DEPDIR)
+	$(CXX) $(OBJS) $(DEPDIR)/*.o -o $@ -lrt $(LIBS)
 	@mv $(TARGET) $(OBJDIR)
 
 clean:

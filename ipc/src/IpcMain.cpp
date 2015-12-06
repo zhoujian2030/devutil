@@ -1,5 +1,5 @@
 /*
- * main.cpp
+ * IpcMain.cpp
  *
  *  Created on: Nov 19, 2015
  *      Author: z.j

@@ -7,7 +7,7 @@ SRCDIR = src
 
 # Libraries
 INC += -I$(PROJBASE)/cm/inc -I$(PROJBASE)/log/inc
-LIBS = 
+LIBS += $(PROJBASE)/log/lib/liblog.a
 
 # Files and folders
 #SRCS    = $(shell find $(SRCDIR) -name '*.cpp')
@@ -24,7 +24,7 @@ exe: $(TARGET)
 # Targets
 $(TARGET): buildrepo $(OBJS)
 #	@echo "SRCS = $(SRCS)"
-	$(CXX) $(OBJS) $(LIBS) -o $@
+	$(CXX) $(OBJS) -o $@ -lrt $(LIBS)
 	@mv $(TARGET) $(OBJDIR)
 
 clean:
