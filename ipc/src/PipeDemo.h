@@ -14,6 +14,9 @@ public:
     PipeDemo();
     ~PipeDemo();
 
+    static void registerSIGCHLDHandler(sighandler_t handler);
+    static void waitChildExit(int signo);
+
     //P: parent process
     //C: child process
     //W: write

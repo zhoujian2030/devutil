@@ -10,6 +10,7 @@
 #include <string.h>
 #include <signal.h>
 #include <unistd.h>
+#include <sys/wait.h> 
 #include <iostream>
 #include "IPCLogger.h"
 #include "PipeDemo.h"
@@ -27,6 +28,23 @@ PipeDemo::PipeDemo() {
 
 PipeDemo::~PipeDemo() {
 
+}
+
+void PipeDemo::registerSIGCHLDHandler(sighandler_t handler) {
+    if (signal(SIGCHLD, handler) == SIG_ERR) {
+        LOG4CPLUS_ERROR(_IPC_LOGGER_, "Register SIGCHLD handler error");
+    }
+}
+
+void PipeDemo::waitChildExit(int signo) {
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "Catch a SIGCHLD signal and signo = " << signo);
+    int status;
+    int pid;
+    while((pid=waitpid(-1, &status, WNOHANG)) > 0) {
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "Child Process " << pid << " is exited, status = " << status);
+    }
+
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "No more SIGCHLD signal.");
 }
 
 void PipeDemo::demoPWCR() {

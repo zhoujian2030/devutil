@@ -27,9 +27,12 @@ int main(int argc, char* argv[]) {
         cout << "signal error" << endl;
         exit(EXIT_FAILURE);
     }
+    //signal(SIGCHLD, SIG_IGN);
+    PipeDemo::registerSIGCHLDHandler(PipeDemo::waitChildExit);
 
     PipeDemo* demo = new PipeDemo();
     demo->demoPWCR();
+    sleep(100);
 
 
     // Pipe* c2pPipe = new Pipe();
