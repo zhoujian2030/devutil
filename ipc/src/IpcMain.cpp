@@ -52,12 +52,12 @@ int main(int argc, char* argv[]) {
         
     //     char sendBuff[] = "1234567890";
     //     sleep(1);
-    //     c2pPipe->setWrite();
+    //     c2pPipe->setWriteOnly();
     //     c2pPipe->send(sendBuff);
     //     //c2pPipe->closeAll();
 
     //     char recvBuff[256];
-    //     p2cPipe->setRead();
+    //     p2cPipe->setReadOnly();
     //     p2cPipe->setReadNonBlock();
     //     p2cPipe->setReadBlock();
     //     int result = p2cPipe->recv(recvBuff, sizeof(recvBuff));
@@ -75,10 +75,10 @@ int main(int argc, char* argv[]) {
     //     cout << "Running parent process, child process pid: " << pid << endl;
     //     // c2pPipe->closeAll();
     //     char recvBuff[256];
-    //     c2pPipe->setRead();
+    //     c2pPipe->setReadOnly();
     //     int result = c2pPipe->recv(recvBuff, sizeof(recvBuff));
     //     //sleep(10);
-    //     // p2cPipe->setWrite();
+    //     // p2cPipe->setWriteOnly();
     //     // p2cPipe->send(recvBuff);
 
 

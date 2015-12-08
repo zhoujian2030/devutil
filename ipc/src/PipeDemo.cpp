@@ -70,7 +70,7 @@ void PipeDemo::demoPWCR() {
             << " pid return from fork() should be 0");
 
         char recvBuff[256];
-        mP2CPipe->setRead();
+        mP2CPipe->setReadOnly();
         LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": " << n++ 
             << " Block on reading from pipe");
         
@@ -94,7 +94,7 @@ void PipeDemo::demoPWCR() {
 
         LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": " << n++ 
             << " pid return from fork() should be child pid.");
-        mP2CPipe->setWrite();
+        mP2CPipe->setWriteOnly();
 
         char sendBuff[] = "**2b2b2b2b2b2b2b2b2b2b2b2b**";
         LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": " << n++ 

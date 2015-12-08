@@ -62,8 +62,8 @@ int Pipe::init() {
     return JSUCCESS;
 }
 
-void Pipe::setRead() {
-    LOG4CPLUS_TRACE(_IPC_LOGGER_, "Pipe::setRead()");
+void Pipe::setReadOnly() {
+    LOG4CPLUS_TRACE(_IPC_LOGGER_, "Pipe::setReadOnly()");
 
     if (isWrite()) {
         LOG4CPLUS_DEBUG(_IPC_LOGGER_, "Close write fd: " << mWriteFd);
@@ -72,8 +72,8 @@ void Pipe::setRead() {
     }
 }
 
-void Pipe::setWrite() {
-    LOG4CPLUS_TRACE(_IPC_LOGGER_, "Pipe::setWrite()");
+void Pipe::setWriteOnly() {
+    LOG4CPLUS_TRACE(_IPC_LOGGER_, "Pipe::setWriteOnly()");
 
     if(isRead()) {
         LOG4CPLUS_DEBUG(_IPC_LOGGER_, "Close read fd: " << mReadFd);

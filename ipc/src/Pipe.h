@@ -30,8 +30,8 @@ namespace ipc
             void setWriteNonBlock();
             void setWriteBlock();
 
-            void setRead();
-            void setWrite();
+            void setReadOnly();
+            void setWriteOnly();
             bool isRead();
             bool isWrite();
 
