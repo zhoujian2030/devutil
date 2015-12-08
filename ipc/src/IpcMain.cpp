@@ -27,12 +27,12 @@ int main(int argc, char* argv[]) {
         cout << "signal error" << endl;
         exit(EXIT_FAILURE);
     }
-    //signal(SIGCHLD, SIG_IGN);
+    // signal(SIGCHLD, SIG_IGN);
     PipeDemo::registerSIGCHLDHandler(PipeDemo::waitChildExit);
 
     PipeDemo* demo = new PipeDemo();
     demo->demoPWCR();
-    sleep(100);
+    cout << "exit main " << getpid() << endl;
 
 
     // Pipe* c2pPipe = new Pipe();
@@ -98,4 +98,3 @@ void sighandler(int signo)
 {
     cout <<"catch a SIGPIPE signal and signum = " << signo << endl;
 }
-

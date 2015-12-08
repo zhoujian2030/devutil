@@ -32,14 +32,14 @@ PipeDemo::~PipeDemo() {
 
 void PipeDemo::registerSIGCHLDHandler(sighandler_t handler) {
     if (signal(SIGCHLD, handler) == SIG_ERR) {
-        LOG4CPLUS_ERROR(_IPC_LOGGER_, "Register SIGCHLD handler error");
+        LOG4CPLUS_ERROR(_IPC_LOGGER_, "Register SIGCHLD handler error.");
     }
 }
 
 void PipeDemo::waitChildExit(int signo) {
-    LOG4CPLUS_INFO(_IPC_LOGGER_, "Catch a SIGCHLD signal and signo = " << signo);
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "In Process " << getpid() <<": Catch a SIGCHLD signal and signo = " << signo);
     int status;
-    int pid;
+    pid_t pid;
     while((pid=waitpid(-1, &status, WNOHANG)) > 0) {
         LOG4CPLUS_INFO(_IPC_LOGGER_, "Child Process " << pid << " is exited, status = " << status);
     }
@@ -88,6 +88,10 @@ void PipeDemo::demoPWCR() {
             << " _exit(0). All fds in this process be closed even not closed mannually.");
         _exit(0);
     } else {
+
+        // Register SIGCHLD handler to handle child process exit
+        // PipeDemo::registerSIGCHLDHandler(PipeDemo::waitChildExit);
+
         LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": " << n++ 
             << " pid return from fork() should be child pid.");
         mP2CPipe->setWrite();
@@ -104,7 +108,9 @@ void PipeDemo::demoPWCR() {
         delete mP2CPipe;
         mP2CPipe = NULL;
 
-        sleep(1);
+        sleep(100);
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT "<< parentPid << ": sleep() could be interrupted by SIGCHLD signal from child process");
+        sleep(5);
     }
 
     LOG4CPLUS_INFO(_IPC_LOGGER_, "Demo End: " << getpid());
