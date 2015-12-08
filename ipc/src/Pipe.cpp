@@ -152,7 +152,8 @@ int Pipe::recv(char* buff, int buffLen) {
     } else {   
         // if the write fd is close, return 0 without blocking
         if (0 == recvLen) {
-            LOG4CPLUS_ERROR(_IPC_LOGGER_, "The write fd of pipe is closed, no data read.");
+            LOG4CPLUS_ERROR(_IPC_LOGGER_, "The write fd of pipe is closed in all processes, return 0 from read.");
+            buff[0] = '\0';
             result = JERROR;
         } else {
             buff[recvLen] = '\0';

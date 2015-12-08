@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <sys/wait.h> 
 #include <iostream>
+#include "common.h"
 #include "IPCLogger.h"
 #include "PipeDemo.h"
 
@@ -75,8 +76,13 @@ void PipeDemo::demoPWCR() {
             << " Block on reading from pipe");
         
         int result = mP2CPipe->recv(recvBuff, sizeof(recvBuff));
-        LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": " << n++ << " Read data: " << recvBuff);
-
+        if (JERROR == result) {
+            LOG4CPLUS_ERROR(_IPC_LOGGER_, "In CHILD " << childPid << ": " << n++ 
+                << " Fail to read data from pipe.");
+        } else {
+            LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": " << n++ 
+                << " Read data: " << recvBuff);
+        }
         LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": " << n++ 
             << " Read data complete, close all fds.");
         mP2CPipe->closeAll();
@@ -110,8 +116,72 @@ void PipeDemo::demoPWCR() {
 
         sleep(100);
         LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT "<< parentPid << ": sleep() could be interrupted by SIGCHLD signal from child process");
-        sleep(5);
+        sleep(3);
     }
 
     LOG4CPLUS_INFO(_IPC_LOGGER_, "Demo End: " << getpid());
+}
+
+void PipeDemo::demoNWCR() {
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "Demo Start: Parent and child close write fd, Child read, Block mode");
+
+    int n = 1;
+    pid_t parentPid = getpid();
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": " << n++ 
+        << " Create a pipe with default block mode");
+    mP2CPipe = new Pipe();
+    mP2CPipe->init();
+
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": " << n++ << " Fork a child process");
+    pid_t pid = fork();
+
+    // Return 0 for child process, return actual pid of child process for parent process
+    if (-1 == pid) {
+        LOG4CPLUS_ERROR(_IPC_LOGGER_, "Fail to fork().");
+    } else if (0 == pid) {
+        pid_t childPid = getpid();
+
+        char recvBuff[256];
+        mP2CPipe->setReadOnly();
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": " << n++ 
+            << " Block on reading from pipe");
+        
+        int result = mP2CPipe->recv(recvBuff, sizeof(recvBuff));
+        if (JERROR == result) {
+            LOG4CPLUS_ERROR(_IPC_LOGGER_, "In CHILD " << childPid << ": " << n++ 
+                << " Fail to read data from pipe.");
+        } else {
+            LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": " << n++ 
+                << " Read data: " << recvBuff);
+        }
+
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": " << n++ 
+            << " Read data complete, close all fds.");
+        mP2CPipe->closeAll();
+        delete mP2CPipe;
+        mP2CPipe = NULL;
+
+        // TODO 子进程应该怎么正常退出？
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": " << n++ << " _exit(0)");
+        _exit(0);
+    } else {
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": " << n++ 
+            << " Sleep 2s and then close write fd.");
+        sleep(2);
+        mP2CPipe->setReadOnly();
+
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": " << n++ 
+            << " Sleep 20s and then close all fds.");
+        sleep(20);
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT "<< parentPid << ": sleep() could be interrupted by SIGCHLD signal from child process");
+
+        mP2CPipe->closeAll();
+        delete mP2CPipe;
+        mP2CPipe = NULL;
+
+        sleep(3);
+    }  
+
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "Demo End: " << getpid());  
 }

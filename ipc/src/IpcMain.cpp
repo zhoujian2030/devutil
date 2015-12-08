@@ -32,6 +32,8 @@ int main(int argc, char* argv[]) {
 
     PipeDemo* demo = new PipeDemo();
     demo->demoPWCR();
+    cout << endl;
+    demo->demoNWCR();
     cout << "exit main " << getpid() << endl;
 
 
