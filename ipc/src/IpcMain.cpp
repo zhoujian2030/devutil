@@ -21,19 +21,24 @@ int main(int argc, char* argv[]) {
 
     cout<<"Start Main Thread..."<< endl;
 
-    //TODO ???
-    if(signal(SIGPIPE,sighandler) == SIG_ERR)
-    {
-        cout << "signal error" << endl;
-        exit(EXIT_FAILURE);
-    }
-    // signal(SIGCHLD, SIG_IGN);
-    PipeDemo::registerSIGCHLDHandler(PipeDemo::waitChildExit);
-
     PipeDemo* demo = new PipeDemo();
+    PipeDemo::registerSIGCHLDHandler(PipeDemo::handleSIGCHLD);
+    PipeDemo::registerSIGPIPEHandler(PipeDemo::handleSIGPIPE);
+    //PipeDemo::ignoreSignal(SIGPIPE);
+
     demo->demoPWCR();
     cout << endl;
+
     demo->demoNWCR();
+    cout << endl;
+
+    demo->demoNRCW();
+    cout << endl;
+
+    PipeDemo::registerSIGPIPEHandler(NULL);
+    demo->demoNRCW();
+    cout << endl;
+
     cout << "exit main " << getpid() << endl;
 
 

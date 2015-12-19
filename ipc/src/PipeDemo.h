@@ -14,8 +14,12 @@ public:
     PipeDemo();
     ~PipeDemo();
 
+    static void ignoreSignal(int signum);
+
     static void registerSIGCHLDHandler(sighandler_t handler);
-    static void waitChildExit(int signo);
+    static void registerSIGPIPEHandler(sighandler_t handler);
+    static void handleSIGCHLD(int signo);
+    static void handleSIGPIPE(int signo);
 
     //P: parent process
     //C: child process
@@ -32,6 +36,11 @@ public:
     // Test: close write fd in both parent and child, then child read from pipe
     // Expect: return 0 immediately when read
     void demoNWCR();
+
+    // Mode: block
+    // Test: close read fd in both parent and child, then child write pipe
+    // Expect: write fail, trigger SIGPIPE signal. If child not register SIGPIPE handler, process exited 13
+    void demoNRCW();
 
 private:
     Pipe* mP2CPipe;
