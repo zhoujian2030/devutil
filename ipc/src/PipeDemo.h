@@ -39,8 +39,14 @@ public:
 
     // Mode: block
     // Test: close read fd in both parent and child, then child write pipe
-    // Expect: write fail, trigger SIGPIPE signal. If child not register SIGPIPE handler, process exited 13
+    // Expect: write fail, trigger SIGPIPE signal. If child not register SIGPIPE handler, process exits 13
     void demoNRCW();
+
+    // Mode: block
+    // Test: close read fd in both parent and child, then parent write pipe
+    // Expect: write fail, trigger SIGPIPE signal. If parent not register SIGPIPE handler, proces exits
+    //         immediately, leaving child process to be managed by init process
+    void demoNRPW();
 
 private:
     Pipe* mP2CPipe;

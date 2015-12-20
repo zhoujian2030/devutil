@@ -37,7 +37,7 @@ int main() {
     while (token != NULL) {
         LOG4CPLUS_INFO(logger, token);
         LOG4CPLUS_DEBUG(logger, "saveptr: " << saveptr << "   str = " << str);
-        token = strtok_r(NULL, " .", &savePtr);
+        token = strtok_r(NULL, " .", &saveptr);
     }
 
     return 0;

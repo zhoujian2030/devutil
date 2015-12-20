@@ -38,6 +38,15 @@ int main(int argc, char* argv[]) {
     PipeDemo::registerSIGPIPEHandler(NULL);
     demo->demoNRCW();
     cout << endl;
+    PipeDemo::registerSIGPIPEHandler(PipeDemo::handleSIGPIPE);
+
+    demo->demoNRPW();
+    cout << endl;
+
+    PipeDemo::registerSIGPIPEHandler(NULL);
+    demo->demoNRPW();
+    cout << endl;
+    PipeDemo::registerSIGPIPEHandler(PipeDemo::handleSIGPIPE);
 
     cout << "exit main " << getpid() << endl;
 

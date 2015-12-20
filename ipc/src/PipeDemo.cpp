@@ -215,8 +215,8 @@ void PipeDemo::demoNRCW() {
     pid_t parentPid = getpid();
     LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": " << n++ 
         << " Create a pipe with default block mode");
-    mP2CPipe = new Pipe();
-    mP2CPipe->init();
+    mC2PPipe = new Pipe();
+    mC2PPipe->init();
 
     LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": " << n++ << " Fork a child process");
     pid_t pid = fork();
@@ -230,10 +230,10 @@ void PipeDemo::demoNRCW() {
         LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": " << n++ 
             << " Close read fd, sleep 2s and then write to pipe.");
 
-        mP2CPipe->setWriteOnly();
+        mC2PPipe->setWriteOnly();
         char sendBuff[] = "**2b2b2b2b2b2b2b2b2b2b2b2b**";
         sleep(2);
-        int result = mP2CPipe->send(sendBuff);
+        int result = mC2PPipe->send(sendBuff);
 
         if(JERROR == result) {
             LOG4CPLUS_ERROR(_IPC_LOGGER_, "In CHILD " << childPid << ": " << n++ 
@@ -246,9 +246,9 @@ void PipeDemo::demoNRCW() {
         LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": " << n++ 
             << " Send data complete, close all fds.");
 
-        mP2CPipe->closeAll();
-        delete mP2CPipe;
-        mP2CPipe = NULL;
+        mC2PPipe->closeAll();
+        delete mC2PPipe;
+        mC2PPipe = NULL;
 
         // TODO 子进程应该怎么正常退出？
         LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": " << n++ << " _exit(0)");
@@ -256,16 +256,83 @@ void PipeDemo::demoNRCW() {
     } else {
         LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": " << n++ 
             << " Close read fd.");
-        mP2CPipe->setWriteOnly();
+        mC2PPipe->setWriteOnly();
 
         LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": " << n++ 
             << " Sleep 20s and then close all fds.");
         sleep(20);
 
         LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT "<< parentPid << ": sleep() could be interrupted by SIGCHLD signal from child process");
+        mC2PPipe->closeAll();
+        delete mC2PPipe;
+        mC2PPipe = NULL;
+
+        sleep(3);
+    }  
+
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "Demo End: " << getpid());      
+}
+
+void PipeDemo::demoNRPW() {
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "Demo Start: Parent and child close read fd, Parent write, Block mode");
+
+    int n = 1;
+    pid_t parentPid = getpid();
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": " << n++ 
+        << " Create a pipe with default block mode");
+    mP2CPipe = new Pipe();
+    mP2CPipe->init();
+
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": " << n++ << " Fork a child process");
+    pid_t pid = fork();
+
+    // Return 0 for child process, return actual pid of child process for parent process
+    if (-1 == pid) {
+        LOG4CPLUS_ERROR(_IPC_LOGGER_, "Fail to fork().");
+    } else if (0 == pid) {
+        pid_t childPid = getpid();
+
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": " << n++ 
+            << " Close read fd.");
+
+        mP2CPipe->setWriteOnly();
+
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": " << n++ 
+            << " Sleep 3s and then close all fds.");
+        sleep(3);
+
         mP2CPipe->closeAll();
         delete mP2CPipe;
         mP2CPipe = NULL;
+
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": " << n++ << " _exit(0)");
+        _exit(0);
+    } else {
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": " << n++ 
+            << " Close read fd, sleep 2s then send data to pipe.");
+        mP2CPipe->setWriteOnly();
+
+        char sendBuff[] = "**2b2b2b2b2b2b2b2b2b2b2b2b**";
+        sleep(2);
+        int result = mP2CPipe->send(sendBuff);
+
+        if(JERROR == result) {
+            LOG4CPLUS_ERROR(_IPC_LOGGER_, "In PARENT " << parentPid << ": " << n++ 
+                << " Fail to send data to pipe, result = " << result);
+        } else {      
+            LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": " << n++ 
+                << " Send data success.");
+        }
+
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": " << n++ 
+            << " Send data complete, close all fds.");
+
+        mP2CPipe->closeAll();
+        delete mP2CPipe;
+        mP2CPipe = NULL;
+
+        // LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT "<< parentPid << ": sleep() could be interrupted by SIGCHLD signal from child process");
 
         sleep(3);
     }  
