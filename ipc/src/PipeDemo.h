@@ -16,8 +16,8 @@ public:
 
     static void ignoreSignal(int signum);
 
-    static void registerSIGCHLDHandler(sighandler_t handler);
-    static void registerSIGPIPEHandler(sighandler_t handler);
+    static void installSIGCHLDHandler(sighandler_t handler);
+    static void installSIGPIPEHandler(sighandler_t handler);
     static void handleSIGCHLD(int signo);
     static void handleSIGPIPE(int signo);
 

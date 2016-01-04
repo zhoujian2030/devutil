@@ -37,9 +37,9 @@ void PipeDemo::ignoreSignal(int signum) {
     }
 }
 
-void PipeDemo::registerSIGCHLDHandler(sighandler_t handler) {
+void PipeDemo::installSIGCHLDHandler(sighandler_t handler) {
     if (signal(SIGCHLD, handler) == SIG_ERR) {
-        LOG4CPLUS_ERROR(_IPC_LOGGER_, "Register SIGCHLD handler error.");
+        LOG4CPLUS_ERROR(_IPC_LOGGER_, "Install SIGCHLD handler error.");
     }
 }
 
@@ -54,14 +54,14 @@ void PipeDemo::handleSIGCHLD(int signo) {
     LOG4CPLUS_INFO(_IPC_LOGGER_, "No more SIGCHLD signal.");
 }
 
-void PipeDemo::registerSIGPIPEHandler(sighandler_t handler) {
+void PipeDemo::installSIGPIPEHandler(sighandler_t handler) {
     if (handler != NULL) {
-        LOG4CPLUS_INFO(_IPC_LOGGER_, "Register SIGPIPE handler.");
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "Install SIGPIPE handler.");
     } else {
-        LOG4CPLUS_INFO(_IPC_LOGGER_, "Deregister SIGPIPE handler.");
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "Uninstall SIGPIPE handler.");
     }
     if (signal(SIGPIPE, handler) == SIG_ERR) {
-        LOG4CPLUS_ERROR(_IPC_LOGGER_, "Register SIGPIPE handler error.");
+        LOG4CPLUS_ERROR(_IPC_LOGGER_, "Install SIGPIPE handler error.");
     }
 }
 
@@ -116,8 +116,8 @@ void PipeDemo::demoPWCR() {
         _exit(0);
     } else {
 
-        // Register SIGCHLD handler to handle child process exit
-        // PipeDemo::registerSIGCHLDHandler(PipeDemo::handleSIGCHLD);
+        // Install SIGCHLD handler to handle child process exit
+        // PipeDemo::installSIGCHLDHandler(PipeDemo::handleSIGCHLD);
 
         LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": " << n++ 
             << " pid return from fork() should be child pid.");

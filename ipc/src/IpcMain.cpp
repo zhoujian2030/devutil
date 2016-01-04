@@ -22,8 +22,8 @@ int main(int argc, char* argv[]) {
     cout<<"Start Main Thread..."<< endl;
 
     PipeDemo* demo = new PipeDemo();
-    PipeDemo::registerSIGCHLDHandler(PipeDemo::handleSIGCHLD);
-    PipeDemo::registerSIGPIPEHandler(PipeDemo::handleSIGPIPE);
+    PipeDemo::installSIGCHLDHandler(PipeDemo::handleSIGCHLD);
+    PipeDemo::installSIGPIPEHandler(PipeDemo::handleSIGPIPE);
     //PipeDemo::ignoreSignal(SIGPIPE);
 
     demo->demoPWCR();
@@ -35,18 +35,18 @@ int main(int argc, char* argv[]) {
     demo->demoNRCW();
     cout << endl;
 
-    PipeDemo::registerSIGPIPEHandler(NULL);
+    PipeDemo::installSIGPIPEHandler(NULL);
     demo->demoNRCW();
     cout << endl;
-    PipeDemo::registerSIGPIPEHandler(PipeDemo::handleSIGPIPE);
+    PipeDemo::installSIGPIPEHandler(PipeDemo::handleSIGPIPE);
 
     demo->demoNRPW();
     cout << endl;
 
-    PipeDemo::registerSIGPIPEHandler(NULL);
+    PipeDemo::installSIGPIPEHandler(NULL);
     demo->demoNRPW();
     cout << endl;
-    PipeDemo::registerSIGPIPEHandler(PipeDemo::handleSIGPIPE);
+    PipeDemo::installSIGPIPEHandler(PipeDemo::handleSIGPIPE);
 
     cout << "exit main " << getpid() << endl;
 
