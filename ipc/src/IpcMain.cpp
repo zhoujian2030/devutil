@@ -12,15 +12,57 @@
 #include <iostream>
 #include "PipeDemo.h"
 #include "Pipe.h"
+#include "NamedPipe.h"
 
 using namespace std;
 using namespace ipc;
 
-void sighandler(int signo);
+void testPipe();
+void testNamedPipe();
 int main(int argc, char* argv[]) {
 
     cout<<"Start Main Thread..."<< endl;
 
+    testPipe();
+    testNamedPipe();
+
+    cout << "exit main " << getpid() << endl;
+
+    return 0;
+
+}
+
+void testNamedPipe() {
+    string pipeName = "/tmp/fifo";
+
+    pid_t pid = fork();
+    if (-1 == pid) {
+        cout << "fail to fork" << endl;
+    } else if (0 == pid) {
+        NamedPipe * pipe = new NamedPipe(pipeName);
+        pipe->initRead();
+        pipe->recv();
+        cout << pipe->toString() << endl;
+    } else {
+        NamedPipe * pipe = new NamedPipe(pipeName);
+        pipe->initWrite();
+        pipe->setData("xxxxxxxxxxxxxxxxxxx123");
+        pipe->send();
+        cout << pipe->toString() << endl;
+    }
+    
+
+    // pipe->setData("aldfkjslkfjsdlfjlkdfjlsfjsdlfskldfkskfsfxxx");
+    // string data = pipe->getData();
+    // cout << "get data: " << data << endl;
+    // cout << "pipe: " << pipe->toString() << endl;
+
+    // delete pipe;
+    // pipe = NULL;
+    // cout << "get data: " << data << endl;
+}
+
+void testPipe() {
     PipeDemo* demo = new PipeDemo();
     PipeDemo::installSIGCHLDHandler(PipeDemo::handleSIGCHLD);
     PipeDemo::installSIGPIPEHandler(PipeDemo::handleSIGPIPE);
@@ -47,8 +89,6 @@ int main(int argc, char* argv[]) {
     demo->demoNRPW();
     cout << endl;
     PipeDemo::installSIGPIPEHandler(PipeDemo::handleSIGPIPE);
-
-    cout << "exit main " << getpid() << endl;
 
 
     // Pipe* c2pPipe = new Pipe();
@@ -105,12 +145,4 @@ int main(int argc, char* argv[]) {
     // //     sleep(1);
     // //     cout << pid << endl;
     // // }    
-
-    return 0;
-
-}
-
-void sighandler(int signo)
-{
-    cout <<"catch a SIGPIPE signal and signum = " << signo << endl;
 }
