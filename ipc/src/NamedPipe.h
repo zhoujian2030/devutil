@@ -24,14 +24,21 @@ namespace ipc
         // read data from fifo and store in m_data
         // return actual number of byte read if success
         // 
-        int recv();
+        int read();
+
+        int write();
+
+        void close();
+
         std::string& getData();
 
-        // write data to fifo
-        void setData(const std::string& theString);
-        int send();
+        // set data to be sent
+        void setData(const std::string& theString);        
 
         std::string toString() const;
+
+        // for test, never call it
+        void clear();
 
         enum {
             BUFF_SIZE = PIPE_BUF
@@ -39,7 +46,7 @@ namespace ipc
 
     private:
         int create();
-        int openFifo(int flags);
+        int open(int flags);
 
         bool m_isRead;
 
@@ -47,7 +54,7 @@ namespace ipc
         int m_fd;
 
         std::string m_messageBuffer;
-        unsigned char m_rxBuffer[BUFF_SIZE];
+        char m_rxBuffer[BUFF_SIZE];
     };
 
 

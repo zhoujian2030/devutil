@@ -3,4 +3,5 @@
 
 
 // define for pipe
-#define JPIPE_NOT_EMPTY 1101
+#define JPIPE_NOT_EMPTY     1101
+#define JPIPE_WRITE_CLOSE   1102

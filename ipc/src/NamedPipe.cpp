@@ -31,7 +31,7 @@ NamedPipe::NamedPipe(string& pathName)
 
 NamedPipe::~NamedPipe() {
     if (-1 != m_fd) {
-        close(m_fd);
+        ::close(m_fd);
     }
 }
 
@@ -40,7 +40,7 @@ int NamedPipe::initRead() {
     m_messageBuffer.clear();
     memset(m_rxBuffer, '/0', sizeof(m_rxBuffer));  
 
-    return openFifo(O_RDONLY);
+    return open(O_RDONLY);
 }
 
 int NamedPipe::initWrite() {
@@ -48,35 +48,46 @@ int NamedPipe::initWrite() {
     m_messageBuffer.clear();
     memset(m_rxBuffer, '/0', sizeof(m_rxBuffer));  
     if (JSUCCESS == create()) {
-        return openFifo(O_WRONLY);
+        return open(O_WRONLY);
     }
 
     return JERROR;
 }
 
-int NamedPipe::recv() {
-    int result = read(m_fd, m_rxBuffer, sizeof(m_rxBuffer));
+int NamedPipe::read() {
+    int result = ::read(m_fd, m_rxBuffer, sizeof(m_rxBuffer));
     if (-1 == result) {
         LOG4CPLUS_ERROR(_IPC_LOGGER_, "fail to read data from fifo " << m_pathName <<
             ", errno = " << errno << " - " << strerror(errno));
         return JERROR;
     } 
 
+    // if all processes opened the fifo in write mode before close the fd
+    // the process read from fifo will return 0 immediately
+    if (0 == result) {
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "No process is ready to write fifo.");
+        m_messageBuffer.clear();
+        return JPIPE_WRITE_CLOSE;
+    }
+
     m_rxBuffer[result] = '\0';
-    LOG4CPLUS_DEBUG(_IPC_LOGGER_, "read data from fifo success: " << m_rxBuffer);
+    m_messageBuffer.clear();
+    m_messageBuffer.append(m_rxBuffer);
+
+    LOG4CPLUS_DEBUG(_IPC_LOGGER_, "read data from fifo success(" << result << ") :" << m_messageBuffer);
     return result;
 }
 
 // return actual number of bytes sent if success
 // return JERROR if error
-int NamedPipe::send() {
+int NamedPipe::write() {
     LOG4CPLUS_DEBUG(_IPC_LOGGER_, "write data to fifo " << m_pathName << " : " << m_messageBuffer);
 
     if (m_messageBuffer.size() > BUFF_SIZE) {
-        LOG4CPLUS_WARN(_IPC_LOGGER_, "write too many data may be non-atomic");
+        LOG4CPLUS_WARN(_IPC_LOGGER_, "writing too many data may be non-atomic");
     }
 
-    int result = write(m_fd, m_messageBuffer.c_str(), m_messageBuffer.size());
+    int result = ::write(m_fd, m_messageBuffer.c_str(), m_messageBuffer.size());
     if (-1 == result) {
         LOG4CPLUS_ERROR(_IPC_LOGGER_, "fail to write data to fifo " << m_pathName << 
             ", errno = " << errno << " - " << strerror(errno));
@@ -87,8 +98,6 @@ int NamedPipe::send() {
 }
 
 string& NamedPipe::getData() {
-    // m_messageBuffer.clear();
-    // m_messageBuffer.append("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
     return m_messageBuffer;
 }
 
@@ -99,6 +108,13 @@ void NamedPipe::setData(const std::string& theString) {
     }
 
     m_messageBuffer = theString;
+}
+
+void NamedPipe::close() {
+    if (-1 != m_fd) {
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "close fifo: " << m_pathName);
+        ::close(m_fd);
+    }    
 }
 
 int NamedPipe::create() {    
@@ -123,12 +139,12 @@ int NamedPipe::create() {
     return JSUCCESS;
 }
 
-int NamedPipe::openFifo(int flags) {
+int NamedPipe::open(int flags) {
     LOG4CPLUS_DEBUG(_IPC_LOGGER_, "NamedPipe::openFifo() - flags = " << flags);
 
     // the access mode in flags can be O_RDONLY, O_WRONLY, or O_RDWR
     // but in fact we should not open a fifo with O_RDWR (read/write)
-    m_fd = open(m_pathName.c_str(), flags);
+    m_fd = ::open(m_pathName.c_str(), flags);
     if (-1 == m_fd) {
         LOG4CPLUS_ERROR(_IPC_LOGGER_, "fail to open fifo with path name " << m_pathName <<
             ". errno = " << errno << " - " << strerror(errno));
@@ -151,4 +167,8 @@ string NamedPipe::toString() const {
     result.append(m_messageBuffer);
 
     return result;
+}
+
+void NamedPipe::clear() {
+    m_messageBuffer.clear();
 }
