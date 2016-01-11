@@ -7,6 +7,7 @@ COMMAND=$1
 
 if [[ $COMMAND = "clean" ]]
 then
+    make -C cm clean
     make -C log clean
     make -C ipc clean
     make -C cpp clean
@@ -14,6 +15,7 @@ then
     make -C test/log clean
     make -C test/str clean
 else
+    make -C cm
     make -C log
     make -C ipc
     make -C cpp

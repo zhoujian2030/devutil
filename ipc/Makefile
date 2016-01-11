@@ -16,6 +16,8 @@ LIBS += $(PROJBASE)/log/lib/liblog.a
 SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)
 OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
 
+DEPOBJS := $(PROJBASE)/cm/obj/*.o
+
 include ../cm/global.mk
 
 all: $(TARGET)
@@ -24,7 +26,7 @@ exe: $(TARGET)
 # Targets
 $(TARGET): buildrepo $(OBJS)
 #	@echo "SRCS = $(SRCS)"
-	$(CXX) $(OBJS) -o $@ -lrt $(LIBS)
+	$(CXX) $(OBJS) $(DEPOBJS) -o $@ -lrt $(LIBS)
 	@mv $(TARGET) $(OBJDIR)
 
 clean:

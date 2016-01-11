@@ -10,26 +10,49 @@
 #include <signal.h>
 #include <unistd.h>
 #include <iostream>
+#include <string>
 #include "PipeDemo.h"
 #include "Pipe.h"
 #include "NamedPipe.h"
+#include "IPCLogger.h"
+#include "common.h"
+#include "Util.h"
 
 using namespace std;
 using namespace ipc;
 
 void testPipe();
 void testNamedPipe();
+void showUsage() {
+    cout << "Usage: " << endl;
+    cout << "ipc [Test Number]" << endl;
+    cout << "  1 : Test Pipe" << endl;
+    cout << "  2 : Test Named Pipe (FIFO)" << endl;
+}
+
 int main(int argc, char* argv[]) {
 
-    cout<<"Start Main Thread..."<< endl;
+    if (argc != 2) {
+        showUsage();
+        return 0;
+    }
 
-    testPipe();
-    testNamedPipe();
+    string testNumber(argv[1]);
+    cout << "testNumber = " << testNumber << endl;
+
+    IPCLogger::initConsoleLog();
+    IPCLogger::setLogLevel(logcpp::INFO);
+
+    if (testNumber.compare("1") == 0) {
+        testPipe();
+    } else if (testNumber.compare("2") == 0) {
+        testNamedPipe();
+    } else {
+        showUsage();
+    }
 
     cout << "exit main " << getpid() << endl;
-
     return 0;
-
 }
 
 void testNamedPipe() {
@@ -41,13 +64,38 @@ void testNamedPipe() {
     } else if (0 == pid) {
         NamedPipe * pipe = new NamedPipe(pipeName);
         pipe->initRead();
-        pipe->recv();
+
+        int result = 0;
+        while (true) {
+            result = pipe->read();
+            string data = pipe->getData();
+            cout << "recv data(" << data.size() << "): " << data << endl;
+
+            if (JPIPE_WRITE_CLOSE == result) {
+                // break;
+                sleep(1);
+            }
+        }
         cout << pipe->toString() << endl;
+        // sleep(100);
+        _exit(0);
     } else {
         NamedPipe * pipe = new NamedPipe(pipeName);
         pipe->initWrite();
-        pipe->setData("xxxxxxxxxxxxxxxxxxx123");
-        pipe->send();
+        pipe->setData("12345678");
+
+        for (int i=0; i<512*17; i++) {
+            cout << i << endl;
+            usleep(100);
+            pipe->write();
+        }
+        sleep(10);
+        pipe->close();
+        sleep(5);
+        pipe->initWrite();
+        sleep(5);
+        pipe->close();
+        sleep(100);
         cout << pipe->toString() << endl;
     }
     
