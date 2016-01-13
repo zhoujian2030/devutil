@@ -17,12 +17,14 @@
 #include "IPCLogger.h"
 #include "common.h"
 #include "Util.h"
+#include "NamedPipeDemo.h"
 
 using namespace std;
 using namespace ipc;
 
 void testPipe();
 void testNamedPipe();
+void testNamedPipe2();
 void showUsage() {
     cout << "Usage: " << endl;
     cout << "ipc [Test Number]" << endl;
@@ -40,8 +42,8 @@ int main(int argc, char* argv[]) {
     string testNumber(argv[1]);
     cout << "testNumber = " << testNumber << endl;
 
-    IPCLogger::initConsoleLog();
-    IPCLogger::setLogLevel(logcpp::INFO);
+    // IPCLogger::initConsoleLog();
+    // IPCLogger::setLogLevel(logcpp::INFO);
 
     if (testNumber.compare("1") == 0) {
         testPipe();
@@ -54,8 +56,14 @@ int main(int argc, char* argv[]) {
     cout << "exit main " << getpid() << endl;
     return 0;
 }
-
 void testNamedPipe() {
+    string pipeName = "/tmp/fifo";
+
+    NamedPipeDemo npd;
+    npd.demo1w1r_normal(pipeName, pipeName);
+}
+
+void testNamedPipe2() {
     string pipeName = "/tmp/fifo";
 
     pid_t pid = fork();

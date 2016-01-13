@@ -75,7 +75,7 @@ int NamedPipe::read() {
     m_messageBuffer.append(m_rxBuffer);
 
     LOG4CPLUS_DEBUG(_IPC_LOGGER_, "read data from fifo success(" << result << ") :" << m_messageBuffer);
-    return result;
+    return JSUCCESS;
 }
 
 // return actual number of bytes sent if success

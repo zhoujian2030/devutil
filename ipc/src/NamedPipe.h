@@ -21,11 +21,13 @@ namespace ipc
         int initRead();
         int initWrite();
 
-        // read data from fifo and store in m_data
-        // return actual number of byte read if success
-        // 
+        // read data from fifo and store in m_messageBuffer
+        // return JSUCCESS if success
+        // return JPIPE_WRITE_CLOSE if read 0 byte from fifo
         int read();
 
+        // return actual number of bytes sent if success
+        // return JERROR if error
         int write();
 
         void close();
