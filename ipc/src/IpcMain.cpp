@@ -60,7 +60,11 @@ void testNamedPipe() {
     string pipeName = "/tmp/fifo";
 
     NamedPipeDemo npd;
-    npd.demo1w1r_normal(pipeName, pipeName);
+    npd.demo_wopen_read_block_fifo_not_exist(pipeName, pipeName);
+
+    npd.demo_ropen_block_fifo_exist(pipeName, pipeName);
+
+    npd.demo_write_block(pipeName, pipeName);
 }
 
 void testNamedPipe2() {

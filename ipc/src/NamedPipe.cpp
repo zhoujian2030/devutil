@@ -74,14 +74,14 @@ int NamedPipe::read() {
     m_messageBuffer.clear();
     m_messageBuffer.append(m_rxBuffer);
 
-    LOG4CPLUS_DEBUG(_IPC_LOGGER_, "read data from fifo success(" << result << ") :" << m_messageBuffer);
+    LOG4CPLUS_TRACE(_IPC_LOGGER_, "read data from fifo success(" << result << ") :" << m_messageBuffer);
     return JSUCCESS;
 }
 
 // return actual number of bytes sent if success
 // return JERROR if error
 int NamedPipe::write() {
-    LOG4CPLUS_DEBUG(_IPC_LOGGER_, "write data to fifo " << m_pathName << " : " << m_messageBuffer);
+    LOG4CPLUS_TRACE(_IPC_LOGGER_, "write data to fifo " << m_pathName << " : " << m_messageBuffer);
 
     if (m_messageBuffer.size() > BUFF_SIZE) {
         LOG4CPLUS_WARN(_IPC_LOGGER_, "writing too many data may be non-atomic");
@@ -140,7 +140,7 @@ int NamedPipe::create() {
 }
 
 int NamedPipe::open(int flags) {
-    LOG4CPLUS_DEBUG(_IPC_LOGGER_, "NamedPipe::openFifo() - flags = " << flags);
+    LOG4CPLUS_DEBUG(_IPC_LOGGER_, "NamedPipe::open() - flags = " << flags);
 
     // the access mode in flags can be O_RDONLY, O_WRONLY, or O_RDWR
     // but in fact we should not open a fifo with O_RDWR (read/write)
