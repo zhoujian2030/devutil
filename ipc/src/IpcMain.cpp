@@ -65,6 +65,8 @@ void testNamedPipe() {
     npd.demo_ropen_block_fifo_exist(pipeName, pipeName);
 
     npd.demo_write_block(pipeName, pipeName);
+
+    npd.demo_write_less_than_64k_block(pipeName, pipeName);
 }
 
 void testNamedPipe2() {
@@ -150,6 +152,10 @@ void testPipe() {
     cout << endl;
     PipeDemo::installSIGPIPEHandler(PipeDemo::handleSIGPIPE);
 
+
+    // Test End
+    PipeDemo::installSIGCHLDHandler(NULL);
+    PipeDemo::installSIGPIPEHandler(NULL);
 
     // Pipe* c2pPipe = new Pipe();
     // c2pPipe->init();

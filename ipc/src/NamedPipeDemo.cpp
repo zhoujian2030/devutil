@@ -10,6 +10,7 @@
 #include "NamedPipe.h"
 #include "IPCLogger.h"
 #include "common.h"
+#include <vector>
 
 using namespace ipc;
 using namespace std;
@@ -219,36 +220,7 @@ void NamedPipeDemo::demo_write_block(string wPathName, string rPathName) {
     if (-1 == pid) {
         LOG4CPLUS_ERROR(_IPC_LOGGER_, "fail to fork.");
     } else if (0 == pid) {
-        pid_t childPid = getpid();
-
-        // 1 open
-        LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": open fifo with O_RDONLY mode"
-            << ", fifo name = " << rPathName);
-
-        m_pNamedPipe = new NamedPipe(rPathName);
-        m_pNamedPipe->initRead();
-
-        // 2 read
-        LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": sleep 3s to wait until fifo is full then read fifo");
-        int n=0;
-        while(n++ < 3) {
-            LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": sleeping ... " << n);
-            sleep(1);
-        }
-
-        int result = m_pNamedPipe->read();
-
-        if (JSUCCESS == result) {
-            string recvData = m_pNamedPipe->getData();
-            LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": read " << recvData.size() << " bytes from fifo");
-        }
-
-        // 3 exit
-        LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": sleep 1s then exit");
-        sleep(1);
-        delete m_pNamedPipe;
-        m_pNamedPipe = NULL;
-        _exit(0);
+        processChild(rPathName);
     } else {
         // 1 open
         LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": create and open fifo with O_WRONLY mode, fifo name = " << wPathName);
@@ -280,4 +252,109 @@ void NamedPipeDemo::demo_write_block(string wPathName, string rPathName) {
     }
 
     LOG4CPLUS_INFO(_IPC_LOGGER_, "Demo End: " << getpid());
+}
+
+void NamedPipeDemo::demo_write_less_than_64k_block(string wPathName, string rPathName) {    
+    if (wPathName.compare(rPathName) != 0) {
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "Run demo_write_block Test Error.");
+        return;
+    }
+
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "Demo Start: Block mode, A process(P) write, B process(C) read" <<
+        "\n\tProcess A create and open fifo with write mode" <<
+        "\n\tProcess A write 8, 4K, 8, 4K, 8, 4K, 8, 4K, 8, 4K, 8, 4K, 8, 4K, 8, 4K bytes data, "<<
+        "\n\t          then block on write 8 more bytes data" <<
+        "\n\tProcess B read 4096 bytes success in one time" <<
+        "\n\tProcess A write 8 bytes success");
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+
+    pid_t parentPid = getpid();
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": Fork a child process");
+
+    pid_t pid = fork();
+    if (-1 == pid) {
+        LOG4CPLUS_ERROR(_IPC_LOGGER_, "fail to fork.");
+    } else if (0 == pid) {
+        processChild(rPathName);
+    } else {
+        // 1 open
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": create and open fifo with O_WRONLY mode, fifo name = " << wPathName);
+
+        m_pNamedPipe = new NamedPipe(wPathName);
+        m_pNamedPipe->initWrite();
+
+        // 2 write 8, 4K, 8, 4K, 8, 4K, 8, 4K, 8, 4K, 8, 4K, 8, 4K, 8, 4K bytes
+        int n=NamedPipe::BUFF_SIZE/8;
+        string bytes8("abcdabcd");
+        string sample8("12345678"), bytes4k;
+        for (int i=0; i<n; i++) {
+            bytes4k.append(sample8);
+        }
+
+        int num = 0;
+        vector<string> wdataVect;
+        for (int i=0; i<8; i++) {
+            wdataVect.push_back(bytes8);
+            wdataVect.push_back(bytes4k);
+            num += 8;
+            num += 4096;
+        }
+
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": write "<< num << " bytes data to fifo, then the fifo is full");
+        
+        for (unsigned int i=0; i<wdataVect.size(); i++) {
+            m_pNamedPipe->setData(wdataVect.at(i));
+            m_pNamedPipe->write();
+        }
+
+        // 3 write 8 byte
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": block on write 8 more bytes data to fifo: " << bytes8);
+        m_pNamedPipe->setData(bytes8);
+        int result = m_pNamedPipe->write();
+
+        if (JERROR != result) {
+            LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": write fifo success, sleep 2s then clear fifo and exit");
+        } 
+
+        sleep(3);
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "In PARENT " << parentPid << ": clear the fifo after test: " << wPathName);
+        string cmd("rm -rf " + wPathName);
+        system(cmd.c_str());
+    }
+
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "Demo End: " << getpid());
+}
+
+void NamedPipeDemo::processChild(string pathName) {
+    pid_t childPid = getpid();
+
+    // 1 open
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": open fifo with O_RDONLY mode"
+        << ", fifo name = " << pathName);
+
+    m_pNamedPipe = new NamedPipe(pathName);
+    m_pNamedPipe->initRead();
+
+    // 2 read
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": sleep 3s to wait until fifo is full then read fifo");
+    int n=0;
+    while(n++ < 3) {
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": sleeping ... " << n);
+        sleep(1);
+    }
+
+    int result = m_pNamedPipe->read();
+
+    if (JSUCCESS == result) {
+        string recvData = m_pNamedPipe->getData();
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": read " << recvData.size() << " bytes from fifo");
+    }
+
+    // 3 exit
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": sleep 1s then exit");
+    sleep(1);
+    delete m_pNamedPipe;
+    m_pNamedPipe = NULL;
+    _exit(0);    
 }

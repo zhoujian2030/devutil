@@ -36,8 +36,17 @@ namespace ipc {
         // Process A write 8 bytes success
         void demo_write_block(std::string wPathName, std::string rPathName);
 
+        // Process A create and open fifo with write mode
+        // Process A write 8, 4K, 8, 4K, 8, 4K, 8, 4K, 8, 4K, 8, 4K, 8, 4K, 8, 4K bytes data
+        //           then block on write 8 more bytes data
+        // Process B read 4096 bytes success in one time
+        // Process A write 8 bytes success
+        void demo_write_less_than_64k_block(std::string wPathName, std::string rPathName);
+
     private:
         NamedPipe* m_pNamedPipe;
+
+        void processChild(std::string pathName);
     };
 }
 
