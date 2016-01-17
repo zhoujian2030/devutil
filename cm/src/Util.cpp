@@ -6,6 +6,7 @@
  */
 
 #include "Util.h"
+#include "common.h"
 #include <sstream>
 #include <string>
 #include <iostream>
@@ -21,4 +22,12 @@ int Util::s2i(string theString) {
     // TODO check if success, handle the exception
 
     return result;
+}
+
+int Util::installSignalHandler(int signo, sighandler_t handler) {
+    if (signal(signo, handler) == SIG_ERR) {
+        return JERROR;
+    }
+
+    return JSUCCESS;
 }

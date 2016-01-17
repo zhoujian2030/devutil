@@ -67,6 +67,8 @@ void testNamedPipe() {
     npd.demo_write_block(pipeName, pipeName);
 
     npd.demo_write_less_than_64k_block(pipeName, pipeName);
+
+    npd.demo_write_catch_sigpipe(pipeName, pipeName);
 }
 
 void testNamedPipe2() {

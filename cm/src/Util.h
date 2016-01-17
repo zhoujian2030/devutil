@@ -9,10 +9,14 @@
 #define _UTIL_H_
 
 #include <string>
+#include <signal.h>
 
 class Util {
 public:
     static int s2i(std::string theString);
+
+    // signal.h typedef void (*sighandler_t)(int);
+    static int installSignalHandler(int signo, sighandler_t handler);
 };
 
 #endif

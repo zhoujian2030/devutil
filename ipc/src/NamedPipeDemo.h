@@ -30,6 +30,7 @@ namespace ipc {
         // Process B read fifo success
         void demo_ropen_block_fifo_exist(std::string wPathName, std::string rPathName);
 
+        // fifo is not existed
         // Process A create and open fifo with write mode
         // Process A write 8191*8 = 65536 bytes data to fifo, then block on write 8 more bytes data
         // Process B read 4096 bytes success in one time
@@ -43,10 +44,18 @@ namespace ipc {
         // Process A write 8 bytes success
         void demo_write_less_than_64k_block(std::string wPathName, std::string rPathName);
 
+        // Process B install SIGPIPE handler, then create and open fifo with write mode
+        // Process A open fifo with read mode then close it
+        // Process B write fifo fail and catch SIGPIPE signal due to A closed the fifo
+        // Process B uninstall SIGPIPE handler and write fifo again, then B exited due to SIGPIPE
+        void demo_write_catch_sigpipe(std::string wPathName, std::string rPathName);
+
     private:
         NamedPipe* m_pNamedPipe;
 
         void processChild(std::string pathName);
+
+        static void handleSIGPIPE(int signo);
     };
 }
 
