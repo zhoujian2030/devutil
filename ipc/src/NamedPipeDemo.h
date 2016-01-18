@@ -50,6 +50,10 @@ namespace ipc {
         // Process B uninstall SIGPIPE handler and write fifo again, then B exited due to SIGPIPE
         void demo_write_catch_sigpipe(std::string wPathName, std::string rPathName);
 
+        // fifo is not created, fail to open the fifo in read mode
+        // fifo is not created, fail to open the fifo in write mode
+        void open_fail_fifo_not_exist(std::string pathName);
+
     private:
         NamedPipe* m_pNamedPipe;
 

@@ -35,12 +35,17 @@ NamedPipe::~NamedPipe() {
     }
 }
 
-int NamedPipe::initRead() {
+int NamedPipe::initRead(bool block) {
     m_isRead = true;
     m_messageBuffer.clear();
     memset(m_rxBuffer, '/0', sizeof(m_rxBuffer));  
-
-    return open(O_RDONLY);
+    if (JSUCCESS == create()) {
+        int mode = O_RDONLY;
+        if (!block) {
+            mode = O_RDONLY | O_NONBLOCK;
+        }
+        return open(mode);
+    }
 }
 
 int NamedPipe::initWrite() {

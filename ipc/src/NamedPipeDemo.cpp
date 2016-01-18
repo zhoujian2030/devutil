@@ -7,6 +7,7 @@
 
 #include <stdlib.h>
 #include <vector>
+#include <fcntl.h>
 #include "NamedPipeDemo.h"
 #include "NamedPipe.h"
 #include "IPCLogger.h"
@@ -161,6 +162,11 @@ void NamedPipeDemo::demo_ropen_block_fifo_exist(string wPathName, string rPathNa
         if (JSUCCESS == result) {
             string recvData = m_pNamedPipe->getData();
             LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": read fifo success, data = " << recvData);
+        } else {
+            LOG4CPLUS_ERROR(_IPC_LOGGER_, "Demo Test Fail !");
+            delete m_pNamedPipe;
+            m_pNamedPipe = NULL;
+            return;
         }
 
         // 3 exit
@@ -422,6 +428,43 @@ void NamedPipeDemo::demo_write_catch_sigpipe(string wPathName, string rPathName)
     Util::installSignalHandler(SIGPIPE, NULL);
 
     LOG4CPLUS_INFO(_IPC_LOGGER_, "Demo End: " << getpid());
+}
+
+void NamedPipeDemo::open_fail_fifo_not_exist(string pathName) {
+
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "Demo Start: Block mode, A process open fifo in read/write mode" <<
+        "\n\tfifo is not created, fail to open the fifo in read mode" <<
+        "\n\tfifo is not created, fail to open the fifo in write mode");
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+
+    // Delete the existing fifo
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "clear the fifo before test: " << pathName);
+    string cmd("rm -rf " + pathName);
+    system(cmd.c_str());
+
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "open fifo which is not created in O_RDONLY mode: " << pathName);
+    m_pNamedPipe = new NamedPipe(pathName);
+    int result = m_pNamedPipe->open(O_RDONLY);   
+
+    if(JERROR == result) {
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "open fifo fail due to it is not created");
+    } else {
+        LOG4CPLUS_ERROR(_IPC_LOGGER_, "Demo Test Fail !");
+        return;
+    }
+
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "open fifo which is not created in O_WRONLY mode: " << pathName);
+    result = m_pNamedPipe->open(O_WRONLY);   
+
+    if(JERROR == result) {
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "open fifo fail due to it is not created");
+    } else {
+        LOG4CPLUS_ERROR(_IPC_LOGGER_, "Demo Test Fail !");
+        return;
+    }
+
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "Demo End");
 }
 
 void NamedPipeDemo::processChild(string pathName) {

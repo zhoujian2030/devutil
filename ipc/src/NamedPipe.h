@@ -18,7 +18,7 @@ namespace ipc
         NamedPipe(std::string& pathName);
         ~NamedPipe();
 
-        int initRead();
+        int initRead(bool block=true);
         int initWrite();
 
         // read data from fifo and store in m_messageBuffer
@@ -46,9 +46,11 @@ namespace ipc
             BUFF_SIZE = PIPE_BUF
         };
 
-    private:
+        //
         int create();
         int open(int flags);
+
+    private:
 
         bool m_isRead;
 
