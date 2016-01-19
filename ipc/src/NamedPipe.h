@@ -12,6 +12,16 @@
 
 namespace ipc 
 {
+
+    // Usage:
+    //   The write process:
+    //     - (Optional) release() make sure old fifo or file with the same pathname is removed, 
+    //                            if there are two write processes, don't do it in both
+    //     - initWrite() to mkfifo and open fifo
+    //     - setData() then write() if any data
+    //   The read process:
+    //     - initRead() to open fifo, mkfifo in case it it not existed
+    //     - read() then getData()
     class NamedPipe {
 
     public:
@@ -30,7 +40,11 @@ namespace ipc
         // return JERROR if error
         int write();
 
+        // only close fd
         void close();
+
+        // close fd and unlink fifo
+        void release();
 
         std::string& getData();
 

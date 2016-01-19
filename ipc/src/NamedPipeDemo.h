@@ -54,6 +54,11 @@ namespace ipc {
         // fifo is not created, fail to open the fifo in write mode
         void open_fail_fifo_not_exist(std::string pathName);
 
+        // test umask unlink
+        // test non block
+        // test 2 process open read, 1 process open write
+        // test 2 process open write, 1 process open read
+
     private:
         NamedPipe* m_pNamedPipe;
 

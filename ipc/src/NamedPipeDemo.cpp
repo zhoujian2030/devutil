@@ -69,14 +69,16 @@ void NamedPipeDemo::demo_wopen_read_block_fifo_not_exist(string wPathName, strin
         if (JSUCCESS == result) {
             string recvData = m_pNamedPipe->getData();
             LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": read fifo success, data = " << recvData);
+        } else {
+            LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": Demo Test Fail !");
         }
 
         // 3 exit
         LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": sleeping ... 1");
         sleep(1);
-        LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": exit");
         delete m_pNamedPipe;
         m_pNamedPipe = NULL;
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": exit");
         _exit(0);
     } else {
         // 1 mkfifo and open
@@ -171,9 +173,9 @@ void NamedPipeDemo::demo_ropen_block_fifo_exist(string wPathName, string rPathNa
 
         // 3 exit
         sleep(1);
-        LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": exit");
         delete m_pNamedPipe;
         m_pNamedPipe = NULL;
+        LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": exit");
         _exit(0);
     } else {
         // 1 open
@@ -464,6 +466,7 @@ void NamedPipeDemo::open_fail_fifo_not_exist(string pathName) {
         return;
     }
 
+    delete m_pNamedPipe;
     LOG4CPLUS_INFO(_IPC_LOGGER_, "Demo End");
 }
 
@@ -493,9 +496,9 @@ void NamedPipeDemo::processChild(string pathName) {
 
     // 3 exit
     sleep(1);
-    LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": exit");
     delete m_pNamedPipe;
     m_pNamedPipe = NULL;
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "In CHILD " << childPid << ": exit");
     _exit(0);    
 }
 

@@ -30,9 +30,7 @@ NamedPipe::NamedPipe(string& pathName)
 }
 
 NamedPipe::~NamedPipe() {
-    if (-1 != m_fd) {
-        ::close(m_fd);
-    }
+    release();
 }
 
 int NamedPipe::initRead(bool block) {
@@ -46,6 +44,8 @@ int NamedPipe::initRead(bool block) {
         }
         return open(mode);
     }
+
+    return JERROR;
 }
 
 int NamedPipe::initWrite() {
@@ -119,7 +119,14 @@ void NamedPipe::close() {
     if (-1 != m_fd) {
         LOG4CPLUS_INFO(_IPC_LOGGER_, "close fifo: " << m_pathName);
         ::close(m_fd);
+        m_fd = -1;
     }    
+}
+
+void NamedPipe::release() {
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "close fd and unlink fifo");
+    this->close();
+    unlink(m_pathName.c_str());
 }
 
 int NamedPipe::create() {    
@@ -130,10 +137,18 @@ int NamedPipe::create() {
         // the permission of the fifo file created is 0777 & ~umask
         // e.g. if umask = 022, 0777 & ~022 = 0755 (rwxr-xr-x)
         int res = mkfifo(m_pathName.c_str(), 0777);  
+
+        // in some case, 2 process may have conflict when invoking mkfifo at the same time
+        // need to check errno to bypass the "file exists" error
         if (res != 0) {
-            LOG4CPLUS_ERROR(_IPC_LOGGER_, "fail to create fifo with path name " << m_pathName <<
-                ". errno = " << errno << " - " << strerror(errno));
-            return JERROR;
+            if (errno == EEXIST) {
+                LOG4CPLUS_WARN(_IPC_LOGGER_, "errno = " << errno << " - " << strerror(errno));
+                return JSUCCESS;
+            } else {
+                LOG4CPLUS_ERROR(_IPC_LOGGER_, "fail to create fifo with path name " << m_pathName <<
+                    ". errno = " << errno << " - " << strerror(errno));
+                return JERROR;
+            }
         } else {
             LOG4CPLUS_INFO(_IPC_LOGGER_, "success to create fifo.");
             return JSUCCESS;
