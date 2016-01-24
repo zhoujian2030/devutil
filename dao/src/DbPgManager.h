@@ -27,6 +27,9 @@ public:
 
     bool getConnection();
     void releaseConnection();
+    bool isDbAlive();
+
+    bool sqlExecuteQuery();
 
 private:
 
