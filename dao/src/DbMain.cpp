@@ -51,9 +51,10 @@ int main(int argc, char* argv[]) {
     }
 
     pDbManager->getConnection();
-    pDbManager->isDbAlive();
+    //pDbManager->isDbAlive();
 
     while (true) {
+        cout << "\n-------------------------------------------------------------" << endl;
         if (!pDbManager->sqlExecuteQuery()) {
             pDbManager->releaseConnection();
             pDbManager->getConnection();

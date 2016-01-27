@@ -99,6 +99,142 @@ void DbPgManager::releaseConnection() {
     }
 }
 
+bool DbPgManager::sqlExecuteQuery() {
+    if (PQstatus(m_conn) != CONNECTION_OK) {
+        LOG4CPLUS_ERROR(_DB_LOGGER_, "Connection is lost.");
+        return false;
+    }
+
+    string sql("select count(1) as TOTALNUMBER");
+    // string sql("select * from simdeviceinfo");
+    int nParams = 0;
+    Oid* paramTypes = new Oid[nParams];
+    memset( paramTypes, 0, nParams*sizeof(Oid) );
+    char** paramValues = new char*[nParams];
+    memset( paramValues, 0, nParams*sizeof(char*) );
+    int* paramLengths = new int[nParams];
+    memset( paramLengths, 0, nParams*sizeof(int) );
+    int* paramFormats = new int[nParams];
+    memset( paramFormats, 0, nParams*sizeof(int) );
+
+    LOG4CPLUS_DEBUG(_DB_LOGGER_, "DbPgManager::sqlExecuteQuery(): " << sql);
+
+    int retVal = PQsendQueryParams(
+        m_conn, 
+        sql.c_str(),
+        nParams,
+        paramTypes,
+        paramValues,
+        paramLengths,
+        paramFormats,
+        0
+        );
+
+    // return 1 if success, 0 if fail
+    if (0 == retVal) {
+        LOG4CPLUS_ERROR(_DB_LOGGER_, "PQsendQueryParams failed: " << PQerrorMessage(m_conn));
+        // TODO free memory?
+        return false;
+    }
+
+    #if 0
+    bool isResultReady = true;
+    int n = 0;
+    while (PQisBusy(m_conn)) {
+        LOG4CPLUS_DEBUG(_DB_LOGGER_, "PQconsumeInput: " << n);
+
+        usleep(500000);
+        retVal = PQconsumeInput(m_conn);
+        if (0 == retVal) {
+            LOG4CPLUS_WARN(_DB_LOGGER_, "PQconsumeInput error: " << PQerrorMessage(m_conn));
+        }
+
+        n++;
+        if (10 == n) {
+            LOG4CPLUS_ERROR(_DB_LOGGER_, "Query Timeout !");
+            isResultReady = false;
+            break;
+        }
+    }
+    #else
+    bool isResultReady = false;
+    int fd = PQsocket(m_conn);
+    fd_set rfds;
+    struct timeval tv;
+    FD_ZERO(&rfds);
+    FD_SET(fd, &rfds);
+    tv.tv_sec = 5;
+    tv.tv_usec = 0;
+
+    LOG4CPLUS_DEBUG(_DB_LOGGER_, "conn fd: " << fd << ", time out: " << tv.tv_sec);
+
+    while (true) {
+        // TODO why fd + 1??
+        // should select in another thread? 
+        retVal = select(fd + 1, &rfds, NULL, NULL, &tv);
+
+        if (retVal > 0) {
+            // result data is ready on the fd
+            retVal = PQconsumeInput(m_conn);
+            if (0 == retVal) {
+                LOG4CPLUS_WARN(_DB_LOGGER_, "PQconsumeInput error: " << PQerrorMessage(m_conn));
+            }
+
+            if (!PQisBusy(m_conn)) {
+                isResultReady = true;
+                LOG4CPLUS_DEBUG(_DB_LOGGER_, "No more read data from fd: " << fd);
+                break;
+            }
+        } else if (retVal < 0) {
+            LOG4CPLUS_ERROR(_DB_LOGGER_, "select() error: " << strerror(errno));
+            break;
+        } else {
+            LOG4CPLUS_ERROR(_DB_LOGGER_, "select() timeout");
+            // TODO cancel the query to free resource??
+
+            // In case network issue, PQcancel will also block until timeout in 45s
+            // if (cancelRequest()) {
+            //     LOG4CPLUS_DEBUG(_DB_LOGGER_, "Success to cancel query");
+            // }
+            break;
+        }
+    }
+    #endif
+
+    if (!isResultReady) {
+        LOG4CPLUS_ERROR(_DB_LOGGER_, "Fail to get query result");
+        return false;
+    }
+
+    LOG4CPLUS_DEBUG(_DB_LOGGER_, "Start to get query result");
+
+    PQclear(m_result);
+    m_result = NULL;
+    PGresult* tmpResult = NULL;
+    // Take the last result as the query result, and clear the other results if exists
+    while ((tmpResult = PQgetResult(m_conn)) != NULL) {
+        if (m_result != NULL) {
+            LOG4CPLUS_DEBUG(_DB_LOGGER_, "PQclear last result");
+            PQclear(m_result);
+            m_result = NULL;
+        }
+
+        int status = PQresultStatus(tmpResult);
+        if (status == PGRES_SINGLE_TUPLE || status == PGRES_TUPLES_OK) {
+            int rowCnt = PQntuples(tmpResult);
+            int colCnt = PQnfields(tmpResult);
+            LOG4CPLUS_DEBUG(_DB_LOGGER_, "Query result: rowCnt = " << rowCnt << ", colCnt = " << colCnt);
+            m_result = tmpResult;
+        } else {
+            // even PQresultStatus indicates a fatal error, PQgetResult should be called and result to be cleared
+            LOG4CPLUS_ERROR(_DB_LOGGER_, "PQresultStatus(), get result fail: " << status);
+            PQclear(tmpResult);
+        }
+    }
+
+    return (m_result != NULL) ? true : false;
+}
+
 bool DbPgManager::isDbAlive() {
     string conninfo("hostaddr=");
     conninfo.append(m_dbIP);
@@ -124,127 +260,25 @@ bool DbPgManager::isDbAlive() {
     return true;
 }
 
-bool DbPgManager::sqlExecuteQuery() {
-    if (PQstatus(m_conn) != CONNECTION_OK) {
-        LOG4CPLUS_ERROR(_DB_LOGGER_, "Connection is bad.");
+bool DbPgManager::cancelRequest() {
+    LOG4CPLUS_DEBUG(_DB_LOGGER_, "DbPgManager::cancelRequest()");
+
+    PGcancel * cancelObj = PQgetCancel(m_conn);
+    if (cancelObj == NULL) {
+        LOG4CPLUS_WARN(_DB_LOGGER_, "PQgetCancel() is NULL");
         return false;
     }
 
-    string sql("select count(1) as TOTALNUMBER");
-    // string sql("select * from simdeviceinfo");
-    int nParams = 0;
-    Oid* paramTypes = new Oid[nParams];
-    memset( paramTypes, 0, nParams*sizeof(Oid) );
-    char** paramValues = new char*[nParams];
-    memset( paramValues, 0, nParams*sizeof(char*) );
-    int* paramLengths = new int[nParams];
-    memset( paramLengths, 0, nParams*sizeof(int) );
-    int* paramFormats = new int[nParams];
-    memset( paramFormats, 0, nParams*sizeof(int) );
+    char errbuf[256];
+    int retVal = PQcancel(cancelObj, errbuf, sizeof(errbuf));
 
-    LOG4CPLUS_DEBUG(_DB_LOGGER_, "sqlExecuteQuery(): " << sql);
-
-    int retVal = PQsendQueryParams(
-        m_conn, 
-        sql.c_str(),
-        nParams,
-        paramTypes,
-        paramValues,
-        paramLengths,
-        paramFormats,
-        0
-        );
-
-    // return 1 if success, 0 if fail
-    if (0 == retVal) {
-        LOG4CPLUS_ERROR(_DB_LOGGER_, "PQsendQueryParams failed: " << PQerrorMessage(m_conn));
-        // TODO free memory?
-        return false;
+    if (1 == retVal) {
+        LOG4CPLUS_DEBUG(_DB_LOGGER_, "PQcancel() success");
+    } else {
+        LOG4CPLUS_ERROR(_DB_LOGGER_, "PQcancel error: " << errbuf);
     }
 
-    bool isResultReady = true;
-    int n = 0;
-    while (PQisBusy(m_conn)) {
-        LOG4CPLUS_DEBUG(_DB_LOGGER_, "PQconsumeInput: " << n);
+    PQfreeCancel(cancelObj);
 
-        usleep(500000);
-        retVal = PQconsumeInput(m_conn);
-        if (0 == retVal) {
-            LOG4CPLUS_WARN(_DB_LOGGER_, "PQconsumeInput error: " << PQerrorMessage(m_conn));
-        }
-
-        n++;
-        if (n > 10) {
-            LOG4CPLUS_ERROR(_DB_LOGGER_, "Timeout !");
-            isResultReady = false;
-            break;
-        }
-    }
-
-    // int fd = PQsocket(m_conn);
-    // fd_set rfds;
-    // struct timeval tv;
-    // FD_ZERO(&rfds);
-    // FD_SET(fd, &rfds);
-    // tv.tv_sec = 5;
-    // tv.tv_usec = 0;
-
-    // while (true) {
-    //     retVal = select(fd + 1, &rfds, NULL, NULL, NULL);
-
-    //     if (retVal > 0) {
-    //         // result data is ready on the fd
-    //         retVal = PQconsumeInput(m_conn);
-    //         if (0 == retVal) {
-    //             LOG4CPLUS_WARN(_DB_LOGGER_, "PQconsumeInput error: " << PQerrorMessage(m_conn));
-    //         }
-
-    //         if (!PQisBusy(m_conn)) {
-    //             isResultReady = true;
-    //         }
-    //     } else if (retVal < 0) {
-    //         LOG4CPLUS_ERROR(_DB_LOGGER_, "select() error: " << strerror(errno));
-    //         break;
-    //     } else {
-    //         LOG4CPLUS_ERROR(_DB_LOGGER_, "select() timeout");
-    //         break;
-    //     }
-
-    // }
-
-    if (!isResultReady) {
-        LOG4CPLUS_ERROR(_DB_LOGGER_, "Fail to get query result");
-        return false;
-    }
-
-    LOG4CPLUS_DEBUG(_DB_LOGGER_, "Start to get query result");
-
-    bool querySuccess = false;
-    PQclear(m_result);
-    m_result = NULL;
-    PGresult* tmpResult = NULL;
-    while (true) {
-        if ((tmpResult = PQgetResult(m_conn)) == NULL) break; 
-
-        int status = PQresultStatus(tmpResult);
-        if (status == PGRES_SINGLE_TUPLE || status == PGRES_TUPLES_OK) {
-            int rowCnt = PQntuples(tmpResult);
-            int colCnt = PQnfields(tmpResult);
-            LOG4CPLUS_DEBUG(_DB_LOGGER_, "Query result: rowCnt = " << rowCnt << ", colCnt = " << colCnt);
-
-            // Take the first result as the query result, and clear the other results if exists
-            if (m_result == NULL) {
-                m_result = tmpResult;
-                querySuccess = true;
-            } else {
-                PQclear(tmpResult);
-            }
-        } else {
-            // even PQresultStatus indicates a fatal error, PQgetResult should be called and result to be cleared
-            LOG4CPLUS_ERROR(_DB_LOGGER_, "PQresultStatus(), query fail: " << status);
-            PQclear(tmpResult);
-        }
-    }
-
-    return querySuccess;
+    return (retVal == 1) ? true : false;
 }
