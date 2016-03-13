@@ -1,5 +1,6 @@
 # Target  name
 TARGET = pipesimulator 
+PTHREAD_TGT = pthreadtest
 
 # Directories
 OBJDIR = obj
@@ -13,10 +14,12 @@ LIBS = $(PROJBASE)/log/lib/liblog.a
 # Files and folders
 SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)
 OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
+PIPEOBJS := obj/PipeMain.o
+PTHREADOBJS := obj/ThreadMain.o obj/TestThread.o $(PROJBASE)/cm/obj/Thread.o
 
 include $(PROJBASE)/cm/global.mk
 
-all: $(TARGET)
+all: $(TARGET) $(PTHREAD_TGT)
 
 # Targets
 $(TARGET): buildrepo $(OBJS)
@@ -24,11 +27,15 @@ $(TARGET): buildrepo $(OBJS)
 	@mkdir -p $(DEPDIR)
 	@cp $(PROJBASE)/ipc/obj/Pipe.o $(DEPDIR)
 	@cp $(PROJBASE)/ipc/obj/IPCLogger.o $(DEPDIR)
-	$(CXX) $(OBJS) $(DEPDIR)/*.o -o $@ -lrt $(LIBS)
+	$(CXX) $(PIPEOBJS) $(DEPDIR)/*.o -o $@ -lrt $(LIBS)
 	@mv $(TARGET) $(OBJDIR)
 
+$(PTHREAD_TGT):
+	$(CXX) $(PTHREADOBJS) -o $@ -pthread
+	@mv $(PTHREAD_TGT) $(OBJDIR)	
+
 clean:
-	rm -rf ./bin/* $(OBJDIR) $(SRCDIR)/*.o
+	rm -rf ./bin/* $(OBJDIR) $(SRCDIR)/*.o $(DEPDIR)
 
 install:
 	mv $(OBJDIR)/$(TARGET) ./bin

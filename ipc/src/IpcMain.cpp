@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <string>
+
 #include "PipeDemo.h"
 #include "Pipe.h"
 #include "NamedPipe.h"
@@ -18,6 +19,7 @@
 #include "common.h"
 #include "Util.h"
 #include "NamedPipeDemo.h"
+#include "PosixThreadDemo.h"
 
 using namespace std;
 using namespace ipc;
@@ -25,11 +27,14 @@ using namespace ipc;
 void testPipe();
 void testNamedPipe();
 void testNamedPipe2();
+void testPosixThread();
+
 void showUsage() {
     cout << "Usage: " << endl;
     cout << "ipc [Test Number]" << endl;
     cout << "  1 : Test Pipe" << endl;
     cout << "  2 : Test Named Pipe (FIFO)" << endl;
+    cout << "  3 : Test POSIX Thread" << endl;
 }
 
 int main(int argc, char* argv[]) {
@@ -49,6 +54,8 @@ int main(int argc, char* argv[]) {
         testPipe();
     } else if (testNumber.compare("2") == 0) {
         testNamedPipe();
+    } else if (testNumber.compare("3") == 0) {
+        testPosixThread();
     } else {
         showUsage();
     }
@@ -56,6 +63,26 @@ int main(int argc, char* argv[]) {
     cout << "exit main " << getpid() << endl;
     return 0;
 }
+
+void testPosixThread() {
+    // DemoThreadA* tha1 = new DemoThreadA();
+    // DemoThreadA* tha2 = new DemoThreadA();
+    // cout << "starting the threads ..." << endl;
+    // tha1->start();
+    // tha2->start();
+
+    // cout << "this is main process " << tha1->getId() << ", " << tha2->getId() << endl;
+    // cout << "this is main process " << tha1->getThreadId() << ", " << tha2->getThreadId() << endl;
+    // tha1->wait();
+    // tha2->wait();
+    // // sleep(5);
+
+    PosixThreadDemo ptd;
+    ptd.demoAll();
+}
+
+// ------------------------------------
+
 void testNamedPipe() {
     string pipeName = "/tmp/fifo";
 
