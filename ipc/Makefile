@@ -26,7 +26,7 @@ exe: $(TARGET)
 # Targets
 $(TARGET): buildrepo $(OBJS)
 #	@echo "SRCS = $(SRCS)"
-	$(CXX) $(OBJS) $(DEPOBJS) -o $@ -lrt $(LIBS)
+	$(CXX) $(OBJS) $(DEPOBJS) -o $@ -lrt -pthread $(LIBS)
 	@mv $(TARGET) $(OBJDIR)
 
 clean:
