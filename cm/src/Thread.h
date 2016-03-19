@@ -9,26 +9,33 @@
 #define THREAD_H
 
 #include <pthread.h>
+#include <string>
 
 namespace base {
 
     class Thread {
     public:
 
-        // Start the thread
+        // Start the thread, default is joinable
         bool start(bool isJoinable = true);
 
         //
         // Wait for termination of the thread. The function returns when the
         // thread has terminated.
         //
-        long wait();
+        bool wait();
 
-        // Kill the thread
+        // return a joinable thread exit status code, only valid after returning true from wait() 
+        long getExitStatus() const;
+
+        // terminate (kill) the thread 
         void terminate();
 
-        // Return true if thread is running
+        // return true if thread is running
         bool isRunning() const;
+
+        // get thread name
+        std::string getName() const;
 
         //
         // Return this POSIX thread id. pthread_self() returns the id of the
@@ -37,13 +44,16 @@ namespace base {
         unsigned long getId() const;
 
         // check if the thread is joinable or not
-        bool isJoinable();
+        bool isJoinable() const;
 
-        // change a running thread to PTHREAD_CREATE_DETACHED state
+        // call pthread_detach to change a running thread to PTHREAD_CREATE_DETACHED state
         void detach();
 
+        // sleep milliseconds
+        static void sleep(int milli);
+
     protected:
-        Thread();
+        Thread(std::string theThreadName);
 
         virtual 
         ~Thread();
@@ -54,6 +64,9 @@ namespace base {
         // The start_routine of the thread
         static void* entry(void* theParameter);
 
+        // Thread name
+        std::string m_threadName;
+
         // Indicates if thread is running
         bool m_isRunning;
         // Thread properties
@@ -62,11 +75,27 @@ namespace base {
         pthread_t       m_threadHandle;
 
         bool m_isJoinable;
+
+        long m_exitStatus;
     };
 
     // --------------------------
+    inline long Thread::getExitStatus() const {
+        return m_exitStatus;
+    }
+
+    // --------------------------
+    inline std::string Thread::getName() const {
+        return m_threadName;
+    }
+
+    // --------------------------
     inline unsigned long Thread::getId() const {
-        return m_threadHandle;
+        if (m_isRunning) {
+            return m_threadHandle;
+        }
+
+        return 0L;
     }
 
     // --------------------------
@@ -75,7 +104,7 @@ namespace base {
     }
 
     // --------------------------
-    inline bool Thread::isJoinable() {
+    inline bool Thread::isJoinable() const{
         return m_isJoinable;
     }
 

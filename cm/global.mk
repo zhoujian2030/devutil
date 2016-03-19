@@ -1,7 +1,7 @@
 # Complier -fPIC is mandatory when building dynamic lib *.so
 CC = gcc
 CXX = g++
-CFLAGS = -Wall -g -O2 -DNDEBUG -fPIC 
+CFLAGS = -Wall -g -O2 -DNDEBUG -fPIC
 LFLAGS = -lrt
 
 .%.d: %.cpp

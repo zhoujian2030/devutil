@@ -15,6 +15,7 @@ SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)
 OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
 
 include global.mk
+CFLAGS += -DJDEBUG
 
 all: $(LIBA)
 

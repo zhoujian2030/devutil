@@ -5,6 +5,7 @@
  *      Author: z.j
  */
 
+#include <string>
 #include "Thread.h"
 #include "MutexLock.h"
 
@@ -14,40 +15,44 @@ namespace ipc {
     class DemoThreadA : public base::Thread {
     public:
         DemoThreadA();
+        DemoThreadA(std::string theThreadName);
 
         virtual
         ~DemoThreadA();
 
         virtual unsigned long run();
 
-        void setStatus(int status);
+        void setStatus(long status);
 
         void waitMutex();
 
     protected:
-        int m_status;
+        long m_status;
         base::MutexLock* m_mutex;
     };
 
-    inline void DemoThreadA::setStatus(int status) {
+    inline void DemoThreadA::setStatus(long status) {
         m_status = status;
     }
 
     // -------------------------------------------
     class DemoThreadB : public DemoThreadA {
     public:
+        DemoThreadB();
         virtual unsigned long run();
     };
 
     // -------------------------------------------
     class DemoThreadC : public DemoThreadA {
     public:
+        DemoThreadC();
         virtual unsigned long run();
     };
 
     // -------------------------------------------
     class DemoThreadD : public DemoThreadA {
     public:
+        DemoThreadD();
         virtual unsigned long run();
     };    
 
@@ -59,11 +64,14 @@ namespace ipc {
 
         void demoAll();
         void demoModifyThreadDetachState();
+        void demoCancelThread();
         void demoJoinableThreadReturnNormal();
         void demoJoinableThreadExitNormal();
+        // TODO demo join thread that already exit normally
         void demoNotJoinTheJoinableThread();
 
     private:
+
         DemoThreadA* pThread;
     };
 

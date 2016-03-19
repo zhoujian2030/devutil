@@ -2,7 +2,7 @@
 
 class TestThread : public base::Thread {
 public:
-    TestThread(){}
+    TestThread();
 
     virtual
     ~TestThread(){}

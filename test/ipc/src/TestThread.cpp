@@ -4,8 +4,14 @@
 // --------------------------------
 
 // ---------------------------------
+TestThread::TestThread()
+: Thread("Test Thread")
+{
+
+}
+
 unsigned long TestThread::run() {
-    std::cout << "Thread is running" << std::endl;
+    std::cout << this->getName() << " is running" << std::endl;
     std::cout << "sleep 1s ..." << std::endl;
     sleep(1);
     pthread_exit((void*)10);
