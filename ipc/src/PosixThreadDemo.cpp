@@ -130,7 +130,7 @@ void PosixThreadDemo::demoAll() {
     std::cout << "------------------------------------------------------------------" << std::endl << std::endl;
     this->demoJoinableThreadExitNormal();
     std::cout << "------------------------------------------------------------------" << std::endl << std::endl;
-    // this->demoNotJoinTheJoinableThread();
+    this->demoNotJoinTheJoinableThread();
 }
 
 // ------------------------
@@ -261,6 +261,12 @@ void PosixThreadDemo::demoModifyThreadDetachState() {
 
 // -------------------------
 void PosixThreadDemo::demoCancelThread() {
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "Demo Start: Test cancel a thread" <<
+        "\n\tA - pthread_cancel a joinable running thread success, then pthread_join the canceled thread success" <<
+        "\n\tB - pthread_cancel a joinable running thread success, then pthread_detach the canceled thread success" <<
+        "\n\tC - A joinable thread exited normally, then pthread_cancel the thread success, pthread_join also sucess");
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
     LOG4CPLUS_INFO(_IPC_LOGGER_, "Test A - Call pthread_create to create a joinable thread by default and let it keep running");
     pThread = new DemoThreadC();
@@ -292,9 +298,39 @@ void PosixThreadDemo::demoCancelThread() {
     delete pThread;
     pThread = NULL;
 
+    // --------------------------------------------
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "Test B - Call pthread_create to create a joinable thread and let it keep running");
+    pThread = new DemoThreadC();
+    pThread->start();
+    Thread::sleep(100);
+
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "The thread should be running: " << pThread->isRunning() 
+        << ", and joinable: " << pThread->isJoinable());
+    if (!pThread->isRunning() || !pThread->isJoinable()) {
+        LOG4CPLUS_ERROR(_IPC_LOGGER_, "Test Failure!!!");
+        exit(0);
+    }
+
+    result  = pthread_cancel(pThread->getId());
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "Call pthread_cancel to cancel the running thread success: " << result);
+    if (result != 0) {
+        LOG4CPLUS_ERROR(_IPC_LOGGER_, "Test Failure!!!");
+        exit(0);
+    }
+
+    result = pthread_detach(pThread->getId());
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "Call pthread_detach to detach the canceled thread and it should success");
+    if (result != 0) {
+        LOG4CPLUS_ERROR(_IPC_LOGGER_, "Test Failure!!!");
+        exit(0);
+    }   
+
+    delete pThread;
+    pThread = NULL;
+
     // -----------------------------------
     long expectedExitStatus = 102;
-    LOG4CPLUS_INFO(_IPC_LOGGER_, "Test B - Call pthread_create to create a joinable thread and the pthread ruturn " 
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "Test C - Call pthread_create to create a joinable thread and the pthread returns " 
         << expectedExitStatus);
     pThread = new DemoThreadA();
     pThread->setStatus(expectedExitStatus);
@@ -323,11 +359,9 @@ void PosixThreadDemo::demoCancelThread() {
     delete pThread;
     pThread = NULL;
 
-    // TODO detach a canceled thread success
-    // result =  pthread_detach(pThread->getId());
-    // LOG4CPLUS_INFO(_IPC_LOGGER_, "detach result : " << result);
-
     // TODO cancel a thread that not allow cansellation ?
+
+    LOG4CPLUS_INFO(_IPC_LOGGER_, "Demo End");
 }
 
 // -------------------------
