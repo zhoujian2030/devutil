@@ -9,6 +9,7 @@
 #define THREAD_H
 
 #include <pthread.h>
+#include <time.h>
 #include <string>
 
 namespace base {
@@ -49,6 +50,21 @@ namespace base {
         // call pthread_detach to change a running thread to PTHREAD_CREATE_DETACHED state
         void detach();
 
+        //
+        // start/stop watchdog timer for this thread
+        // if this timer expires then the thread supervision function
+        // assumes the thread is hanging and terminates the process
+        // @param delaTime the number of seconds after which the watchdog 
+        //                 timer should be expired
+        //
+        void startWatchdogTimer(unsigned int deltaTime);
+        void stopWatchdogTimer();
+
+        // check if the watchdog timer is expired
+        // @return true, if expired
+        //         false, otherwise
+        bool isWatchdogTimerExpired() const; 
+
         // sleep milliseconds
         static void sleep(int milli);
 
@@ -75,8 +91,9 @@ namespace base {
         pthread_t       m_threadHandle;
 
         bool m_isJoinable;
-
         long m_exitStatus;
+
+        volatile time_t m_watchdogTime;
     };
 
     // --------------------------
@@ -114,6 +131,22 @@ namespace base {
             pthread_detach(m_threadHandle);
             m_isJoinable = false;
         }
+    }
+
+    // ---------------------------
+    inline void Thread::startWatchdogTimer(unsigned int deltaTime) {
+        // TODO
+    }
+
+    // ---------------------------
+    inline void Thread::stopWatchdogTimer() {
+        m_watchdogTime = 0;
+    }
+
+    // ---------------------------
+    inline bool Thread::isWatchdogTimerExpired() const {
+        // TODO
+        return false;
     }
 }
 

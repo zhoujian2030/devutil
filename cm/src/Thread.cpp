@@ -16,7 +16,8 @@ m_threadName(theThreadName),
 m_isRunning(false), 
 m_threadHandle(0),
 m_isJoinable(true),
-m_exitStatus(0)
+m_exitStatus(0),
+m_watchdogTime(0)
 {
 
 }
