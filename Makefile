@@ -1,6 +1,8 @@
 SUBDIRS = cm \
 	log \
+	mq \
 	ipc \
+	net \
 	cpp \
 	dao \
 	test 
@@ -15,4 +17,5 @@ $(SUBDIRS):
 # specify the dependency here
 ipc: cm
 dao: cm
+net: cm
 test: ipc

@@ -1,0 +1,44 @@
+# Target  name
+TARGET = net 
+
+# Directories
+OBJDIR = obj
+SRCDIR = src
+
+# Libraries
+INC += -I$(PROJBASE)/cm/inc -I$(PROJBASE)/log/inc
+LIBS += $(PROJBASE)/log/lib/liblog.a
+
+# Files and folders
+SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)
+OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
+
+DEPOBJS := $(PROJBASE)/cm/obj/*.o
+
+include ../cm/global.mk
+
+all: $(TARGET)
+exe: $(TARGET)
+
+# Targets
+$(TARGET): buildrepo $(OBJS)
+	$(CXX) $(OBJS) $(DEPOBJS) -o $@ -lrt -pthread $(LIBS)
+	@mv $(TARGET) $(OBJDIR)
+
+clean:
+	rm -rf ./bin/* $(OBJDIR) $(SRCDIR)/*.o
+
+install:
+	mv $(OBJDIR)/$(TARGET) ./bin
+	
+buildrepo:
+	@$(call make-repo)
+
+# Create obj directory structure
+define make-repo
+	mkdir -p $(OBJDIR)
+	for dir in $(SRCDIRS); \
+	do \
+		mkdir -p $(OBJDIR)/$$dir; \
+	done
+endef

@@ -16,7 +16,7 @@ namespace base {
 
     class MutexLock: public Lock {
     public:
-        MutexLock();
+        MutexLock(bool recursive = false);
 
         virtual 
         ~MutexLock();
@@ -30,8 +30,15 @@ namespace base {
     };
 
     // -------------------------------------
-    inline MutexLock::MutexLock() {
-        pthread_mutex_init(&m_mutex, NULL);
+    inline MutexLock::MutexLock(bool recursive) {
+        if (!recursive) {
+            pthread_mutex_init(&m_mutex, NULL);
+        } else {
+            pthread_mutexattr_t attr;
+            pthread_mutexattr_init(&attr);
+            pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+            pthread_mutex_init(&m_mutex, &attr);
+        }
     }
 
     inline MutexLock::~MutexLock() {

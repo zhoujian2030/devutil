@@ -17,7 +17,14 @@ namespace base {
     class Thread {
     public:
 
+        //
         // Start the thread, default is joinable
+        // normally if you don't care when the thread exits, better to create 
+        // a detached thread, so that the thread resources will be free after exit.
+        // but anyway, if you create a joinable thread and forget to join it,
+        // the resources will be also recycled after the thread object is deleted,
+        // because pthread_detach is called in the destructor function
+        //
         bool start(bool isJoinable = true);
 
         //
