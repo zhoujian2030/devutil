@@ -32,7 +32,7 @@ void showUsage() {
 }
 
 void testReactorThread();
-void testEpollSocketSet();
+void testEpollSocketSet(string ip);
 void testSocket(string ip);
 
 int main(int argc, char* argv[]) {
@@ -51,7 +51,11 @@ int main(int argc, char* argv[]) {
     if (testNumber.compare("1") == 0) {
         testReactorThread();
     } else if (testNumber.compare("2") == 0) {
-        testEpollSocketSet();
+        string ip("127.0.0.1");
+        if (argc > 2) {
+            ip = argv[2];
+        }
+        testEpollSocketSet(ip);
     } else if (testNumber.compare("3") == 0) {
         string ip("127.0.0.1");
         if (argc > 2) {
@@ -74,8 +78,56 @@ void testReactorThread() {
 }
 
 // ---------------------------------------------
-void testEpollSocketSet() {
+void testEpollSocketSet(string ip) {
+    Socket* socket = new Socket(ip, 8080);
+    socket->bind();
+    socket->listen();  
+    socket->makeNonBlocking();
+
     EpollSocketSet epollSocketSet;
+    epollSocketSet.registerInputHandler(socket, 0);
+
+    EpollSocketSet::EpollSocket* epollSocket;
+    cout << "start to poll the socket" << endl;
+    while (true) {
+        epollSocket = epollSocketSet.poll(0);
+
+        if (epollSocket != 0 && (epollSocket->events & EPOLLIN)) {
+            if (epollSocket->socket->getSocket() == socket->getSocket()) {
+                Socket::InetAddressPort remoteAddrAndPort;
+                int newSocketFd = -1;
+
+                if (epollSocket->socket->accept(remoteAddrAndPort, newSocketFd)) {
+                    Socket* newSocket = new Socket(newSocketFd);
+                    newSocket->makeNonBlocking();
+                    epollSocketSet.registerInputHandler(newSocket, 0);
+                }
+            } else {
+                DataBuffer* recvBuf = new DataBuffer();
+                int numOfBytesRecved = 0;
+
+                if (epollSocket->socket->recv(recvBuf->getEndOfDataPointer(), recvBuf->getSize() - recvBuf->getLength(), numOfBytesRecved)) {
+                    if (numOfBytesRecved == 0) {
+                        cout << "socket is disconnected by peer: " << epollSocket->socket->getSocket() << endl;
+                        // close socket in server side
+                        epollSocketSet.removeInputHandler(epollSocket->socket);
+                        epollSocket->socket->close();
+                        delete epollSocket->socket;
+                    } else {
+                        recvBuf->increaseDataLength(numOfBytesRecved);
+                        cout << "receive " << numOfBytesRecved << " bytes data from socket: " << recvBuf->getData() << endl;
+                        cout << "buffer length: " << recvBuf->getLength() << endl;
+                    }
+                    recvBuf->reset();
+                } else {
+                    cout << "fail to recv data from socket: " << epollSocket->socket->getSocket() << endl;
+                }
+            }
+        } else {
+            //cout << "no available read events" << endl;
+            base::Thread::sleep(1);
+        }
+    }
 }
 
 // ---------------------------------------------
@@ -87,6 +139,45 @@ void testSocket(string ip) {
     Socket::InetAddressPort remoteAddrAndPort;
     int newSocketFd = -1;
 
+    // Test non-blocking socket
+    socket->makeNonBlocking();
+    while (true) {
+        if (socket->accept(remoteAddrAndPort, newSocketFd)) {
+            Socket* newSocket = new Socket(newSocketFd);
+            newSocket->makeNonBlocking();
+            DataBuffer* recvBuf = new DataBuffer();
+
+            int numOfBytesRecved = 0;
+
+            while (true) {
+                if (newSocket->recv(recvBuf->getEndOfDataPointer(), recvBuf->getSize() - recvBuf->getLength(), numOfBytesRecved)) {
+                    if (numOfBytesRecved == 0) {
+                        newSocket->close();
+                        delete newSocket;
+                        newSocket = 0;
+                        cout << "socket is disconnected by peer: " << endl;
+                        break;
+                    }
+
+                    recvBuf->increaseDataLength(numOfBytesRecved);
+                    cout << "receive " << numOfBytesRecved << " bytes data from socket: " << recvBuf->getData() << endl;
+                    cout << "buffer length: " << recvBuf->getLength() << endl;
+
+                    recvBuf->reset();
+                } else {
+                    base::Thread::sleep(1000);
+                }
+            }
+
+            // stop the non-blocking test after one client connected complete
+            break;
+        } else {
+            base::Thread::sleep(1000);
+        }
+    }
+
+    // Test blocking socket
+    socket->makeBlocking();
     if (socket->accept(remoteAddrAndPort, newSocketFd)) {
         Socket* newSocket = new Socket(newSocketFd);
         DataBuffer* recvBuf = new DataBuffer();
@@ -94,8 +185,11 @@ void testSocket(string ip) {
         int numOfBytesRecved = 0;
 
         while (true) {
-            if (newSocket->recv(recvBuf->getEndOfDataPointer(), recvBuf->getSize() - recvBuf->getLength(), numOfBytesRecved)) {
+            if (newSocket->read(recvBuf->getEndOfDataPointer(), recvBuf->getSize() - recvBuf->getLength(), numOfBytesRecved)) {
                 if (numOfBytesRecved == 0) {
+                    newSocket->close();
+                    delete newSocket;
+                    newSocket = 0;
                     cout << "socket is disconnected by peer: " << endl;
                     break;
                 }
@@ -106,8 +200,9 @@ void testSocket(string ip) {
 
                 recvBuf->reset();
             } else {
-                break;
+                base::Thread::sleep(1000);
             }
         }
     }
+
 }

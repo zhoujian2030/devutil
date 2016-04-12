@@ -42,9 +42,15 @@ namespace net {
         void close();
 
         // Receive data from socket
-        bool recv(char* theBuffer, int buffSize, int& numOfBytesReceived);
+        bool recv(char* theBuffer, int buffSize, int& numOfBytesReceived, int flags = 0);
+        // Identical to recv() with flags set to 0
+        bool read(char* theBuffer, int buffSize, int& numOfBytesReceived);
+
         // Send data to socket
         bool send(char* theBuffer, int numberOfBytesSent);
+
+        void makeNonBlocking();
+        void makeBlocking();
 
         int getSocket() const;
 

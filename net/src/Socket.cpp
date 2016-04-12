@@ -11,6 +11,9 @@
 #include <errno.h>
 #include <string.h>
 #include <netdb.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 using namespace std;
 using namespace net;
@@ -141,8 +144,15 @@ bool Socket::accept(InetAddressPort& theRemoteAddrPort, int& theSocket) {
     socklen_t length = sizeof(remoteAddr);
     int newFd = ::accept(m_socket, (struct sockaddr*)&remoteAddr, &length);
     if (newFd == -1) {
-        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to accept for socket: " << m_socket <<
-            ". errno = " << errno << " - " << strerror(errno));
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            // For non-blocking socket, it would return EAGAIN or WWOULDBLOCK 
+            // when no data read from socket
+            LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "no new connection coming now, fd = " << m_socket);
+        } else {
+            LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to accept for socket: " << m_socket <<
+                ". errno = " << errno << " - " << strerror(errno));
+            // TODO throw io exception ??
+        }
         return false;
     }
 
@@ -172,7 +182,9 @@ void Socket::close() {
 }
 
 // -------------------------------------------------
-bool Socket::recv(char* theBuffer, int buffSize, int& numOfBytesReceived) {
+//  only used in connected socket (TCP socket)
+// -------------------------------------------------
+bool Socket::recv(char* theBuffer, int buffSize, int& numOfBytesReceived, int flags) {
     if (theBuffer == 0) {
         LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "null pointer buffer!");
         return false;
@@ -180,11 +192,18 @@ bool Socket::recv(char* theBuffer, int buffSize, int& numOfBytesReceived) {
 
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "Socket::recv(), fd = " << m_socket);
 
-    int result = ::recv(m_socket, theBuffer, buffSize, 0);
+    int result = ::recv(m_socket, theBuffer, buffSize, flags);
 
     if (result == -1) {
-        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to recv data from socket: " << m_socket
-            << ", errno = " << errno << " - " << strerror(errno));
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            // For non-blocking socket, it would return EAGAIN or WWOULDBLOCK 
+            // when no data read from socket
+            LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "No data received from the socket now, fd = " << m_socket);
+        } else {
+            LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to recv data from socket: " << m_socket
+                << ", errno = " << errno << " - " << strerror(errno));
+            // TODO throw io exception ??
+        }
         return false;
     }
 
@@ -193,9 +212,56 @@ bool Socket::recv(char* theBuffer, int buffSize, int& numOfBytesReceived) {
 }
 
 // -------------------------------------------------
+bool Socket::read(char* theBuffer, int buffSize, int& numOfBytesReceived) {
+    if (theBuffer == 0) {
+        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "null pointer buffer!");
+        return false;
+    }
+
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "Socket::read(), fd = " << m_socket);    
+
+    int result = ::read(m_socket, theBuffer, buffSize);
+
+    if (result == -1) {
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            // For non-blocking socket, it would return EAGAIN or WWOULDBLOCK 
+            // when no data read from socket
+            LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "no data read from the socket now, fd = " << m_socket);
+        } else {
+            LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to read data from socket: " << m_socket
+                << ", errno = " << errno << " - " << strerror(errno));
+            // TODO throw io exception ??
+        }
+        return false;
+    }
+
+    numOfBytesReceived = result;
+    return true;    
+}
+
+// -------------------------------------------------
 bool Socket::send(char* theBuffer, int numOfBytesSent) {
     //TODO
     return false;
+}
+
+// -------------------------------------------------
+void Socket::makeNonBlocking() {
+    int option = 1;
+    if (ioctl(m_socket, FIONBIO, &option) == -1) {
+        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to set non-blocking by ioctl. errno = " 
+            << errno << " - " << strerror(errno));
+    }
+}
+
+// -------------------------------------------------
+void Socket::makeBlocking() {
+    int flags = fcntl(m_socket, F_GETFL, 0);
+    if (fcntl(m_socket, F_SETFL, flags & (~O_NONBLOCK)) == -1) {
+        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to set blocking by fcntl. errno = " 
+            << errno << " - " << strerror(errno));
+    }
+
 }
 
 // ------------------------------------------------

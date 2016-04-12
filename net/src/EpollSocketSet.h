@@ -43,18 +43,23 @@ namespace net {
         EpollSocketSet();
         virtual ~EpollSocketSet();
 
-        void registerReadSocket(Socket* theSocket, SocketEventHandler* theEventHandler);
+        EpollSocket* poll(int theTimeout);
+
+        void registerInputHandler(Socket* theSocket, SocketEventHandler* theEventHandler);
+        void removeInputHandler(Socket* theSocket);
         // void registerWriteSocket(int fd);
 
     private:
 
-        void addEvents();
+        void updateEvents();
 
         // use non-recursive mutex
         base::MutexLock m_lock;
 
         struct epoll_event* m_epollEvents;
         int m_epollFdSize;
+
+        EpollSocket* m_readySocketArray;
 
         // epoll fd
         int m_epollFd;
@@ -77,7 +82,7 @@ namespace net {
     };
 
     // --------------------------------------------
-    inline void EpollSocketSet::registerReadSocket(Socket* theSocket, SocketEventHandler* theEventHandler) {
+    inline void EpollSocketSet::registerInputHandler(Socket* theSocket, SocketEventHandler* theEventHandler) {
         if (theSocket == 0) {
             return;
         }
@@ -95,7 +100,7 @@ namespace net {
         std::pair<EpollSocketMap::iterator, bool> result = 
             m_epollSocketMap.insert(EpollSocketMap::value_type(fd, epollSocket));
         if (!result.second) {
-            // The socket is already registered in epoll
+            // The socket is already registered in epoll, update it
             operation = EPOLL_CTL_MOD;
             (result.first)->second.events |= epollSocket.events;
             (result.first)->second.socket = epollSocket.socket;
@@ -108,6 +113,39 @@ namespace net {
         updateSocket.op = operation;
         updateSocket.events = epollSocket.events;
         m_updateSocketList.push_back(updateSocket);
+
+        m_lock.unlock();
+    }
+
+    // --------------------------------------------
+    inline void EpollSocketSet::removeInputHandler(Socket* theSocket) {
+        if (theSocket == 0) {
+            return;
+        }
+
+        m_lock.lock();
+
+        int fd = theSocket->getSocket();
+        EpollSocketMap::iterator it = m_epollSocketMap.find(fd);
+
+        if (it != m_epollSocketMap.end()) {
+            it->second.events &= (~EPOLLIN);
+
+            UpdateSocket updateSocket;
+            updateSocket.fd = fd;
+            
+            // if no events, remove the socket from EpollSocketMap
+            if (it->second.events == 0) {
+                m_epollSocketMap.erase(it);
+                updateSocket.op = EPOLL_CTL_DEL;
+                updateSocket.events = 0;
+            } else {
+                updateSocket.op = EPOLL_CTL_MOD;
+                updateSocket.events = it->second.events;
+            }
+
+            m_updateSocketList.push_back(updateSocket);
+        }
 
         m_lock.unlock();
     }

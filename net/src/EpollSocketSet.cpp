@@ -33,6 +33,9 @@ EpollSocketSet::EpollSocketSet()
         m_epollFdSize = 1024 * 64;
     }
 
+    // store all available EpollSocket objects
+    m_readySocketArray = new EpollSocket[m_epollFdSize + 1];
+
     // 
     m_epollEvents = new epoll_event[m_epollFdSize];
 
@@ -52,14 +55,116 @@ EpollSocketSet::EpollSocketSet()
 // -------------------------------------------------
 EpollSocketSet::~EpollSocketSet() {
     if (m_epollEvents != 0) {
-        delete m_epollEvents;
+        delete [] m_epollEvents;
         m_epollEvents = 0;
+    }
+
+    if (m_readySocketArray != 0) {
+        delete [] m_readySocketArray;
+        m_readySocketArray = 0;
     }
 
     // TODO close epoll fd ?
 }
 
 // -------------------------------------------------
-void EpollSocketSet::addEvents() {
-    
+void EpollSocketSet::updateEvents() {
+    m_lock.lock();
+
+    // update the sockets in epoll if any
+    int eventNumber = m_updateSocketList.size();
+    if (eventNumber > 0) {
+        int result;
+        for (UpdateSocketList::iterator it = m_updateSocketList.begin(); it != m_updateSocketList.end(); it++) {
+            struct epoll_event event;
+            event.events = it->events;
+            event.data.fd = it->fd;
+
+            result = epoll_ctl(m_epollFd, it->op, it->fd, &event);
+            if (result < 0) {
+                if (errno == EBADF) {
+                    // Do nothing.
+                    // It may happen if EPOLL_CTL_DEL operation is called for a socket that has been closed
+                    LOG4CPLUS_INFO(_NET_LOOGER_NAME_, "epoll_ctl fail, errno is EBADF, ignore it");
+
+                } else if (errno == EEXIST) {
+                    LOG4CPLUS_INFO(_NET_LOOGER_NAME_, "epoll_ctl fail, errno is EXIST, try EPOLL_CTL_MOD");
+                    epoll_ctl(m_epollFd, EPOLL_CTL_MOD, it->fd, &event);
+                    
+                } else {
+                    LOG4CPLUS_WARN(_NET_LOOGER_NAME_, "fail to change socket " << it->fd << " to epoll. errno = "
+                        << errno << " - " << strerror(errno));
+                }
+            }
+        }
+
+        m_updateSocketList.clear();
+    }
+
+    m_lock.unlock();
+}
+
+// -------------------------------------------------
+EpollSocketSet::EpollSocket* EpollSocketSet::poll(int theTimeout) {
+
+    updateEvents();
+
+    // check if any event available,
+    // if theTimeout = -1, block on waiting
+    // else if theTimeout = 0, return immediately
+    // else return after timeout in millisecond
+    m_numFds = epoll_wait(m_epollFd, m_epollEvents, m_epollFdSize, theTimeout);
+
+    if (m_numFds <= 0) {
+        if (m_numFds == -1) {
+            LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to wait epoll events. errno = "
+                << errno << " - " << strerror(errno));
+        }
+
+        return 0;
+    }
+
+    m_lock.lock();
+
+    int readySocketIndex(0);
+
+    for (int i=0; i<m_numFds; i++) {
+        int fd = m_epollEvents[i].data.fd;
+        int pollEvent = m_epollEvents[i].events;
+
+        // we are only interested in read/write events
+        if (!(pollEvent & (EPOLLIN | EPOLLOUT))) {
+            LOG4CPLUS_WARN(_NET_LOOGER_NAME_, "drop the events and remove the socket. fd = " << fd 
+                << ", events = " << pollEvent);
+            m_epollSocketMap.erase(fd);
+            struct epoll_event ev;
+            epoll_ctl(m_epollFd, EPOLL_CTL_DEL, fd, &ev);
+        } else {
+            EpollSocketMap::iterator it = m_epollSocketMap.find(fd);
+            if (it != m_epollSocketMap.end()) {
+                m_readySocketArray[readySocketIndex].socket = it->second.socket;
+                m_readySocketArray[readySocketIndex].eventHandler = it->second.eventHandler;
+                // Make a "&" between the monitored events and the poll events to avoid notifying 
+                // events that are not monitored any more
+                m_readySocketArray[readySocketIndex].events = it->second.events & pollEvent;
+
+                readySocketIndex++;
+
+                // TODO is it necessary to remove the socket event?
+                // if so, the event handler need to re-register the socket event later
+                // after current event is handled
+            } else {
+                // socket is no found, clean up
+                LOG4CPLUS_WARN(_NET_LOOGER_NAME_, "the available socket is not found: " << fd);
+                struct epoll_event ev;
+                epoll_ctl(m_epollFd, EPOLL_CTL_DEL, fd, &ev);
+            }
+        }
+    }
+
+    m_readySocketArray[readySocketIndex].events = 0;
+
+    m_lock.unlock();
+
+    return m_readySocketArray;
 }
