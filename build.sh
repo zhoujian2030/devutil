@@ -15,6 +15,7 @@ then
     make -C cpp clean
     make -C dao clean
     make -C test/ipc clean
+    make -C test/net clean
     make -C test/log clean
     make -C test/str clean
 else
@@ -26,6 +27,7 @@ else
     make -C cpp
     make -C dao
     make -C test/ipc
+    make -C test/net
     make -C test/log
     make -C test/str
 fi

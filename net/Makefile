@@ -1,9 +1,11 @@
 # Target  name
-TARGET = net 
+LIBA = libnet.a
 
 # Directories
 OBJDIR = obj
 SRCDIR = src
+INCDIR = inc
+LIBDIR = lib
 
 # Libraries
 INC += -I$(PROJBASE)/cm/inc -I$(PROJBASE)/log/inc
@@ -17,19 +19,17 @@ DEPOBJS := $(PROJBASE)/cm/obj/*.o
 
 include ../cm/global.mk
 
-all: $(TARGET)
-exe: $(TARGET)
+all: $(LIBA)
 
-# Targets
-$(TARGET): buildrepo $(OBJS)
-	$(CXX) $(OBJS) $(DEPOBJS) -o $@ -lrt -pthread $(LIBS)
-	@mv $(TARGET) $(OBJDIR)
+$(LIBA): buildrepo $(OBJS)
+	ar q $@ $(OBJS)
+	@mkdir -p $(LIBDIR)
+	@mv $(LIBA) ./lib
+	@mkdir -p $(INCDIR)
+	@cp $(SRCDIR)/*.h ./inc/
 
 clean:
-	rm -rf ./bin/* $(OBJDIR) $(SRCDIR)/*.o
-
-install:
-	mv $(OBJDIR)/$(TARGET) ./bin
+	rm -rf $(LIBDIR) $(INCDIR) $(OBJDIR) $(SRCDIR)/*.o
 	
 buildrepo:
 	@$(call make-repo)

@@ -246,6 +246,12 @@ bool Socket::send(char* theBuffer, int numOfBytesSent) {
 }
 
 // -------------------------------------------------
+bool Socket::write(char* theBuffer, int numberOfBytesSent) {
+    // TODO
+    return false;
+}
+
+// -------------------------------------------------
 void Socket::makeNonBlocking() {
     int option = 1;
     if (ioctl(m_socket, FIONBIO, &option) == -1) {

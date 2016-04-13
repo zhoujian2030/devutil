@@ -48,6 +48,7 @@ namespace net {
 
         // Send data to socket
         bool send(char* theBuffer, int numberOfBytesSent);
+        bool write(char* theBuffer, int numberOfBytesSent);
 
         void makeNonBlocking();
         void makeBlocking();
