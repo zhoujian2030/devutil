@@ -30,6 +30,9 @@ $(LIBA): buildrepo $(OBJS)
 
 clean:
 	rm -rf ./lib/* ./inc/* $(OBJDIR) $(LIBOBJDIR) $(SRCDIR)/*.o
+
+install:
+	# nothing to do
 	
 buildrepo:
 	@$(call make-repo)
