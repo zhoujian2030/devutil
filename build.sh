@@ -5,11 +5,9 @@ echo "Current directory: $PROJBASE"
 
 COMMAND=$1
 
-if [[ $COMMAND = "clean" ]]
-then
+if [[ $COMMAND = "clean" ]]; then
     make clean
-else if [[ $COMMAND = "install" ]]
-then
+elif [[ $COMMAND = "install" ]]; then
     make install
 else
     make
