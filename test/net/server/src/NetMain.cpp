@@ -97,7 +97,9 @@ void testEpollSocketSet(string ip) {
                 Socket::InetAddressPort remoteAddrAndPort;
                 int newSocketFd = -1;
 
-                if (epollSocket->socket->accept(remoteAddrAndPort, newSocketFd)) {
+                int result = epollSocket->socket->accept(newSocketFd, remoteAddrAndPort);
+                assert(result != SKT_ERR);
+                if (result == SKT_SUCC) {
                     Socket* newSocket = new Socket(newSocketFd);
                     newSocket->makeNonBlocking();
                     epollSocketSet.registerInputHandler(newSocket, 0);
@@ -106,7 +108,9 @@ void testEpollSocketSet(string ip) {
                 DataBuffer* recvBuf = new DataBuffer();
                 int numOfBytesRecved = 0;
 
-                if (epollSocket->socket->recv(recvBuf->getEndOfDataPointer(), recvBuf->getSize() - recvBuf->getLength(), numOfBytesRecved)) {
+                int result = epollSocket->socket->recv(recvBuf->getEndOfDataPointer(), recvBuf->getSize() - recvBuf->getLength(), numOfBytesRecved);
+                assert(result != SKT_ERR);
+                if (result == SKT_SUCC) {
                     if (numOfBytesRecved == 0) {
                         cout << "socket is disconnected by peer: " << epollSocket->socket->getSocket() << endl;
                         // close socket in server side
@@ -117,10 +121,16 @@ void testEpollSocketSet(string ip) {
                         recvBuf->increaseDataLength(numOfBytesRecved);
                         cout << "receive " << numOfBytesRecved << " bytes data from socket: " << recvBuf->getData() << endl;
                         cout << "buffer length: " << recvBuf->getLength() << endl;
+
+                        char respData[] = "TCP server response";
+                        int numOfBytesSent;
+                        assert(SKT_SUCC == epollSocket->socket->send(respData, strlen(respData), numOfBytesSent));
+                        assert(numOfBytesSent == strlen(respData));
+                        cout << "send " << numOfBytesSent << " bytes data to socket: " << respData << endl;
                     }
                     recvBuf->reset();
                 } else {
-                    cout << "fail to recv data from socket: " << epollSocket->socket->getSocket() << endl;
+                    cout << "no data, continue to read from socket: " << epollSocket->socket->getSocket() << endl;
                 }
             }
         } else {
@@ -142,7 +152,9 @@ void testSocket(string ip) {
     // Test non-blocking socket
     socket->makeNonBlocking();
     while (true) {
-        if (socket->accept(remoteAddrAndPort, newSocketFd)) {
+        int result = socket->accept(newSocketFd, remoteAddrAndPort);
+        assert(result != SKT_ERR);
+        if (result == SKT_SUCC) {
             Socket* newSocket = new Socket(newSocketFd);
             newSocket->makeNonBlocking();
             DataBuffer* recvBuf = new DataBuffer();
@@ -150,7 +162,9 @@ void testSocket(string ip) {
             int numOfBytesRecved = 0;
 
             while (true) {
-                if (newSocket->recv(recvBuf->getEndOfDataPointer(), recvBuf->getSize() - recvBuf->getLength(), numOfBytesRecved)) {
+                int result = newSocket->recv(recvBuf->getEndOfDataPointer(), recvBuf->getSize() - recvBuf->getLength(), numOfBytesRecved);
+                assert(result != SKT_ERR);
+                if (result == SKT_SUCC) {
                     if (numOfBytesRecved == 0) {
                         newSocket->close();
                         delete newSocket;
@@ -162,6 +176,12 @@ void testSocket(string ip) {
                     recvBuf->increaseDataLength(numOfBytesRecved);
                     cout << "receive " << numOfBytesRecved << " bytes data from socket: " << recvBuf->getData() << endl;
                     cout << "buffer length: " << recvBuf->getLength() << endl;
+
+                    char respData[] = "TCP server response";
+                    int numOfBytesSent;
+                    assert(SKT_SUCC == newSocket->send(respData, strlen(respData), numOfBytesSent));
+                    assert(numOfBytesSent == strlen(respData));
+                    cout << "send " << numOfBytesSent << " bytes data to socket: " << respData << endl;
 
                     recvBuf->reset();
                 } else {
@@ -178,14 +198,18 @@ void testSocket(string ip) {
 
     // Test blocking socket
     socket->makeBlocking();
-    if (socket->accept(remoteAddrAndPort, newSocketFd)) {
+    int result = socket->accept(newSocketFd, remoteAddrAndPort);
+    assert(result != SKT_ERR);
+    if (result == SKT_SUCC) {
         Socket* newSocket = new Socket(newSocketFd);
         DataBuffer* recvBuf = new DataBuffer();
 
         int numOfBytesRecved = 0;
 
         while (true) {
-            if (newSocket->read(recvBuf->getEndOfDataPointer(), recvBuf->getSize() - recvBuf->getLength(), numOfBytesRecved)) {
+            int result = newSocket->read(recvBuf->getEndOfDataPointer(), recvBuf->getSize() - recvBuf->getLength(), numOfBytesRecved);
+            assert(result != SKT_ERR);
+            if (result == SKT_SUCC) {
                 if (numOfBytesRecved == 0) {
                     newSocket->close();
                     delete newSocket;
@@ -198,9 +222,15 @@ void testSocket(string ip) {
                 cout << "receive " << numOfBytesRecved << " bytes data from socket: " << recvBuf->getData() << endl;
                 cout << "buffer length: " << recvBuf->getLength() << endl;
 
+                char respData[] = "TCP server response";
+                int numOfBytesSent;
+                assert(SKT_SUCC == newSocket->send(respData, strlen(respData), numOfBytesSent));
+                assert(numOfBytesSent == strlen(respData));
+                cout << "send " << numOfBytesSent << " bytes data to socket: " << respData << endl;
+
                 recvBuf->reset();
             } else {
-                base::Thread::sleep(1000);
+                base::Thread::sleep(1);
             }
         }
     }

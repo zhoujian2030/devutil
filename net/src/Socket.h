@@ -17,6 +17,12 @@
 
 namespace net {
 
+    typedef enum {
+        SKT_SUCC,
+        SKT_ERR,
+        SKT_WAIT
+    } SocketErrCode;
+
     // currently only support IPV4 TCP socket
     class Socket {
     public:
@@ -26,29 +32,29 @@ namespace net {
             unsigned short port;
         };
 
-        Socket(std::string ip, short port, int socketType = SOCK_STREAM, int saFamily = AF_INET);
+        Socket(std::string localIp, short localPort, int socketType = SOCK_STREAM, int saFamily = AF_INET);
         Socket(int socket, int socketType = SOCK_STREAM);
         virtual ~Socket();
 
         // Only applicable for TCP server socket
         bool bind();
         bool listen(int backlog=10000);
-        bool accept(InetAddressPort& theRemoteAddrPort, int& theSocket);
+        int accept(int& theSocket, InetAddressPort& theRemoteAddrPort);
 
         // Only applicable for TCP client socket
-        bool connect();
+        int connect(const InetAddressPort& theRemoteAddrPort);
 
         // Close socket
         void close();
 
         // Receive data from socket
-        bool recv(char* theBuffer, int buffSize, int& numOfBytesReceived, int flags = 0);
+        int recv(char* theBuffer, int buffSize, int& numOfBytesReceived, int flags = 0);
         // Identical to recv() with flags set to 0
-        bool read(char* theBuffer, int buffSize, int& numOfBytesReceived);
+        int read(char* theBuffer, int buffSize, int& numOfBytesReceived);
 
         // Send data to socket
-        bool send(char* theBuffer, int numberOfBytesSent);
-        bool write(char* theBuffer, int numberOfBytesSent);
+        int send(const char* theBuffer, int numOfBytesToSend, int& numberOfBytesSent);
+        int write(const char* theBuffer, int numOfBytesToSend, int& numberOfBytesSent);
 
         void makeNonBlocking();
         void makeBlocking();
@@ -56,6 +62,7 @@ namespace net {
         int getSocket() const;
 
         static std::string getHostAddress(struct sockaddr* sockaddr);
+        static void getSockaddrByIpAndPort(struct sockaddr_in* sockaddr, std::string ip, unsigned short port);
 
     private: 
         typedef enum {
@@ -87,11 +94,10 @@ namespace net {
 
         int m_socketType;
 
-        // for server socket, they stand for local ip and port
-        // for client socket, they stand for remote ip and port
-        std::string m_hostIp;
-        unsigned short m_port;
-        struct sockaddr_in m_sa;
+        // local ip and port
+        std::string m_localIp;
+        unsigned short m_localPort;
+        struct sockaddr_in m_localSa;
 
         State m_state;
     };

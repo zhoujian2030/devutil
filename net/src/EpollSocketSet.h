@@ -47,7 +47,7 @@ namespace net {
 
         void registerInputHandler(Socket* theSocket, SocketEventHandler* theEventHandler);
         void removeInputHandler(Socket* theSocket);
-        // void registerWriteSocket(int fd);
+        void registerOutputHandler(Socket* theSocket, SocketEventHandler* theEventHandler);
 
     private:
 
@@ -150,10 +150,11 @@ namespace net {
         m_lock.unlock();
     }
 
-    // // --------------------------------------------
-    // void EpollSocketSet::registerWriteSocket(int fd) {
-    //     // TODO
-    // }
+    // --------------------------------------------
+    inline void EpollSocketSet::registerOutputHandler(Socket* theSocket, SocketEventHandler* theEventHandler) {
+        //TODO
+    }
+
 }
 
 #endif

@@ -1,0 +1,100 @@
+@startuml
+autonumber
+title tcp connect example
+
+participant "TCPClient" as client
+participant "ReactorThread" as reactorthread
+participant "Socket" as socket
+participant "EpollSocketSet" as epoll
+participant "glibc" as lib
+
+== Blocking Mode ==
+
+client -> socket ++: new Socket()
+    socket -> lib ++: socket(AF_INET, SOCK_STREAM, 0)
+    return fd
+return socket
+
+note over client, socket
+    connect will be blocked until success or timeout,
+    timeout could be very long depends on server setting
+end note
+client -> socket ++: connect(remoteAddrAndPort)
+    socket -> lib ++: connect(fd, sockaddr*, addrLength)
+    return success(0)
+
+    note over socket,lib
+        get local ip and port by fd which
+        are used to connect to TCP server
+    end note
+
+    socket -> lib ++: getsockname(fd, sockaddr*, addrLength)
+    return success(0)
+return SKT_SUCC
+
+... send/recv data ...
+
+== NonBlocking Mode ==
+
+client -> socket ++: new Socket()
+    socket -> lib ++: socket(AF_INET, SOCK_STREAM, 0)
+    return fd
+return socket
+
+client -> socket ++: makeNonBlocking()
+    socket -> lib ++: ioctl(fd, FIONBIO, ...)
+    note over socket,lib
+        fcntl can do the same thing
+    end note
+    return success(0)
+return
+
+client -> socket ++: connect(remoteAddrAndPort)
+    socket -> lib ++: connect(fd, sockaddr*, addrLength)
+    return result
+return result
+
+alt result = SKT_SUCC
+    note over client, lib
+        connect success, start sending and receving data
+    end note
+    ... send/recv data ...
+else result = SKT_ERR
+    note over client, lib
+        connect error, close socket
+    end note    
+    client -> socket ++: close()
+        socket->lib ++: close(fd)
+        return
+    return
+else result = SKT_WAIT
+    note over client, lib
+        connect is not complete yet, register the socket EPOLLOUT event to epoll
+    end note 
+
+    client -> epoll ++: registerOutputHandler(Socket*, SocketEventHandler*)
+        epoll -> epoll ++: add the socket event into its queue
+        return
+    return
+end
+
+== ReactorThread poll the socket ==
+reactorthread -> epoll ++: poll()
+    epoll -> epoll ++: updateEvents()
+        epoll -> lib ++: epoll_ctl()
+        return
+    return
+
+    epoll -> lib ++: epoll_wait()
+        note over epoll, lib
+            if valid EPOLLIN or EPOLLOUT event is available,
+            return the socket and eventHandler
+        end note
+    return
+return available socket
+
+reactorthread -> client: notify client
+
+... send/recv data ...
+
+@enduml

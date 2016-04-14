@@ -20,12 +20,12 @@ using namespace net;
 
 // ------------------------------------------------
 Socket::Socket(
-    std::string ip, 
-    short port, 
+    std::string localIp, 
+    short localPort, 
     int socketType, 
     int saFamily)
-: m_socket(-1), m_socketType(socketType), m_hostIp(ip), 
-  m_port(port), m_state(CLOSED)
+: m_socket(-1), m_socketType(socketType), m_localIp(localIp), 
+  m_localPort(localPort), m_state(CLOSED)
 {
     NetLogger::initConsoleLog();
 
@@ -46,37 +46,39 @@ Socket::Socket(
             << " - " << strerror(errno));
     }
 
-
-    // check if the ip is valid
-    if (INADDR_NONE == inet_addr(m_hostIp.c_str())) {
-        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "IP is not valid: " << m_hostIp);
-        close();
-        return;
+    // for client socket, m_localPort is set to 0, m_localIp is unspecified ?
+    if (m_localPort != 0) {
+        // check if the ip is valid
+        if (INADDR_NONE == inet_addr(m_localIp.c_str())) {
+            LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "IP is not valid: " << m_localIp);
+            close();
+            return;
+        }
+        memset(&m_localSa, 0, sizeof(struct sockaddr_in));
+        m_localSa.sin_family = saFamily;
+        m_localSa.sin_addr.s_addr = inet_addr(m_localIp.c_str());
+        m_localSa.sin_port = htons(m_localPort);
     }
-    memset(&m_sa, 0, sizeof(struct sockaddr_in));
-    m_sa.sin_family = saFamily;
-    m_sa.sin_addr.s_addr = inet_addr(m_hostIp.c_str());
-    m_sa.sin_port = htons(m_port);
 
     m_state = CREATED;
 
-    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "Success to create socket: " << m_socket << ", address = " << m_hostIp << ":" << m_port);
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "Success to create socket: " << m_socket << ", address = " << m_localIp << ":" << m_localPort);
 }
 
 // ------------------------------------------------
 Socket::Socket(int socket, int socketType)
-: m_socket(socket), m_socketType(socketType), m_hostIp("null"), 
-  m_port(0), m_state(CONNECTED)
+: m_socket(socket), m_socketType(socketType), m_localIp("null"), 
+  m_localPort(0), m_state(CONNECTED)
 {
     socklen_t length = sizeof(struct sockaddr);
 
-    if (getsockname(m_socket, (struct sockaddr*)&m_sa, &length) == 0) {
-        m_port = ntohs(m_sa.sin_port);
-        m_hostIp = Socket::getHostAddress((struct sockaddr*)&m_sa);
+    if (::getsockname(m_socket, (struct sockaddr*)&m_localSa, &length) == 0) {
+        m_localPort = ntohs(m_localSa.sin_port);
+        m_localIp = Socket::getHostAddress((struct sockaddr*)&m_localSa);
     }
 
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "initialize the connected socket, fd = " << m_socket 
-        << ", address = " << m_hostIp << ":" << m_port);
+        << ", address = " << m_localIp << ":" << m_localPort);
 }
 
 // ------------------------------------------------
@@ -86,11 +88,11 @@ Socket::~Socket() {
 
 // ------------------------------------------------
 bool Socket::bind() {
-    if (m_state == CREATED && m_port != 0) {
-        int result = ::bind(m_socket, (struct sockaddr *)&m_sa, sizeof(struct sockaddr_in));
+    if (m_state == CREATED && m_localPort != 0) {
+        int result = ::bind(m_socket, (struct sockaddr *)&m_localSa, sizeof(struct sockaddr_in));
         if (result == -1) {
-            LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to bind socket, fd = " << m_socket << ", address = " << m_hostIp << 
-                ":" << m_port << ". errno = " << errno << " - " << strerror(errno));
+            LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to bind socket, fd = " << m_socket << ", address = " << m_localIp << 
+                ":" << m_localPort << ". errno = " << errno << " - " << strerror(errno));
             close();
             return false;
         }
@@ -132,12 +134,12 @@ bool Socket::listen(int backlog) {
 }
 
 // ------------------------------------------------
-bool Socket::accept(InetAddressPort& theRemoteAddrPort, int& theSocket) {
+int Socket::accept(int& theSocket, InetAddressPort& theRemoteAddrPort) {
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "Socket::accept(), fd = " << m_socket);
 
     if (m_state != LISTENING) {
         LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "socket is not ready to accept connection: " << m_socket);
-        return false;
+        return SKT_ERR;
     }
 
     struct sockaddr_in remoteAddr;
@@ -145,15 +147,16 @@ bool Socket::accept(InetAddressPort& theRemoteAddrPort, int& theSocket) {
     int newFd = ::accept(m_socket, (struct sockaddr*)&remoteAddr, &length);
     if (newFd == -1) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
-            // For non-blocking socket, it would return EAGAIN or WWOULDBLOCK 
+            // For non-blocking socket, it would return EAGAIN or EWOULDBLOCK 
             // when no data read from socket
             LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "no new connection coming now, fd = " << m_socket);
+            return SKT_WAIT;
         } else {
             LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to accept for socket: " << m_socket <<
                 ". errno = " << errno << " - " << strerror(errno));
             // TODO throw io exception ??
+            return SKT_ERR;
         }
-        return false;
     }
 
     memcpy(&theRemoteAddrPort.addr, &remoteAddr, sizeof(theRemoteAddrPort.addr));
@@ -163,13 +166,46 @@ bool Socket::accept(InetAddressPort& theRemoteAddrPort, int& theSocket) {
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "accept new connection, fd = " << theSocket << ", remote address = " 
         << Socket::getHostAddress((struct sockaddr*)&theRemoteAddrPort.addr) << ":" << theRemoteAddrPort.port);
 
-    return true;
+    return SKT_SUCC;
 }
 
 // ------------------------------------------------
-bool Socket::connect() {
-    // TODO
-    return false;
+int Socket::connect(const InetAddressPort& theRemoteAddrPort) {
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "Socket::connect(), fd = " << m_socket);
+
+    if (m_state != CREATED || m_state == CONNECTED) {
+        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "socket is not ready to connect server: " << m_socket);
+        return SKT_ERR;
+    }
+
+    int result = ::connect(m_socket, (struct sockaddr*)&theRemoteAddrPort.addr, sizeof(theRemoteAddrPort.addr));
+    if (result == -1) {
+        if (errno == EINPROGRESS) {
+            LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "connecting, fd = " << m_socket << ", " << strerror(errno));
+            return SKT_WAIT;
+        } else {
+            LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to connect on socket: " << m_socket <<
+                ". errno = " << errno << " - " << strerror(errno));
+            // TODO throw io exception ??
+            return SKT_ERR;
+        }
+    }
+
+    socklen_t length = sizeof(struct sockaddr);
+    if (::getsockname(m_socket, (struct sockaddr*)&m_localSa, &length) == 0) {
+        m_localPort = ntohs(m_localSa.sin_port);
+        m_localIp = Socket::getHostAddress((struct sockaddr*)&m_localSa);
+
+        LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "connect success, local address = " << m_localIp << ", local port = "
+            << m_localPort << ", fd = " << m_socket);
+
+        m_state = CONNECTED;
+        return SKT_SUCC;
+    } else {
+        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to getsockname on socket: " << m_socket <<
+            ". errno = " << errno << " - " << strerror(errno));
+        return SKT_ERR;
+    }
 }
 
 // ------------------------------------------------
@@ -184,10 +220,10 @@ void Socket::close() {
 // -------------------------------------------------
 //  only used in connected socket (TCP socket)
 // -------------------------------------------------
-bool Socket::recv(char* theBuffer, int buffSize, int& numOfBytesReceived, int flags) {
+int Socket::recv(char* theBuffer, int buffSize, int& numOfBytesReceived, int flags) {
     if (theBuffer == 0) {
         LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "null pointer buffer!");
-        return false;
+        return SKT_ERR;
     }
 
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "Socket::recv(), fd = " << m_socket);
@@ -196,26 +232,28 @@ bool Socket::recv(char* theBuffer, int buffSize, int& numOfBytesReceived, int fl
 
     if (result == -1) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
-            // For non-blocking socket, it would return EAGAIN or WWOULDBLOCK 
+            // For non-blocking socket, it would return EAGAIN or EWOULDBLOCK 
             // when no data read from socket
-            LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "No data received from the socket now, fd = " << m_socket);
+            LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "no data received from the socket now, fd = " << m_socket
+                << ", " << strerror(errno));
+            return SKT_WAIT;
         } else {
             LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to recv data from socket: " << m_socket
                 << ", errno = " << errno << " - " << strerror(errno));
             // TODO throw io exception ??
+            return SKT_ERR;
         }
-        return false;
     }
 
     numOfBytesReceived = result;
-    return true;
+    return SKT_SUCC;
 }
 
 // -------------------------------------------------
-bool Socket::read(char* theBuffer, int buffSize, int& numOfBytesReceived) {
+int Socket::read(char* theBuffer, int buffSize, int& numOfBytesReceived) {
     if (theBuffer == 0) {
         LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "null pointer buffer!");
-        return false;
+        return SKT_ERR;
     }
 
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "Socket::read(), fd = " << m_socket);    
@@ -224,29 +262,52 @@ bool Socket::read(char* theBuffer, int buffSize, int& numOfBytesReceived) {
 
     if (result == -1) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
-            // For non-blocking socket, it would return EAGAIN or WWOULDBLOCK 
+            // For non-blocking socket, it would return EAGAIN or EWOULDBLOCK 
             // when no data read from socket
-            LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "no data read from the socket now, fd = " << m_socket);
+            LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "no data read from the socket now, fd = " << m_socket
+                << ", " << strerror(errno));
+            return SKT_WAIT;
         } else {
             LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to read data from socket: " << m_socket
                 << ", errno = " << errno << " - " << strerror(errno));
             // TODO throw io exception ??
+            return SKT_ERR;
         }
-        return false;
     }
 
     numOfBytesReceived = result;
-    return true;    
+    return SKT_SUCC;    
 }
 
 // -------------------------------------------------
-bool Socket::send(char* theBuffer, int numOfBytesSent) {
-    //TODO
-    return false;
+int Socket::send(const char* theBuffer, int numOfBytesToSend, int& numberOfBytesSent) {
+    if (theBuffer == 0) {
+        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "null pointer buffer!");
+        return SKT_ERR;
+    }
+
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "Socket::send(), fd = " << m_socket);
+
+    int result = ::send(m_socket, theBuffer, numOfBytesToSend, 0);
+    if (result == -1) {
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            // For non-blocking socket, it would return EAGAIN or EWOULDBLOCK 
+            // when send buffer is full
+            LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "no data read from the socket now, fd = " << m_socket);
+            return SKT_WAIT;
+        } else {
+            LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to send data to socket: " << m_socket
+                << ", errno = " << errno << " - " << strerror(errno));    
+            return SKT_ERR;        
+        }
+    }
+
+    numberOfBytesSent = result;
+    return SKT_SUCC;
 }
 
 // -------------------------------------------------
-bool Socket::write(char* theBuffer, int numberOfBytesSent) {
+int Socket::write(const char* theBuffer, int numOfBytesToSend, int& numberOfBytesSent) {
     // TODO
     return false;
 }
@@ -288,4 +349,17 @@ std::string Socket::getHostAddress(struct sockaddr* sockaddr) {
     std::string hostAddr(tempAddr);
 
     return hostAddr;
+}
+
+// ------------------------------------------------
+void Socket::getSockaddrByIpAndPort(struct sockaddr_in* sockaddr, std::string ip, unsigned short port) {
+    if (sockaddr == 0) {
+        return;
+    }
+
+    memset(sockaddr, 0, sizeof(struct sockaddr_in));
+    sockaddr->sin_family = AF_INET;
+    sockaddr->sin_addr.s_addr = inet_addr(ip.c_str());
+    sockaddr->sin_port = htons(port);
+
 }
