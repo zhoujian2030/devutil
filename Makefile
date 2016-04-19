@@ -5,6 +5,7 @@ SUBDIRS = cm \
 	net \
 	cpp \
 	dao \
+	ads \
 	test 
 
 BUILDDIRS = $(SUBDIRS:%=build-%)
@@ -41,6 +42,8 @@ dao: cm
 dao: log
 net: cm
 net: log
+ads: cm
+ads: log
 test: ipc
 test: net
 test: log
