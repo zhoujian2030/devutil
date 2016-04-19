@@ -13,11 +13,10 @@
 #include <list>
 
 #include "Socket.h"
+#include "SocketEventHandler.h"
 #include "MutexLock.h"
 
 namespace net {
-
-    class SocketEventHandler;
     
     // provide API to register listenning fd and associated event handler callback.
     // max number of listening fd supported depends on system limit for current process,

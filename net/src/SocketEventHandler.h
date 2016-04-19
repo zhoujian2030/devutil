@@ -18,6 +18,7 @@ namespace net {
     // when data can be received or sent or there is exception on 
     // one socket
     class SocketEventHandler {
+    public:
 
         // Called by reactor when data can be received on the socket
         // without blocking

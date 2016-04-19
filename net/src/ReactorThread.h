@@ -10,8 +10,10 @@
 
 #include "Thread.h"
 #include "MutexLock.h"
+#include "EpollSocketSet.h"
 
 namespace net {
+    
     class ReactorThread : public base::Thread {
     public:
         ReactorThread();
@@ -22,6 +24,8 @@ namespace net {
 
     private:
         base::Lock* m_lock;
+
+        EpollSocketSet m_epollSocketSet;
     };
 }
 

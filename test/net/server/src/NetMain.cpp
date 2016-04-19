@@ -72,9 +72,9 @@ int main(int argc, char* argv[]) {
 
 // ---------------------------------------------
 void testReactorThread() {
-    ReactorThread *pReactorThread = new ReactorThread();
-    pReactorThread->start();
-    pReactorThread->wait();
+    ReactorThread reactorThread;// = new ReactorThread();
+    reactorThread.start();
+    reactorThread.wait();
 }
 
 // ---------------------------------------------

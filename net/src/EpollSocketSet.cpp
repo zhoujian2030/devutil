@@ -75,7 +75,7 @@ void EpollSocketSet::updateEvents() {
     int eventNumber = m_updateSocketList.size();
     if (eventNumber > 0) {
         int result;
-        for (UpdateSocketList::iterator it = m_updateSocketList.begin(); it != m_updateSocketList.end(); it++) {
+        for (UpdateSocketList::iterator it = m_updateSocketList.begin(); it != m_updateSocketList.end(); ++it) {
             struct epoll_event event;
             event.events = it->events;
             event.data.fd = it->fd;
@@ -115,13 +115,17 @@ EpollSocketSet::EpollSocket* EpollSocketSet::poll(int theTimeout) {
     // else return after timeout in millisecond
     m_numFds = epoll_wait(m_epollFd, m_epollEvents, m_epollFdSize, theTimeout);
 
+
     if (m_numFds <= 0) {
-        if (m_numFds == -1) {
+        if (m_numFds == -1 && errno != EINTR) {
             LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to wait epoll events. errno = "
                 << errno << " - " << strerror(errno));
+            return 0;
+        } else {
+            // timeout or no socket event received
+            m_readySocketArray[0].events = 0;
+            return m_readySocketArray;
         }
-
-        return 0;
     }
 
     m_lock.lock();
@@ -162,6 +166,7 @@ EpollSocketSet::EpollSocket* EpollSocketSet::poll(int theTimeout) {
         }
     }
 
+    // Set last socket event 0 to indicate ending
     m_readySocketArray[readySocketIndex].events = 0;
 
     m_lock.unlock();
