@@ -24,7 +24,7 @@ all: $(TARGET)
 
 # Targets
 $(TARGET): buildrepo $(OBJS)
-	$(CXX) $(OBJS) $(DEPOBJS) -o $@ -lrt -pthread $(LIBS)
+	$(CXX) $(OBJS) $(DEPOBJS) -o $@ -lrt -lsctp -pthread $(LIBS)
 	@mv $(TARGET) $(OBJDIR)
 
 clean:

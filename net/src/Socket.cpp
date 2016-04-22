@@ -23,6 +23,7 @@ Socket::Socket(
     std::string localIp, 
     short localPort, 
     int socketType, 
+    int protocol,
     int saFamily)
 : m_socket(-1), m_socketType(socketType), m_localIp(localIp), 
   m_localPort(localPort), m_state(CLOSED)
@@ -30,7 +31,7 @@ Socket::Socket(
     NetLogger::initConsoleLog();
 
     // create socket
-    m_socket = ::socket(saFamily, socketType, 0);
+    m_socket = ::socket(saFamily, socketType, protocol);
     if (m_socket == -1) {
         LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to create socket. errno = " << errno 
             << " - " << strerror(errno));

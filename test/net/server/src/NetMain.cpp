@@ -17,6 +17,7 @@
 #include "EpollSocketSet.h"
 #include "Socket.h"
 #include "DataBuffer.h"
+#include "SctpSocket.h"
 
 
 using namespace std;
@@ -29,12 +30,13 @@ void showUsage() {
     cout << "  1 : Test ReactorThread" << endl;
     cout << "  2 : Test EpollSocketSet" << endl;
     cout << "  3 : Test Socket" << endl;
+    cout << "  4 : Test SctpSocket" << endl;
 }
 
 void testReactorThread();
 void testEpollSocketSet(string ip);
 void testSocket(string ip);
-
+void testSctpSocket(string ip);
 int main(int argc, char* argv[]) {
 
     if (argc < 2) {
@@ -62,6 +64,12 @@ int main(int argc, char* argv[]) {
             ip = argv[2];
         }
         testSocket(ip);
+    } else if (testNumber.compare("4") == 0) {
+        string ip("127.0.0.1");
+        if (argc > 2) {
+            ip = argv[2];
+        }
+        testSctpSocket(ip);
     } else {
         showUsage();
     }
@@ -235,4 +243,41 @@ void testSocket(string ip) {
         }
     }
 
+}
+
+// --------------------------------------------------
+void testSctpSocket(string ip) {
+    SctpSocket* socket = new SctpSocket(ip, 62324);
+    socket->bind();
+    socket->listen(5);
+
+    Socket::InetAddressPort remoteAddrAndPort;
+    int newSocketFd = -1;
+    int result = socket->accept(newSocketFd, remoteAddrAndPort);
+    assert(result == SKT_SUCC);
+    SctpSocket* newSocket = new SctpSocket(newSocketFd);
+    DataBuffer* recvBuf = new DataBuffer();
+    int numOfBytesRecved = 0;
+
+    while (true) {
+        int result = newSocket->recv(recvBuf->getEndOfDataPointer(), recvBuf->getSize() - recvBuf->getLength(), numOfBytesRecved);
+        assert(result != SKT_ERR);
+        if (result == SKT_SUCC) {
+            if (numOfBytesRecved == 0) {
+                newSocket->close();
+                delete newSocket;
+                newSocket = 0;
+                cout << "socket is disconnected by peer: " << endl;
+                break;
+            }
+
+            recvBuf->increaseDataLength(numOfBytesRecved);
+            cout << "receive " << numOfBytesRecved << " bytes data from socket: " << recvBuf->getData() << endl;
+            cout << "buffer length: " << recvBuf->getLength() << endl;
+
+            recvBuf->reset();
+        } else {
+            base::Thread::sleep(1);
+        }
+    }    
 }

@@ -23,7 +23,7 @@ namespace net {
         SKT_WAIT
     } SocketErrCode;
 
-    // currently only support IPV4 TCP socket
+    // currently only support IPV4 TCP/SCTP socket
     class Socket {
     public:
 
@@ -32,7 +32,15 @@ namespace net {
             unsigned short port;
         };
 
-        Socket(std::string localIp, short localPort, int socketType = SOCK_STREAM, int saFamily = AF_INET);
+        // @protocol: 0 - TCP/UDP
+        //            132 (IPPROTO_SCTP) - SCTP
+        Socket(
+            std::string localIp, 
+            short localPort, 
+            int socketType = SOCK_STREAM, 
+            int protocol = 0, 
+            int saFamily = AF_INET);
+
         Socket(int socket, int socketType = SOCK_STREAM);
         virtual ~Socket();
 
@@ -48,12 +56,12 @@ namespace net {
         void close();
 
         // Receive data from socket
-        int recv(char* theBuffer, int buffSize, int& numOfBytesReceived, int flags = 0);
+        virtual int recv(char* theBuffer, int buffSize, int& numOfBytesReceived, int flags = 0);
         // Identical to recv() with flags set to 0
         int read(char* theBuffer, int buffSize, int& numOfBytesReceived);
 
         // Send data to socket
-        int send(const char* theBuffer, int numOfBytesToSend, int& numberOfBytesSent);
+        virtual int send(const char* theBuffer, int numOfBytesToSend, int& numberOfBytesSent);
         int write(const char* theBuffer, int numOfBytesToSend, int& numberOfBytesSent);
 
         void makeNonBlocking();
@@ -65,6 +73,8 @@ namespace net {
         static void getSockaddrByIpAndPort(struct sockaddr_in* sockaddr, std::string ip, unsigned short port);
 
     private: 
+        friend class SctpSocket;
+        
         typedef enum {
             // The socket is successfull created by socket()
             CREATED,
