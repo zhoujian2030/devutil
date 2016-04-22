@@ -16,28 +16,34 @@
 using namespace std;
 using namespace ads;
 
-// #define DEBUG_ADS
-
 // ----------------------------------------------
 void Sort::insertionSort(int array[], int length) {
-    int temp;
+    int n = 0;
     for (int i=1; i<length; i++) {
-        for (int j=i; j>0; j--) {
-            if (array[j] < array[j-1]) {
-                temp = array[j];
-                array[j] = array[j-1];
-                array[j-1] = temp;
+        int j = i;
+        int target2inserted = array[i]; // suppose array[i] is the target to insert into left sorted array
+        
+        while (j > 0) {
+            n++;
+            if (target2inserted < array[j-1]) {
+                array[j] = array[j-1];      // shift right
+                j--;
             } else {
-                // no need to compare with the rest elements of 
-                // the sorted sub array
                 break;
             }
         }
-    }
+
+        if (j < i) {
+            array[j] = target2inserted;
+        }
+    } 
+
+    LOG4CPLUS_DEBUG(_ADS_LOOGER_NAME_, "n = " << n);  
 }
 
 // ----------------------------------------------
-void Sort::selectionSort(int array[], int length) {   
+void Sort::selectionSort(int array[], int length) { 
+    int n = 0;  
     int minIndex, temp;
     for (int i=0; i<length-1; i++) {
         minIndex = i;
@@ -45,6 +51,8 @@ void Sort::selectionSort(int array[], int length) {
             if (array[j] < array[minIndex]) {
                 minIndex = j;
             }
+
+            n++;
         }
         if (minIndex != i) {
             temp = array[minIndex];
@@ -52,11 +60,36 @@ void Sort::selectionSort(int array[], int length) {
             array[i] = temp;
         }
     } 
+
+    LOG4CPLUS_DEBUG(_ADS_LOOGER_NAME_, "n = " << n);  
+}
+
+// -----------------------------------------------
+void Sort::bubbleSort(int array[], int length) {
+    int n = 0;
+    for (int i=0; i<length; i++) {
+        bool swap = false;
+        for (int j=length-1; j>i; j--) {
+            if (array[j] < array[j-1]) {
+                int temp = array[j];
+                array[j] = array[j-1];
+                array[j-1] = temp;
+
+                swap = true;
+            }
+            n++;
+        }
+
+        if (!swap) {
+            break;
+        }
+    }
+
+    LOG4CPLUS_DEBUG(_ADS_LOOGER_NAME_, "n = " << n);
 }
 
 // ----------------------------------------------
 void Sort::formatPrint(int array[], int length, int numOfColumn) {
-#ifdef DEBUG_ADS
     cout << "+------------------------------------------------+" << endl;
     for (int i=0; i<length; i++) {
         if (i != 0 && (i % numOfColumn == 0)) {
@@ -67,7 +100,6 @@ void Sort::formatPrint(int array[], int length, int numOfColumn) {
 
     cout << endl;
     cout << "+------------------------------------------------+" << endl;
-#endif
 }
 
 // ------------------------------------------------
@@ -86,8 +118,20 @@ void Sort::generateSortedArray(int array[], int length, bool ascending) {
         }
     } else {
         for (int i=0; i<length; ++i) {
-            array[i] = length - i + 1;
+            array[i] = length - i;
         }
+    }
+}
+
+// -----------------------------------------------
+void Sort::breakOrder(int array[], int length) {
+    srand(time(NULL));
+    for (int i=0; i<length; i++) {
+        int j = rand() % length;
+        int k = rand() % length;
+        int temp = array[j];
+        array[j] = array[k];
+        array[k] = temp;
     }
 }
 
@@ -112,5 +156,5 @@ void Sort::startTimer() {
 void Sort::stopTimer() {
     struct timeval tv;
     gettimeofday(&tv, 0);
-    s_time = tv.tv_sec + (double)tv.tv_usec / 1000000 - s_time;
+    s_time = (tv.tv_sec + (double)tv.tv_usec / 1000000 - s_time) * 1000;
 }
