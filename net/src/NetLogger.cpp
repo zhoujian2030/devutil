@@ -21,6 +21,7 @@ void NetLogger::initConsoleLog() {
     }
 
     CPPLogger::initConsoleLog(logger);
+    CPPLogger::setLogLevel(logger, DEBUG);
     s_isInited = true;
 }
 

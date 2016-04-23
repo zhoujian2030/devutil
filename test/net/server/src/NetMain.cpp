@@ -18,7 +18,7 @@
 #include "Socket.h"
 #include "DataBuffer.h"
 #include "SctpSocket.h"
-
+#include "Util.h"
 
 using namespace std;
 using namespace net;
@@ -33,7 +33,7 @@ void showUsage() {
     cout << "  4 : Test SctpSocket" << endl;
 }
 
-void testReactorThread();
+void testReactorThread(string ip, short port);
 void testEpollSocketSet(string ip);
 void testSocket(string ip);
 void testSctpSocket(string ip);
@@ -49,26 +49,23 @@ int main(int argc, char* argv[]) {
 
     // NETLogger::initConsoleLog();
     // NETLogger::setLogLevel(logcpp::INFO);
+    string ip("127.0.0.1");
+    if (argc > 2) {
+        ip = argv[2];
+    }
+
+    short port = 8080;
+    if (argc > 3) {
+        port = Util::s2i(argv[3]);
+    }
 
     if (testNumber.compare("1") == 0) {
-        testReactorThread();
+        testReactorThread(ip, port);
     } else if (testNumber.compare("2") == 0) {
-        string ip("127.0.0.1");
-        if (argc > 2) {
-            ip = argv[2];
-        }
         testEpollSocketSet(ip);
     } else if (testNumber.compare("3") == 0) {
-        string ip("127.0.0.1");
-        if (argc > 2) {
-            ip = argv[2];
-        }
         testSocket(ip);
     } else if (testNumber.compare("4") == 0) {
-        string ip("127.0.0.1");
-        if (argc > 2) {
-            ip = argv[2];
-        }
         testSctpSocket(ip);
     } else {
         showUsage();
@@ -79,9 +76,19 @@ int main(int argc, char* argv[]) {
 }
 
 // ---------------------------------------------
-void testReactorThread() {
+void testReactorThread(string ip, short port) {
     ReactorThread reactorThread;// = new ReactorThread();
     reactorThread.start();
+
+    base::Thread::sleep(1000);
+
+    Socket* socket = new Socket(ip, port);
+    socket->bind();
+    socket->listen();  
+    socket->makeNonBlocking();
+
+    reactorThread.registerInputHandler(socket, 0);
+
     reactorThread.wait();
 }
 
@@ -142,8 +149,8 @@ void testEpollSocketSet(string ip) {
                 }
             }
         } else {
-            //cout << "no available read events" << endl;
-            base::Thread::sleep(1);
+            cout << "no available read events" << endl;
+            base::Thread::sleep(1000);
         }
     }
 }

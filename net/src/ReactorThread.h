@@ -11,6 +11,7 @@
 #include "Thread.h"
 #include "MutexLock.h"
 #include "EpollSocketSet.h"
+#include "EventIndicator.h"
 
 namespace net {
     
@@ -22,11 +23,25 @@ namespace net {
 
         virtual unsigned long run();
 
+        void registerInputHandler(Socket* theSocket, SocketEventHandler* theEventHandler);
+        void removeInputHandler(Socket* theSocket);
+
     private:
         base::Lock* m_lock;
-
         EpollSocketSet m_epollSocketSet;
+        cm::EventIndicator m_socketSetChangeEvent;
     };
+
+    // ---------------------------------------------------------
+    inline void ReactorThread::registerInputHandler(Socket* theSocket, SocketEventHandler* theEventHandler) {
+        m_epollSocketSet.registerInputHandler(theSocket, theEventHandler);
+        m_socketSetChangeEvent.set();
+    }
+
+    // ---------------------------------------------------------
+    inline void ReactorThread::removeInputHandler(Socket* theSocket) {
+        m_epollSocketSet.removeInputHandler(theSocket);
+    }
 }
 
 #endif

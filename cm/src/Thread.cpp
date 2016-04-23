@@ -66,17 +66,17 @@ bool Thread::start(bool isJoinable) {
 // -----------------------------------------------
 void Thread::terminate() {
     if (m_isRunning) {
-#ifdef JDEBUG
+#ifdef DEBUG_CM
         std::cout << "Teminating the thread : " << m_threadHandle << std::endl;
 #endif        
         int result = 0;
         if ((result = pthread_cancel(m_threadHandle)) != 0) {
-#ifdef JDEBUG
+#ifdef DEBUG_CM
             std::cout << "Error. pthread_cancel result code is " << result << std::endl;
 #endif
         }
         if ((result = pthread_detach(m_threadHandle)) != 0) {
-#ifdef JDEBUG
+#ifdef DEBUG_CM
             std::cout << "Error. pthread_detach result code is " << result << std::endl;
 #endif
         }
@@ -121,7 +121,7 @@ void Thread::sleep(int milli) {
 void* Thread::entry(void* theParameter) {
     Thread* theThread =  (Thread*)theParameter;
     unsigned long result = theThread->run();
-#ifdef JDEBUG
+#ifdef DEBUG_CM
     std::cout << "Thread::entry return " << result << std::endl;
 #endif
     return (void*)result;

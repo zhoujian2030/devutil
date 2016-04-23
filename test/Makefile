@@ -1,7 +1,8 @@
 SUBDIRS = log \
 	ipc \
 	net \
-	str
+	str \
+	cm
 
 BUILDDIRS = $(SUBDIRS:%=build-%)
 INSTALLDIRS = $(SUBDIRS:%=install-%)

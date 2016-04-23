@@ -1,38 +1,35 @@
 # Target  name
-LIBA = libnet.a
+TARGET = cmtest 
 
 # Directories
 OBJDIR = obj
 SRCDIR = src
-INCDIR = inc
-LIBDIR = lib
+BINDIR = bin
 
 # Libraries
 INC += -I$(PROJBASE)/cm/inc -I$(PROJBASE)/log/inc
-LIBS += $(PROJBASE)/log/lib/liblog.a $(PROJBASE)/cm/lib/libcm.a
+# MUST place libnet.a ahead of liblog.a because libnet depends on liblog.a
+LIBS = $(PROJBASE)/cm/lib/libcm.a $(PROJBASE)/log/lib/liblog.a
 
 # Files and folders
 SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)
 OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
 
-#DEPOBJS := $(PROJBASE)/cm/obj/*.o
+include $(PROJBASE)/cm/global.mk
 
-include ../cm/global.mk
+all: $(TARGET)
 
-all: $(LIBA)
-
-$(LIBA): buildrepo $(OBJS)
-	ar q $@ $(OBJS)
-	@mkdir -p $(LIBDIR)
-	@mv $(LIBA) $(LIBDIR)
-	@mkdir -p $(INCDIR)
-	@cp $(SRCDIR)/*.h $(INCDIR)
+# Targets
+$(TARGET): buildrepo $(OBJS)
+	$(CXX) $(OBJS) $(DEPOBJS) -o $@ -lrt -pthread $(LIBS)
+	@mv $(TARGET) $(OBJDIR)
 
 clean:
-	rm -rf $(LIBDIR) $(INCDIR) $(OBJDIR) $(SRCDIR)/*.o
-	
+	rm -rf $(BINDIR) $(OBJDIR) $(SRCDIR)/*.o
+
 install:
-	# nothing to do
+	mkdir -p $(BINDIR)
+	cp $(OBJDIR)/$(TARGET) $(BINDIR)
 	
 buildrepo:
 	@$(call make-repo)

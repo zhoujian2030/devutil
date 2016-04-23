@@ -12,6 +12,7 @@
 
 using namespace net;
 using namespace base;
+using namespace cm;
 
 // --------------------------------------------------
 ReactorThread::ReactorThread()
@@ -29,9 +30,15 @@ ReactorThread::~ReactorThread() {
 
 // --------------------------------------------------
 unsigned long ReactorThread::run() {
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, this->getName() << " is running.");
 
     while (true) {
-        // TODO if no socket event registered, should wait ???
+        // if no socket registered in epoll, wait
+        if (m_epollSocketSet.getNumberOfSocket() < 1) {
+            m_socketSetChangeEvent.wait();
+            LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "New socket change event is set.");
+        }
+
         EpollSocketSet::EpollSocket* epollSocket = m_epollSocketSet.poll(0);
         bool sleep = true;
 
@@ -58,13 +65,16 @@ unsigned long ReactorThread::run() {
                     eventHandler->handleInput(socket);
                     sleep = false;
                 }
+            } else {
+                LOG4CPLUS_WARN(_NET_LOOGER_NAME_, "eventHandler of socket " << socket->getSocket() 
+                    << " is NULL.");
             }
 
             epollSocket++;
         }
 
         if (sleep) {
-            LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "no socket event, sleep 1ms");
+            LOG4CPLUS_TRACE(_NET_LOOGER_NAME_, "No socket event, sleep 1ms");
             // sleep 1ms
             struct timespec sleepTime;
             sleepTime.tv_sec = 0;

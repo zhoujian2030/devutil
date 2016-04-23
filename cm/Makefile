@@ -5,6 +5,8 @@ LIBA = libcm.a
 # Directories
 OBJDIR = obj
 SRCDIR = src
+INCDIR = inc
+LIBDIR = lib
 
 # Libraries
 INC  = 
@@ -15,16 +17,20 @@ SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)
 OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
 
 include global.mk
-CFLAGS += -DJDEBUG
+CFLAGS += -DDEBUG_CM
 
 all: $(LIBA)
 
 # Targets
 $(LIBA): buildrepo $(OBJS)
-	@cp -rf $(SRCDIR)/*.h ./inc/
+	ar q $@ $(OBJS)
+	@mkdir -p $(LIBDIR)
+	@mv $(LIBA) $(LIBDIR)
+	@mkdir -p $(INCDIR)
+	@cp $(SRCDIR)/*.h $(INCDIR)
 
 clean:
-	rm -rf ./lib/* ./inc/* $(OBJDIR) $(SRCDIR)/*.o
+	rm -rf $(LIBDIR) $(INCDIR) $(OBJDIR) $(SRCDIR)/*.o
 
 install:
 	# nothing to do

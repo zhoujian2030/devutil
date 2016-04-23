@@ -48,6 +48,8 @@ namespace net {
         void removeInputHandler(Socket* theSocket);
         void registerOutputHandler(Socket* theSocket, SocketEventHandler* theEventHandler);
 
+        int getNumberOfSocket() const;
+
     private:
 
         void updateEvents();
@@ -152,6 +154,17 @@ namespace net {
     // --------------------------------------------
     inline void EpollSocketSet::registerOutputHandler(Socket* theSocket, SocketEventHandler* theEventHandler) {
         //TODO
+    }
+
+    // --------------------------------------------
+    inline int EpollSocketSet::getNumberOfSocket() const {
+        int num = 0;
+
+        const_cast<EpollSocketSet*>(this)->m_lock.lock();
+        num = m_epollSocketMap.size();
+        const_cast<EpollSocketSet*>(this)->m_lock.unlock();
+
+        return num;
     }
 
 }
