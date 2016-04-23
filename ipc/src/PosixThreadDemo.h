@@ -12,7 +12,7 @@
 namespace ipc {
 
     // ------------------------------------------
-    class DemoThreadA : public base::Thread {
+    class DemoThreadA : public cm::Thread {
     public:
         DemoThreadA();
         DemoThreadA(std::string theThreadName);
@@ -28,7 +28,7 @@ namespace ipc {
 
     protected:
         long m_status;
-        base::MutexLock* m_mutex;
+        cm::MutexLock* m_mutex;
     };
 
     inline void DemoThreadA::setStatus(long status) {

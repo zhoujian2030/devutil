@@ -77,7 +77,7 @@ void testSocket(string ip, unsigned short port) {
         if (SKT_SUCC == result) {
             cout << "connect success!" << endl;
 
-            base::Thread::sleep(100);
+            cm::Thread::sleep(100);
 
             char sendData[] = "TCP client request";
             int numberOfBytesSent;
@@ -98,7 +98,7 @@ void testSocket(string ip, unsigned short port) {
                         response->reset();
                         break;
                     } else {
-                        base::Thread::sleep(1);
+                        cm::Thread::sleep(1);
                     }
                 }
             }
@@ -106,7 +106,7 @@ void testSocket(string ip, unsigned short port) {
             socket->close();
             break;
         } else {
-            base::Thread::sleep(1);
+            cm::Thread::sleep(1);
         } 
     }
 }

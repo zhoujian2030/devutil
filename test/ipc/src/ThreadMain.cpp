@@ -10,7 +10,7 @@
 #include "TestThread.h"
 
 using namespace std;
-using namespace base;
+using namespace cm;
 
 int main(int argc, char* argv[]) {
 

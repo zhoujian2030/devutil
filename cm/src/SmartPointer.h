@@ -8,7 +8,7 @@
 #ifndef SMART_POINTER_H
 #define SMART_POINTER_H
 
-namespace base {
+namespace cm {
 
 template <class T> class SmartPointer {
 

@@ -13,7 +13,7 @@
 #include <string.h>
 
 using namespace net;
-using namespace base;
+using namespace cm;
 
 // -------------------------------------------------
 EpollSocketSet::EpollSocketSet()

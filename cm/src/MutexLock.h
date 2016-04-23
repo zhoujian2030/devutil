@@ -12,7 +12,7 @@
 
 #include "Lock.h"
 
-namespace base {
+namespace cm {
 
     class MutexLock: public Lock {
     public:

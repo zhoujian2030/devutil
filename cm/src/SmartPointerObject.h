@@ -7,7 +7,7 @@
 #ifndef SMART_POINTER_OBJECT_H
 #define SMART_POINTER_OBJECT_H
 
-namespace base {
+namespace cm {
 
     /*
      * The class is the base class for all not thread-safe smart pointer
@@ -91,6 +91,6 @@ namespace base {
       // empty
     }
 
-} // end of namespace base
+} // end of namespace cm
 
 #endif

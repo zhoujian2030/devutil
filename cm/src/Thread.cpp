@@ -7,7 +7,7 @@
 #include <iostream>
 #include "Thread.h"
 
-using namespace base;
+using namespace cm;
 using namespace std;
 
 Thread::Thread(string theThreadName)

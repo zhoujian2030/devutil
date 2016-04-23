@@ -7,12 +7,12 @@
 #ifndef THREAD_SAFE_SMART_POINTER_OBJECT_H
 #define THREAD_SAFE_SMART_POINTER_OBJECT_H
 
-namespace base {
+namespace cm {
 
 class ThreadSafeSmartPointerObject {
 
 };
 
-} // end of namespace base
+} // end of namespace cm
 
 #endif

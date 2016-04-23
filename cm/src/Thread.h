@@ -12,7 +12,7 @@
 #include <time.h>
 #include <string>
 
-namespace base {
+namespace cm {
 
     class Thread {
     public:

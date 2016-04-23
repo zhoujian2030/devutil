@@ -1,6 +1,6 @@
 #include "Thread.h"
 
-class TestThread : public base::Thread {
+class TestThread : public cm::Thread {
 public:
     TestThread();
 

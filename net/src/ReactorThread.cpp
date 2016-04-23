@@ -11,7 +11,6 @@
 #include <time.h>
 
 using namespace net;
-using namespace base;
 using namespace cm;
 
 // --------------------------------------------------
@@ -68,6 +67,11 @@ unsigned long ReactorThread::run() {
             } else {
                 LOG4CPLUS_WARN(_NET_LOOGER_NAME_, "eventHandler of socket " << socket->getSocket() 
                     << " is NULL.");
+
+                // TODO if the epoll event of this socket is not removed in m_epollSocketSet.poll()
+                // here should remove this socket from the epoll to avoid keeping recving the event that
+                // is not monitored any more ??
+                // maybe epoll ET mode can be considered?
             }
 
             epollSocket++;

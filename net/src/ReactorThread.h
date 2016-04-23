@@ -15,7 +15,7 @@
 
 namespace net {
     
-    class ReactorThread : public base::Thread {
+    class ReactorThread : public cm::Thread {
     public:
         ReactorThread();
 
@@ -27,7 +27,7 @@ namespace net {
         void removeInputHandler(Socket* theSocket);
 
     private:
-        base::Lock* m_lock;
+        cm::Lock* m_lock;
         EpollSocketSet m_epollSocketSet;
         cm::EventIndicator m_socketSetChangeEvent;
     };

@@ -80,7 +80,7 @@ void testReactorThread(string ip, short port) {
     ReactorThread reactorThread;// = new ReactorThread();
     reactorThread.start();
 
-    base::Thread::sleep(1000);
+    cm::Thread::sleep(1000);
 
     Socket* socket = new Socket(ip, port);
     socket->bind();
@@ -150,7 +150,7 @@ void testEpollSocketSet(string ip) {
             }
         } else {
             cout << "no available read events" << endl;
-            base::Thread::sleep(1000);
+            cm::Thread::sleep(1000);
         }
     }
 }
@@ -200,14 +200,14 @@ void testSocket(string ip) {
 
                     recvBuf->reset();
                 } else {
-                    base::Thread::sleep(1000);
+                    cm::Thread::sleep(1000);
                 }
             }
 
             // stop the non-blocking test after one client connected complete
             break;
         } else {
-            base::Thread::sleep(1000);
+            cm::Thread::sleep(1000);
         }
     }
 
@@ -245,7 +245,7 @@ void testSocket(string ip) {
 
                 recvBuf->reset();
             } else {
-                base::Thread::sleep(1);
+                cm::Thread::sleep(1);
             }
         }
     }
@@ -284,7 +284,7 @@ void testSctpSocket(string ip) {
 
             recvBuf->reset();
         } else {
-            base::Thread::sleep(1);
+            cm::Thread::sleep(1);
         }
     }    
 }

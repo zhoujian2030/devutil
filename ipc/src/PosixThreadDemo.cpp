@@ -11,7 +11,7 @@
 #include "IPCLogger.h"
 
 using namespace ipc;
-using namespace base;
+using namespace cm;
 
 // --------------------------------
 

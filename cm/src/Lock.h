@@ -8,7 +8,7 @@
 #ifndef LOCK_H
 #define LOCK_H
 
-namespace base {
+namespace cm {
 
     class Lock {
     public:

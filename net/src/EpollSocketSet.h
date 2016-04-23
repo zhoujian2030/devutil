@@ -55,7 +55,7 @@ namespace net {
         void updateEvents();
 
         // use non-recursive mutex
-        base::MutexLock m_lock;
+        cm::MutexLock m_lock;
 
         struct epoll_event* m_epollEvents;
         int m_epollFdSize;

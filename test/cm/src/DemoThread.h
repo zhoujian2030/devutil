@@ -9,7 +9,7 @@
 #include "EventIndicator.h"
 #include "MutexLock.h"
 
-class ThreadA : public base::Thread {
+class ThreadA : public cm::Thread {
 public:
     ThreadA();
     ~ThreadA();
@@ -19,14 +19,14 @@ public:
     void setEvent();
 
 private:
-    base::Lock* m_lock;
+    cm::Lock* m_lock;
     cm::EventIndicator m_eventIndicator;
 };
 
 inline ThreadA::ThreadA()
 : Thread("ThreadA")
 {
-    m_lock = new base::MutexLock(true);
+    m_lock = new cm::MutexLock(true);
 }
 
 inline ThreadA::~ThreadA() {
