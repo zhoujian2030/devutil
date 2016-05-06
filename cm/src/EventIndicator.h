@@ -11,6 +11,9 @@
 #include <pthread.h>
 
 namespace cm {
+
+    // Thread A calls wait() and blocks if m_eventIsSet is never set "true" before
+    // Thread B calls set() to set m_eventIsSet and send notification to Thread A
     class EventIndicator {
     public:
         EventIndicator(bool eventIsSet = false);

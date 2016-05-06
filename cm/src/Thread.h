@@ -14,6 +14,8 @@
 
 namespace cm {
 
+    // TODO support restart the thread if it is already exited?
+    //      call terminate() then call start() ?
     class Thread {
     public:
 
