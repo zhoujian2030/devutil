@@ -19,6 +19,7 @@
 #include "DataBuffer.h"
 #include "SctpSocket.h"
 #include "Util.h"
+#include "TcpServerSocketEventHandlerTest.h"
 
 using namespace std;
 using namespace net;
@@ -77,8 +78,8 @@ int main(int argc, char* argv[]) {
 
 // ---------------------------------------------
 void testReactorThread(string ip, short port) {
-    ReactorThread reactorThread;// = new ReactorThread();
-    reactorThread.start();
+    ReactorThread* reactorThread = new ReactorThread();
+    reactorThread->start();
 
     cm::Thread::sleep(1000);
 
@@ -87,9 +88,12 @@ void testReactorThread(string ip, short port) {
     socket->listen();  
     socket->makeNonBlocking();
 
-    reactorThread.registerInputHandler(socket, 0);
+    TcpServerSocketEventHandlerTest* tcpServerHandler = new TcpServerSocketEventHandlerTest(reactorThread);
+    reactorThread->registerInputHandler(socket, tcpServerHandler);
 
-    reactorThread.wait();
+    reactorThread->wait();
+
+    delete reactorThread;
 }
 
 // ---------------------------------------------

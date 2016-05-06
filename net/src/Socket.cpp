@@ -125,7 +125,7 @@ bool Socket::listen(int backlog) {
             return false;
         }
         m_state = LISTENING;
-        LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "success to lisgen socket: " << m_socket);
+        LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "success to listen socket: " << m_socket);
     } else {
         LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "socket is not ready to listen: " << m_socket);
         return false;

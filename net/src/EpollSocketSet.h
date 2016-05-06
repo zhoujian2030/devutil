@@ -86,7 +86,7 @@ namespace net {
     inline void EpollSocketSet::registerInputHandler(Socket* theSocket, SocketEventHandler* theEventHandler) {
         if (theSocket == 0) {
             return;
-        }
+        }        
 
         int fd = theSocket->getSocket();
         int operation = EPOLL_CTL_ADD;
