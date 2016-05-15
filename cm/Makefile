@@ -1,48 +1,51 @@
-# Target  name
-TARGET=
 LIBA = libcm.a
-
-# Directories
-OBJDIR = obj
-SRCDIR = src
-INCDIR = inc
 LIBDIR = lib
 
-# Libraries
-INC  = 
-LIBS = 
+SUBDIRS = foundation \
+	thread \
+	mq
 
-# Files and folders
-SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)
-OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
+BUILDDIRS = $(SUBDIRS:%=build-%)
+INSTALLDIRS = $(SUBDIRS:%=install-%)
+CLEANDIRS = $(SUBDIRS:%=clean-%)
 
-include global.mk
-CFLAGS += -DDEBUG_CM
+POSTBUILD := 1
+POSTCLEAN := 2
 
-all: $(LIBA)
+# build target
+all: $(BUILDDIRS) $(POSTBUILD)
+$(SUBDIRS): $(BUILDDIRS)
+$(BUILDDIRS):
+	$(MAKE) -C $(@:build-%=%)
 
-# Targets
-$(LIBA): buildrepo $(OBJS)
-	ar q $@ $(OBJS)
+# clean target
+clean: $(CLEANDIRS) $(POSTCLEAN)
+$(CLEANDIRS): 
+	$(MAKE) -C $(@:clean-%=%) clean
+
+# install target
+install: $(INSTALLDIRS) all
+$(INSTALLDIRS):
+	$(MAKE) -C $(@:install-%=%) install
+
+.PHONY: subdirs $(SUBDIRS)
+.PHONY: subdirs $(BUILDDIRS)
+.PHONY: subdirs $(INSTALLDIRS)
+.PHONY: subdirs $(CLEANDIRS)
+
+.PHONY: all install clean
+
+OBJS = foundation/obj/* thread/obj/* mq/obj/*
+
+.PHONY: $(POSTBUILD)
+$(POSTBUILD): 
+	ar q $(LIBA) $(OBJS)
 	@mkdir -p $(LIBDIR)
 	@mv $(LIBA) $(LIBDIR)
-	@mkdir -p $(INCDIR)
-	@cp $(SRCDIR)/*.h $(INCDIR)
 
-clean:
-	rm -rf $(LIBDIR) $(INCDIR) $(OBJDIR) $(SRCDIR)/*.o
+.PHONY: $(POSTCLEAN)
+$(POSTCLEAN):
+	rm -rf $(LIBDIR)
 
-install:
-	# nothing to do
-	
-buildrepo:
-	@$(call make-repo)
 
-# Create obj directory structure
-define make-repo
-	mkdir -p $(OBJDIR)
-	for dir in $(SRCDIRS); \
-	do \
-		mkdir -p $(OBJDIR)/$$dir; \
-	done
-endef
+# specify the dependency here

@@ -6,7 +6,7 @@ OBJDIR = obj
 SRCDIR = src
 
 # Libraries
-INC += -I$(PROJBASE)/cm/inc -I$(PROJBASE)/log/inc
+INC += -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/log/inc
 # /usr/local/lib/liblog4cplus.a is included in liblog.a
 LIBS = $(PROJBASE)/log/lib/liblog.a
 

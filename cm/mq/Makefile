@@ -1,36 +1,28 @@
 # Target  name
-LIBA = libnet.a
+TARGET=
 
 # Directories
 OBJDIR = obj
 SRCDIR = src
 INCDIR = inc
-LIBDIR = lib
 
 # Libraries
-INC += -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/thread/inc -I$(PROJBASE)/log/inc
-LIBS += $(PROJBASE)/log/lib/liblog.a $(PROJBASE)/cm/lib/libcm.a
+INC += 
+LIBS = 
 
 # Files and folders
 SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)
 OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
 
-#DEPOBJS := $(PROJBASE)/cm/obj/*.o
+include ../global.mk
 
-include ../cm/global.mk
-
-all: $(LIBA)
-
-$(LIBA): buildrepo $(OBJS)
-	ar q $@ $(OBJS)
-	@mkdir -p $(LIBDIR)
-	@mv $(LIBA) $(LIBDIR)
+all: buildrepo $(OBJS)
 	@mkdir -p $(INCDIR)
 	@cp $(SRCDIR)/*.h $(INCDIR)
 
 clean:
-	rm -rf $(LIBDIR) $(INCDIR) $(OBJDIR) $(SRCDIR)/*.o
-	
+	rm -rf $(INCDIR) $(OBJDIR) $(SRCDIR)/*.o
+
 install:
 	# nothing to do
 	

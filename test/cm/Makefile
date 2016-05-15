@@ -7,7 +7,7 @@ SRCDIR = src
 BINDIR = bin
 
 # Libraries
-INC += -I$(PROJBASE)/cm/inc -I$(PROJBASE)/log/inc
+INC += -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/thread/inc -I$(PROJBASE)/log/inc
 # MUST place libnet.a ahead of liblog.a because libnet depends on liblog.a
 LIBS = $(PROJBASE)/cm/lib/libcm.a $(PROJBASE)/log/lib/liblog.a
 

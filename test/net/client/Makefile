@@ -8,15 +8,13 @@ DEPDIR = dep
 BINDIR = bin
 
 # Libraries
-INC += -I$(PROJBASE)/cm/inc -I$(PROJBASE)/log/inc -I$(PROJBASE)/net/inc
+INC += -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/thread/inc -I$(PROJBASE)/log/inc -I$(PROJBASE)/net/inc
 # MUST place libnet.a ahead of liblog.a because libnet depends on liblog.a
-LIBS = $(PROJBASE)/net/lib/libnet.a $(PROJBASE)/log/lib/liblog.a
+LIBS = $(PROJBASE)/net/lib/libnet.a $(PROJBASE)/log/lib/liblog.a $(PROJBASE)/cm/lib/libcm.a
 
 # Files and folders
 SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)
 OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
-
-DEPOBJS := $(PROJBASE)/cm/obj/*.o
 
 include $(PROJBASE)/cm/global.mk
 
@@ -24,7 +22,7 @@ all: $(TARGET)
 
 # Targets
 $(TARGET): buildrepo $(OBJS)
-	$(CXX) $(OBJS) $(DEPOBJS) -o $@ -lrt -pthread $(LIBS)
+	$(CXX) $(OBJS) -o $@ -lrt -pthread $(LIBS)
 	@mv $(TARGET) $(OBJDIR)
 
 clean:

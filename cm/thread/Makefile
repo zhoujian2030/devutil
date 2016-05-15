@@ -1,31 +1,27 @@
 # Target  name
 TARGET=
-LIBA = libmq.a
 
 # Directories
 OBJDIR = obj
 SRCDIR = src
+INCDIR = inc
 
 # Libraries
-INC += -I$(PROJBASE)/cm/inc
+INC  = 
 LIBS = 
 
 # Files and folders
 SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)
 OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
 
-include ../cm/global.mk
+include ../global.mk
 
-all: $(LIBA)
-
-# Targets
-$(LIBA): buildrepo $(OBJS)
-	ar q $@ $(OBJS)
-	@mv $(LIBA) ./lib
-	@cp $(SRCDIR)/*.h ./inc/
+all: buildrepo $(OBJS)
+	@mkdir -p $(INCDIR)
+	@cp $(SRCDIR)/*.h $(INCDIR)
 
 clean:
-	rm -rf ./lib/* ./inc/* $(OBJDIR) $(SRCDIR)/*.o
+	rm -rf $(INCDIR) $(OBJDIR) $(SRCDIR)/*.o
 
 install:
 	# nothing to do

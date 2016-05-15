@@ -6,8 +6,8 @@ OBJDIR = obj
 SRCDIR = src
 
 # Libraries
-INC += -I$(PROJBASE)/cm/inc -I$(PROJBASE)/log/inc
-LIBS += $(PROJBASE)/log/lib/liblog.a
+INC += -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/log/inc
+LIBS += $(PROJBASE)/log/lib/liblog.a $(PROJBASE)/cm/lib/libcm.a
 
 # Files and folders
 #SRCS    = $(shell find $(SRCDIR) -name '*.cpp')
@@ -15,8 +15,6 @@ LIBS += $(PROJBASE)/log/lib/liblog.a
 #OBJS   := $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRCS))
 SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)
 OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
-
-DEPOBJS := $(PROJBASE)/cm/obj/*.o
 
 include ../cm/global.mk
 
@@ -26,7 +24,7 @@ exe: $(TARGET)
 # Targets
 $(TARGET): buildrepo $(OBJS)
 #	@echo "SRCS = $(SRCS)"
-	$(CXX) $(OBJS) $(DEPOBJS) -o $@ -lrt -lpq $(LIBS)
+	$(CXX) $(OBJS) -o $@ -lrt -lpq $(LIBS)
 	@mv $(TARGET) $(OBJDIR)
 
 clean:

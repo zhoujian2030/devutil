@@ -1,6 +1,5 @@
 SUBDIRS = cm \
 	log \
-	mq \
 	ipc \
 	net \
 	cpp \

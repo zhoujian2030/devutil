@@ -8,14 +8,14 @@ SRCDIR = src
 DEPDIR = dep
 
 # Libraries
-INC += -I$(PROJBASE)/cm/inc -I$(PROJBASE)/ipc/src
+INC += -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/thread/inc -I$(PROJBASE)/ipc/src
 LIBS = $(PROJBASE)/log/lib/liblog.a
 
 # Files and folders
 SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)
 OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
 PIPEOBJS := obj/PipeMain.o
-PTHREADOBJS := obj/ThreadMain.o obj/TestThread.o $(PROJBASE)/cm/obj/Thread.o
+PTHREADOBJS := obj/ThreadMain.o obj/TestThread.o $(PROJBASE)/cm/thread/obj/Thread.o
 
 include $(PROJBASE)/cm/global.mk
 
