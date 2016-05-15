@@ -68,9 +68,16 @@ unsigned long ReactorThread::run() {
                 LOG4CPLUS_WARN(_NET_LOOGER_NAME_, "eventHandler of socket " << socket->getSocket() 
                     << " is NULL.");
 
-                // TODO if the epoll event of this socket is not removed in m_epollSocketSet.poll()
+                // as the epoll event of this socket is not removed in m_epollSocketSet.poll()
                 // here should remove this socket from the epoll to avoid keeping recving the event that
-                // is not monitored any more ??
+                // is not monitored any more
+                if (socket != 0) {
+                    removeHandlers(socket);
+                    socket->close();
+                    delete socket;
+                    socket = 0;
+                }
+
                 // maybe epoll ET mode can be considered?
             }
 

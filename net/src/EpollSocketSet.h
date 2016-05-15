@@ -47,12 +47,18 @@ namespace net {
         void registerInputHandler(Socket* theSocket, SocketEventHandler* theEventHandler);
         void removeInputHandler(Socket* theSocket);
         void registerOutputHandler(Socket* theSocket, SocketEventHandler* theEventHandler);
+        void removeOutputHandler(Socket* theSocket);
+        void removeHandlers(Socket* theSocket);
 
         int getNumberOfSocket() const;
 
     private:
 
+        typedef std::map<int, EpollSocket> EpollSocketMap;  
+
         void updateEvents();
+        void removeInputHandler(EpollSocketMap::iterator it);
+        void removeOutputHandler(EpollSocketMap::iterator it);
 
         // use non-recursive mutex
         cm::MutexLock m_lock;
@@ -69,7 +75,6 @@ namespace net {
         int m_numFds;
 
         // save all the sockets registered to epoll
-        typedef std::map<int, EpollSocket> EpollSocketMap;
         EpollSocketMap m_epollSocketMap;
 
         // save all the new sockets that need to be added
@@ -157,6 +162,30 @@ namespace net {
     }
 
     // --------------------------------------------
+    inline void EpollSocketSet::removeOutputHandler(Socket* theSocket) {
+        // TODO
+    }
+
+    // --------------------------------------------
+    inline void EpollSocketSet::removeHandlers(Socket* theSocket) {
+        if (theSocket == 0) {
+            return;
+        }
+
+        m_lock.lock();
+
+        // the user who call this method is responsible to close the socket,
+        // and the socket is automatically removed from epoll after socket closed
+        int fd = theSocket->getSocket();
+        EpollSocketMap::iterator it = m_epollSocketMap.find(fd);
+        if (it != m_epollSocketMap.end()) {
+            m_epollSocketMap.erase(it);
+        }
+
+        m_lock.unlock();
+    }
+
+    // --------------------------------------------
     inline int EpollSocketSet::getNumberOfSocket() const {
         int num = 0;
 
@@ -165,6 +194,37 @@ namespace net {
         const_cast<EpollSocketSet*>(this)->m_lock.unlock();
 
         return num;
+    }
+
+    // ---------------------------------------------
+    inline void EpollSocketSet::removeInputHandler(EpollSocketMap::iterator it) {
+        if (it != m_epollSocketMap.end()) {
+            m_lock.lock();
+
+            it->second.events &= (~EPOLLIN);
+
+            UpdateSocket updateSocket;
+            updateSocket.fd = (it->second.socket)->getSocket();
+            
+            // if no events, remove the socket from EpollSocketMap
+            if (it->second.events == 0) {
+                m_epollSocketMap.erase(it);
+                updateSocket.op = EPOLL_CTL_DEL;
+                updateSocket.events = 0;
+            } else {
+                updateSocket.op = EPOLL_CTL_MOD;
+                updateSocket.events = it->second.events;
+            }
+
+            m_updateSocketList.push_back(updateSocket);
+
+            m_lock.unlock();
+        }
+    }
+
+    // ---------------------------------------------
+    inline void EpollSocketSet::removeOutputHandler(EpollSocketMap::iterator it) {
+        // TODO
     }
 
 }

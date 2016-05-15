@@ -15,6 +15,8 @@
 
 #include <string>
 
+#include "SocketEventHandler.h"
+
 namespace net {
 
     typedef enum {
@@ -24,7 +26,7 @@ namespace net {
     } SocketErrCode;
 
     // currently only support IPV4 TCP/SCTP socket
-    class Socket {
+    class Socket : protected SocketEventHandler {
     public:
 
         struct InetAddressPort {
@@ -36,7 +38,7 @@ namespace net {
         //            132 (IPPROTO_SCTP) - SCTP
         Socket(
             std::string localIp, 
-            short localPort, 
+            unsigned short localPort, 
             int socketType = SOCK_STREAM, 
             int protocol = 0, 
             int saFamily = AF_INET);
@@ -73,7 +75,14 @@ namespace net {
         static void getSockaddrByIpAndPort(struct sockaddr_in* sockaddr, std::string ip, unsigned short port);
 
     private: 
+        // As the SocketEventHandler is protected inherrited, only
+        // the Socket's friend classes are allowed to call its 
+        // handler callback function like handleInput(), etc. 
+        // So we should define ReactorThread as Socket's friend class
+        friend class ReactorThread;
+
         friend class SctpSocket;
+        friend class TcpSocket;
         
         typedef enum {
             // The socket is successfull created by socket()

@@ -1,0 +1,6 @@
+@startuml
+title tcp connect example
+
+TcpServerSocket ---|> Socket
+
+@enduml

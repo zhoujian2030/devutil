@@ -20,6 +20,7 @@
 #include "SctpSocket.h"
 #include "Util.h"
 #include "TcpServerSocketEventHandlerTest.h"
+#include "TcpServer.h"
 
 using namespace std;
 using namespace net;
@@ -32,12 +33,14 @@ void showUsage() {
     cout << "  2 : Test EpollSocketSet" << endl;
     cout << "  3 : Test Socket" << endl;
     cout << "  4 : Test SctpSocket" << endl;
+    cout << "  5 : Test TcpServer" << endl;
 }
 
 void testReactorThread(string ip, short port);
 void testEpollSocketSet(string ip);
 void testSocket(string ip);
 void testSctpSocket(string ip);
+void testTcpServer(string ip, short port);
 int main(int argc, char* argv[]) {
 
     if (argc < 2) {
@@ -68,6 +71,8 @@ int main(int argc, char* argv[]) {
         testSocket(ip);
     } else if (testNumber.compare("4") == 0) {
         testSctpSocket(ip);
+    } else if (testNumber.compare("5") == 0) {
+        testTcpServer(ip, port);
     } else {
         showUsage();
     }
@@ -94,6 +99,16 @@ void testReactorThread(string ip, short port) {
     reactorThread->wait();
 
     delete reactorThread;
+}
+
+// ---------------------------------------------
+void testTcpServer(string ip, short port) {
+    TcpServer* tcpServer = new TcpServer(ip, port);
+    tcpServer->start();
+
+    while (tcpServer->isRunning()) {
+        sleep(10);
+    }
 }
 
 // ---------------------------------------------

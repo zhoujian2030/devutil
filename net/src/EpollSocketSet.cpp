@@ -105,6 +105,7 @@ void EpollSocketSet::updateEvents() {
 }
 
 // -------------------------------------------------
+// @Description: 
 EpollSocketSet::EpollSocket* EpollSocketSet::poll(int theTimeout) {
 
     updateEvents();
@@ -152,11 +153,24 @@ EpollSocketSet::EpollSocket* EpollSocketSet::poll(int theTimeout) {
                 // events that are not monitored any more
                 m_readySocketArray[readySocketIndex].events = it->second.events & pollEvent;
 
-                readySocketIndex++;
-
                 // TODO is it necessary to remove the socket event?
-                // if so, the event handler need to re-register the socket event later
+                // if do so, the event handler need to re-register the socket event later
                 // after current event is handled
+
+                // as the socket events are actually removed asynchronously when the reactor thread
+                // calls poll() next time, while the reactor thread calls socket event handler in 
+                // current time and normally the handler needs to re-register the socket event in 
+                // epoll, that means in next time reactor thread will remove then add the same socket
+                // event which must be a waste of time.
+
+                // if (m_readySocketArray[readySocketIndex].events & EPOLLIN) {
+                //     removeInputHandler(it);
+                // }
+                // if (m_readySocketArray[readySocketIndex].events & EPOLLOUT) {
+                //     removeOutputHandler(it);
+                // }
+
+                readySocketIndex++;
             } else {
                 // socket is no found, clean up
                 LOG4CPLUS_WARN(_NET_LOOGER_NAME_, "the available socket is not found: " << fd);

@@ -21,7 +21,7 @@ using namespace net;
 // ------------------------------------------------
 Socket::Socket(
     std::string localIp, 
-    short localPort, 
+    unsigned short localPort, 
     int socketType, 
     int protocol,
     int saFamily)

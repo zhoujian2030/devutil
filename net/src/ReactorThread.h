@@ -21,12 +21,13 @@ namespace net {
 
         virtual ~ReactorThread();
 
-        virtual unsigned long run();
-
         void registerInputHandler(Socket* theSocket, SocketEventHandler* theEventHandler);
         void removeInputHandler(Socket* theSocket);
+        void removeHandlers(Socket* theSocket);
 
     private:
+        virtual unsigned long run();
+        
         cm::Lock* m_lock;
         EpollSocketSet m_epollSocketSet;
         cm::EventIndicator m_socketSetChangeEvent;
@@ -41,6 +42,11 @@ namespace net {
     // ---------------------------------------------------------
     inline void ReactorThread::removeInputHandler(Socket* theSocket) {
         m_epollSocketSet.removeInputHandler(theSocket);
+    }
+
+    // ---------------------------------------------------------
+    inline void ReactorThread::removeHandlers(Socket* theSocket) {
+        m_epollSocketSet.removeHandlers(theSocket);
     }
 }
 
