@@ -7,6 +7,7 @@
 
 #include "TcpSocket.h"
 #include "NetLogger.h"
+#include <string.h>
 
 using namespace net;
 using namespace std;
@@ -15,6 +16,7 @@ using namespace std;
 TcpSocket::TcpSocket(int socket, Socket::InetAddressPort& theRemoteAddrPort)
 : Socket(socket, SOCK_STREAM)  
 {
+    memcpy(&m_remoteSa, &theRemoteAddrPort.addr, sizeof(theRemoteAddrPort.addr));
     m_remoteIp = Socket::getHostAddress((struct sockaddr*)&theRemoteAddrPort.addr);
     m_remotePort = theRemoteAddrPort.port;
 

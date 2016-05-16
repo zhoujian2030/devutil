@@ -21,10 +21,11 @@
 #include "Util.h"
 #include "TcpServerSocketEventHandlerTest.h"
 #include "TcpServer.h"
+#include "Worker.h"
 
 using namespace std;
 using namespace net;
-
+using namespace cm;
 
 void showUsage() {
     cout << "Usage: " << endl;
@@ -103,6 +104,7 @@ void testReactorThread(string ip, short port) {
 
 // ---------------------------------------------
 void testTcpServer(string ip, short port) {
+    Worker::initialize();
     TcpServer* tcpServer = new TcpServer(ip, port);
     tcpServer->start();
 

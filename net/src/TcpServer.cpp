@@ -9,9 +9,11 @@
 #include "TcpServerSocket.h"
 #include "TcpSocket.h"
 #include "NetLogger.h"
+#include "Worker.h"
 
 using namespace net;
 using namespace std;
+using namespace cm;
 
 // -------------------------------------------
 TcpServer::TcpServer(
@@ -39,6 +41,8 @@ void TcpServer::handleAcceptResult(TcpServerSocket* serverSocket, TcpSocket* new
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpServer::handleAcceptResult, server socket: " << 
         serverSocket->getSocket() << ", accepted socket: " << newSocket->getSocket());
 
+    Worker* worker = Worker::getInstance(newSocket->getRemoteAddress());
+    
     // TODO handle the new TcpSocket, receives data from the socket (need to register to epoll)
 }
 

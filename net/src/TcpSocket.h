@@ -18,6 +18,8 @@ namespace net {
     public:
         virtual ~TcpSocket();
 
+        const sockaddr_in& getRemoteAddress() const;
+
     protected:
         // Only TcpServerSocket is allowed to create a TcpSocket with an
         // created(connected) socket fd.
@@ -30,7 +32,13 @@ namespace net {
     private: 
         std::string m_remoteIp;
         unsigned short m_remotePort;
+        struct sockaddr_in m_remoteSa;
     };
+
+    // --------------------------------------------
+    inline const sockaddr_in& TcpSocket::getRemoteAddress() const {
+        return m_remoteSa;
+    }
 }
 
 #endif
