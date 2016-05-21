@@ -15,7 +15,7 @@ MutexLock Worker::m_lock;
 
 // ----------------------------------------
 Worker::Worker(int index)
-: Thread("Worker Thread"),
+: Thread("WorkerThread"),
   m_index(index)
 {
 
@@ -54,7 +54,18 @@ void Worker::initialize() {
 
 // ----------------------------------------
 unsigned long Worker::run() {
-    //TODO
+    std::cout << this->getName() << " " << this->getIndex() << " is running." << endl;
+    
+    int result = TRC_CONTINUE;
+    while (result == TRC_CONTINUE) {
+        // if the task queue is empty, block and wait until there
+        // new task available
+        if (m_taskQueue.getLength() == 0) {
+            m_taskChangeIndicator.wait();
+        } 
+        
+        result = m_taskQueue.executeTask();          
+    }
 
     return 0; 
 }

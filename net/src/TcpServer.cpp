@@ -10,6 +10,7 @@
 #include "TcpSocket.h"
 #include "NetLogger.h"
 #include "Worker.h"
+#include "TcpAcceptTask.h"
 
 using namespace net;
 using namespace std;
@@ -42,8 +43,8 @@ void TcpServer::handleAcceptResult(TcpServerSocket* serverSocket, TcpSocket* new
         serverSocket->getSocket() << ", accepted socket: " << newSocket->getSocket());
 
     Worker* worker = Worker::getInstance(newSocket->getRemoteAddress());
-    
-    // TODO handle the new TcpSocket, receives data from the socket (need to register to epoll)
+    TcpAcceptTask* task = new TcpAcceptTask(newSocket);
+    worker->addTask(task);
 }
 
 void TcpServer::handleCloseResult(TcpServerSocket* serverSocket) {

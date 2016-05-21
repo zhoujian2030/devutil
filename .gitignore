@@ -28,3 +28,6 @@
 *.app
 
 *.tar
+
+# others
+.vscode
