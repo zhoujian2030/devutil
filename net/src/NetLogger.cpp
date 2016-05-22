@@ -8,7 +8,7 @@
 #include "NetLogger.h"
 
 using namespace net;
-using namespace logcpp;
+using namespace cm;
 
 bool NetLogger::s_isInited = false;
 

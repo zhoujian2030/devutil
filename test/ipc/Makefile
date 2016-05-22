@@ -9,7 +9,7 @@ DEPDIR = dep
 
 # Libraries
 INC += -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/thread/inc -I$(PROJBASE)/ipc/src
-LIBS = $(PROJBASE)/log/lib/liblog.a
+LIBS = $(PROJBASE)/cm/lib/libcm.a
 
 # Files and folders
 SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)

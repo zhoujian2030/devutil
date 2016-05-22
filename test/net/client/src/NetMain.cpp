@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
     cout << "testNumber = " << testNumber << endl;
 
     // NETLogger::initConsoleLog();
-    // NETLogger::setLogLevel(logcpp::INFO);
+    // NETLogger::setLogLevel(cm::INFO);
 
     if (testNumber.compare("1") == 0) {
         string ip("127.0.0.1");

@@ -7,17 +7,15 @@
  
 #include "TaskQueue.h"
 #include "Task.h"
-
-#include <iostream>
+#include "CMLogger.h"
 
 using namespace cm;
-using namespace std;
  
 // ------------------------------------
 TaskQueue::TaskQueue() 
 : m_firstTask(0), m_lastTask(0), m_length(0)
 {
-     
+    CMLogger::initConsoleLog();
 }
  
 // ------------------------------------
@@ -37,7 +35,7 @@ int TaskQueue::executeTask() {
     
     if (m_length == 0) {
         // should not happen
-        cout << "Empty queue!" << endl;       
+        LOG4CPLUS_WARN(_CM_LOOGER_NAME_, "Empty queue!");       
         m_lock.unlock();
         return TRC_EMPTY;
     }
@@ -57,7 +55,7 @@ int TaskQueue::executeTask() {
         return result;
     } else {
         // should not happen
-        cout << "No available task!" << endl;
+        LOG4CPLUS_WARN(_CM_LOOGER_NAME_, "No available task!");
         m_lock.unlock();
         return TRC_EMPTY;
     }
@@ -69,6 +67,7 @@ bool TaskQueue::addTask(Task* theTask) {
         return false;
     }
     
+    LOG4CPLUS_DEBUG(_CM_LOOGER_NAME_, "add new task into queue.");
     m_lock.lock();
     
     if (m_lastTask == 0) {

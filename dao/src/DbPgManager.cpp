@@ -36,7 +36,7 @@ m_userName(userName),
 m_password(password),
 m_connectTimeout(connectTimeout)
 {
-    logcpp::CPPLogger::initConsoleLog(_DB_LOOGER_NAME_);
+    cm::CPPLogger::initConsoleLog(_DB_LOOGER_NAME_);
 }
 
 DbPgManager::~DbPgManager() {

@@ -6,7 +6,7 @@ OBJDIR = obj
 SRCDIR = src
 
 # Libraries
-INC += -I$(PROJBASE)/cm/inc -I$(PROJBASE)/log/inc
+INC += -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/log/inc
 LIBS = 
 
 # Files and folders

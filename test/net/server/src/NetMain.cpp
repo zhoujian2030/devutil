@@ -53,7 +53,7 @@ int main(int argc, char* argv[]) {
     cout << "testNumber = " << testNumber << endl;
 
     // NETLogger::initConsoleLog();
-    // NETLogger::setLogLevel(logcpp::INFO);
+    // NETLogger::setLogLevel(cm::INFO);
     string ip("127.0.0.1");
     if (argc > 2) {
         ip = argv[2];

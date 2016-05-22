@@ -6,10 +6,10 @@
  */
 #include "CPPLogger.h"
 
+using namespace cm;
 using namespace std;
 using namespace log4cplus;
 using namespace log4cplus::helpers;
-using namespace logcpp;
 
 Logger CPPLogger::getLogger(const tstring& loggerName) {
     return Logger::getInstance(loggerName);

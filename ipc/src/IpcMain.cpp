@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
     cout << "testNumber = " << testNumber << endl;
 
     // IPCLogger::initConsoleLog();
-    // IPCLogger::setLogLevel(logcpp::INFO);
+    // IPCLogger::setLogLevel(cm::INFO);
 
     if (testNumber.compare("1") == 0) {
         testPipe();

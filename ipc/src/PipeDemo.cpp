@@ -17,7 +17,7 @@
 #include "PipeDemo.h"
 
 using namespace ipc;
-using namespace logcpp;
+using namespace cm;
 
 
 PipeDemo::PipeDemo() {

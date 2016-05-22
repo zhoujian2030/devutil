@@ -6,9 +6,8 @@
  */
 
 #include "EventIndicator.h"
-#include <iostream>
+#include "CMLogger.h"
 
-using namespace std;
 using namespace cm;
 
 // --------------------------------------------
@@ -19,11 +18,11 @@ EventIndicator::EventIndicator(bool eventIsSet)
     if (result == 0) {
         result = pthread_cond_init(&m_condition, 0);
         if (result != 0) {
-            cout << "ERROR. Fail to init pthread_cond_t" << endl; 
+            LOG4CPLUS_ERROR(_CM_LOOGER_NAME_, "Fail to init pthread_cond_t"); 
             pthread_mutex_destroy(&m_mutex);
         }
     } else {
-        cout << "ERROR. Fail to init pthread_mutex_t" << endl; 
+        LOG4CPLUS_ERROR(_CM_LOOGER_NAME_, "Fail to init pthread_mutex_t"); 
     }
 }
 
@@ -35,20 +34,18 @@ EventIndicator::~EventIndicator() {
 
 // --------------------------------------------
 void EventIndicator::wait() {
-#ifdef DEBUG_CM
-    cout << "EventIndicator::wait()" << endl;
-#endif
+    LOG4CPLUS_DEBUG(_CM_LOOGER_NAME_, "EventIndicator::wait()");
 
     int result = pthread_mutex_lock(&m_mutex);
     if (result != 0) {
-        cout << "ERROR. Fail to lock on mutex." << endl;
+        LOG4CPLUS_ERROR(_CM_LOOGER_NAME_, "Fail to lock on mutex.");
         return;
     }
 
     while (!m_eventIsSet) {       
         result = pthread_cond_wait(&m_condition, &m_mutex);
         if (result != 0) {
-            cout << "ERROR. Fail to wait on condition." << endl;
+            LOG4CPLUS_ERROR(_CM_LOOGER_NAME_, "Fail to wait on condition.");
             pthread_mutex_unlock(&m_mutex);
             return;
         }
@@ -60,20 +57,18 @@ void EventIndicator::wait() {
 
 // --------------------------------------------
 void EventIndicator::set() {
-#ifdef DEBUG_CM
-    cout << "EventIndicator::set()" << endl;
-#endif
+    LOG4CPLUS_DEBUG(_CM_LOOGER_NAME_, "EventIndicator::set()");
 
     int result = pthread_mutex_lock(&m_mutex);
     if (result != 0) {
-        cout << "ERROR. Fail to lock on mutex." << endl;
+        LOG4CPLUS_ERROR(_CM_LOOGER_NAME_, "Fail to lock on mutex.");
         return;
     }        
 
     m_eventIsSet = true; 
     result = pthread_cond_signal(&m_condition);
     if (result != 0) {
-        cout << "ERROR. Fail to signal." << endl;
+        LOG4CPLUS_ERROR(_CM_LOOGER_NAME_, "Fail to signal.");
     }
 
     pthread_mutex_unlock(&m_mutex);

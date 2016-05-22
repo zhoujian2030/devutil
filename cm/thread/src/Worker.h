@@ -15,7 +15,6 @@
 #include "EventIndicator.h"
 
 #include <arpa/inet.h>
-#include <iostream>
 
 namespace cm {
 
@@ -78,15 +77,7 @@ namespace cm {
         Worker** m_workerArray;
         int m_numOfWorkers;
     };
-    
-    // ----------------------------------------
-    // @param sockAddr - remote address
-    // @return a worker according to remote ip and port
-    inline Worker* WorkerPool::getWorker(const sockaddr_in& remoteAddr) {
-        int hashValue = remoteAddr.sin_addr.s_addr + remoteAddr.sin_port;
-        std::cout << "get worker " << (hashValue % m_numOfWorkers) << std::endl;
-        return m_workerArray[hashValue % m_numOfWorkers];
-    }   
+      
 }
 
 #endif

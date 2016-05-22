@@ -8,7 +8,7 @@
 #include "AdsLogger.h"
 
 using namespace ads;
-using namespace logcpp;
+using namespace cm;
 
 bool AdsLogger::s_isInited = false;
 

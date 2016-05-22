@@ -6,8 +6,8 @@ OBJDIR = obj
 SRCDIR = src
 
 # Libraries
-INC += -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/log/inc
-LIBS += $(PROJBASE)/log/lib/liblog.a $(PROJBASE)/cm/lib/libcm.a
+INC += -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/log/inc
+LIBS += $(PROJBASE)/cm/lib/libcm.a
 
 # Files and folders
 #SRCS    = $(shell find $(SRCDIR) -name '*.cpp')

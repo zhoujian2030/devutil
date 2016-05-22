@@ -8,9 +8,9 @@ DEPDIR = dep
 BINDIR = bin
 
 # Libraries
-INC += -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/thread/inc -I$(PROJBASE)/log/inc -I$(PROJBASE)/net/inc
+INC += -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/thread/inc -I$(PROJBASE)/cm/log/inc -I$(PROJBASE)/net/inc
 # MUST place libnet.a ahead of liblog.a because libnet depends on liblog.a
-LIBS = $(PROJBASE)/net/lib/libnet.a $(PROJBASE)/log/lib/liblog.a $(PROJBASE)/cm/lib/libcm.a
+LIBS = $(PROJBASE)/net/lib/libnet.a $(PROJBASE)/cm/lib/libcm.a
 
 # Files and folders
 SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)

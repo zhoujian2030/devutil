@@ -6,9 +6,9 @@
  */
 
 #include "Worker.h"
+#include "CMLogger.h"
 
 using namespace cm;
-using namespace std;
 
 WorkerPool* Worker::m_workerPoolInstance = 0;
 MutexLock Worker::m_lock;
@@ -18,7 +18,7 @@ Worker::Worker(int index)
 : Thread("WorkerThread"),
   m_index(index)
 {
-
+    
 }
 
 // ----------------------------------------
@@ -54,7 +54,7 @@ void Worker::initialize() {
 
 // ----------------------------------------
 unsigned long Worker::run() {
-    std::cout << this->getName() << " " << this->getIndex() << " is running." << endl;
+    LOG4CPLUS_DEBUG(_CM_LOOGER_NAME_, this->getName() << " " << this->getIndex() << " is running.");
     
     int result = TRC_CONTINUE;
     while (result == TRC_CONTINUE) {
@@ -67,6 +67,7 @@ unsigned long Worker::run() {
         result = m_taskQueue.executeTask();          
     }
 
+    LOG4CPLUS_INFO(_CM_LOOGER_NAME_, this->getName() << " " << this->getIndex() << " is exited.");
     return 0; 
 }
 
@@ -74,6 +75,8 @@ unsigned long Worker::run() {
 WorkerPool::WorkerPool() 
 : m_numOfWorkers(NUM_OF_WORKER_THREAD)
 {
+    CMLogger::initConsoleLog();
+    
     m_workerArray = new Worker*[m_numOfWorkers];
     for (int i=0; i<m_numOfWorkers; i++) {
         Worker* worker = new Worker(i);
@@ -89,3 +92,12 @@ WorkerPool::~WorkerPool() {
     }
     delete m_workerArray;
 }
+
+// -----------------------------------------
+// @param sockAddr - remote address
+// @return a worker according to remote ip and port
+Worker* WorkerPool::getWorker(const sockaddr_in& remoteAddr) {
+    int hashValue = remoteAddr.sin_addr.s_addr + remoteAddr.sin_port;
+    LOG4CPLUS_DEBUG(_CM_LOOGER_NAME_, "get worker " << (hashValue % m_numOfWorkers));
+    return m_workerArray[hashValue % m_numOfWorkers];
+} 

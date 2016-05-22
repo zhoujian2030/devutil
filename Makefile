@@ -1,5 +1,4 @@
 SUBDIRS = cm \
-	log \
 	ipc \
 	net \
 	cpp \
@@ -36,13 +35,8 @@ $(INSTALLDIRS):
 
 # specify the dependency here
 ipc: cm
-ipc: log
 dao: cm
-dao: log
 net: cm
-net: log
 ads: cm
-ads: log
 test: ipc
 test: net
-test: log

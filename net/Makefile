@@ -8,8 +8,8 @@ INCDIR = inc
 LIBDIR = lib
 
 # Libraries
-INC += -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/thread/inc -I$(PROJBASE)/log/inc
-LIBS += $(PROJBASE)/log/lib/liblog.a $(PROJBASE)/cm/lib/libcm.a
+INC += -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/thread/inc -I$(PROJBASE)/cm/log/inc
+LIBS += $(PROJBASE)/cm/lib/libcm.a
 
 # Files and folders
 SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)

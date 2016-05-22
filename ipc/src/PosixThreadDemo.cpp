@@ -121,7 +121,7 @@ PosixThreadDemo::~PosixThreadDemo() {
 
 // -------------------------
 void PosixThreadDemo::demoAll() {
-    IPCLogger::setLogLevel(logcpp::INFO);
+    IPCLogger::setLogLevel(cm::INFO);
     this->demoModifyThreadDetachState();
     std::cout << "------------------------------------------------------------------" << std::endl << std::endl;
     demoCancelThread();
@@ -439,7 +439,7 @@ void PosixThreadDemo::demoNotJoinTheJoinableThread() {
 
     LOG4CPLUS_INFO(_IPC_LOGGER_, "Process " << getpid() << " calls pthread_create to create a thread and let it start running");
     
-    IPCLogger::setLogLevel(logcpp::INFO);
+    IPCLogger::setLogLevel(cm::INFO);
 
     long count = 0;
     while (true) {

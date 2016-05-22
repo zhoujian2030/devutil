@@ -11,7 +11,6 @@
 
 using namespace std;
 using namespace cm;
-using namespace logcpp;
 
 int main(int argc, char* argv[]) {
     log4cplus::Logger logger = log4cplus::Logger::getInstance("CMTEST");

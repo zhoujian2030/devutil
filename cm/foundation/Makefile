@@ -7,7 +7,7 @@ SRCDIR = src
 INCDIR = inc
 
 # Libraries
-INC  = 
+INC  = -I$(PROJBASE)/cm/log/inc 
 LIBS = 
 
 # Files and folders

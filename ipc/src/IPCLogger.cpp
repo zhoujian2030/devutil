@@ -8,7 +8,7 @@
 #include "IPCLogger.h"
 
 using namespace ipc;
-using namespace logcpp;
+using namespace cm;
 
 bool IPCLogger::s_isInited = false;
 

@@ -11,7 +11,7 @@
 #include <log4cplus/layout.h>
 #include <log4cplus/loggingmacros.h>
 
-namespace logcpp {
+namespace cm {
 
     typedef enum {
         TRACE = log4cplus::TRACE_LOG_LEVEL,
@@ -31,6 +31,6 @@ namespace logcpp {
         static void setLogLevel(log4cplus::Logger& logger, log4cplus::LogLevel level);
     };
 
-} // namespace logcpp
+} // namespace cm
 
 #endif

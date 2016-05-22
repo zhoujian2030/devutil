@@ -19,7 +19,7 @@ using namespace std;
 
 NamedPipeDemo::NamedPipeDemo() {
     IPCLogger::initConsoleLog();
-    IPCLogger::setLogLevel(logcpp::DEBUG);    
+    IPCLogger::setLogLevel(cm::DEBUG);    
 }
 
 void NamedPipeDemo::demo_wopen_read_block_fifo_not_exist(string wPathName, string rPathName) {

@@ -14,7 +14,7 @@
 #include "Pipe.h"
 
 using namespace ipc;
-using namespace logcpp;
+using namespace cm;
 
 Pipe::Pipe()
 : 

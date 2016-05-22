@@ -10,7 +10,7 @@
 #include "CPPLogger.h"
 
 using namespace std;
-using namespace logcpp;
+using namespace cm;
 
 int main() {
     //char str[] = "This is. sample .string.";

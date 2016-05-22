@@ -17,7 +17,7 @@ namespace ads {
 class AdsLogger {
 public:
     static void initConsoleLog();
-    static void setLogLevel(logcpp::Level level);
+    static void setLogLevel(cm::Level level);
 
 private:
     static bool s_isInited;
