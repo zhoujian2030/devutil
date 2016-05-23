@@ -9,6 +9,7 @@
 #define TCP_SOCKET_H
 
 #include "Socket.h"
+#include "TcpSocketListener.h"
 
 namespace net {
 
@@ -18,6 +19,11 @@ namespace net {
     public:
         virtual ~TcpSocket();
 
+        // add a TcpSocketListener to the TCP socket in acync mode
+        // need to change the socket to nonblocking if the listener 
+        // is 0 before
+        void addSocketListener(TcpSocketListener* socketListener);
+        
         const sockaddr_in& getRemoteAddress() const;
 
     protected:
@@ -33,6 +39,8 @@ namespace net {
         std::string m_remoteIp;
         unsigned short m_remotePort;
         struct sockaddr_in m_remoteSa;
+        
+        TcpSocketListener* m_socketListener;
     };
 
     // --------------------------------------------

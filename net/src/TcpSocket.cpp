@@ -14,7 +14,7 @@ using namespace std;
 
 // ----------------------------------------------
 TcpSocket::TcpSocket(int socket, Socket::InetAddressPort& theRemoteAddrPort)
-: Socket(socket, SOCK_STREAM)  
+: Socket(socket, SOCK_STREAM), m_socketListener(0) 
 {
     memcpy(&m_remoteSa, &theRemoteAddrPort.addr, sizeof(theRemoteAddrPort.addr));
     m_remoteIp = Socket::getHostAddress((struct sockaddr*)&theRemoteAddrPort.addr);
@@ -27,6 +27,23 @@ TcpSocket::TcpSocket(int socket, Socket::InetAddressPort& theRemoteAddrPort)
 // -----------------------------------------------
 TcpSocket::~TcpSocket() {
     
+}
+
+// -----------------------------------------------
+void TcpSocket::addSocketListener(TcpSocketListener* socketListener) {
+    if (socketListener != 0) {
+        if (m_socketListener == 0) {
+            // if previous listener is null, it means the socket is blocking mode currently
+            makeNonBlocking();
+        }
+    } else {
+        if (m_socketListener != 0) {
+            makeBlocking();
+        }
+    }
+
+    m_socketListener = socketListener;
+
 }
 
 // ----------------------------------------------
