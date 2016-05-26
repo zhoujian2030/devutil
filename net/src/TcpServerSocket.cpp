@@ -22,6 +22,8 @@ TcpServerSocket::TcpServerSocket(
   m_tcpState(TCP_LISTENING),
   m_socketListener(0)
 {
+    NetLogger::initConsoleLog();
+    
     m_lock = new MutexLock(true);
 
     if (bind()) {
@@ -49,6 +51,8 @@ TcpServerSocket::TcpServerSocket(
   m_tcpState(TCP_LISTENING),
   m_socketListener(0)
 {
+    NetLogger::initConsoleLog();
+    
     m_lock = new MutexLock(true);
 
     addSocketListener(socketListener);

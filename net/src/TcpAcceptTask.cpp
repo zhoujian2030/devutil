@@ -7,14 +7,14 @@
 
 #include "TcpAcceptTask.h"
 #include "NetLogger.h"
-#include "DataBuffer.h"
+#include "TcpServerWorker.h"
 
 using namespace net;
 using namespace cm;
 
 // --------------------------------
-TcpAcceptTask::TcpAcceptTask(TcpSocket* theSocket) 
-: m_tcpSocket(theSocket)
+TcpAcceptTask::TcpAcceptTask(TcpSocket* theSocket, TcpServerWorker* theWorker) 
+: m_tcpSocket(theSocket), m_tcpServerWorker(theWorker)
 {
     NetLogger::initConsoleLog();
 }
@@ -26,29 +26,10 @@ TcpAcceptTask::~TcpAcceptTask() {
 
 // --------------------------------
 int TcpAcceptTask::execute() {
-    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "Handling new TCP socket: " << m_tcpSocket->getSocket());
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpAcceptTask::execute()");
     
-    // for test, use sync mode
-    DataBuffer* recvBuf = new DataBuffer(); 
-    while (true) {
-        int numOfBytesRecved;
-        int result = m_tcpSocket->recv(recvBuf->getEndOfDataPointer(), 
-            recvBuf->getSize() - recvBuf->getLength(), numOfBytesRecved);
-        if (numOfBytesRecved == 0) {
-            LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "disconnected by peer");
-            delete m_tcpSocket;
-            delete recvBuf;
-            break;
-        }
+    m_tcpServerWorker->onConnectionCreated(m_tcpSocket);
         
-        recvBuf->increaseDataLength(numOfBytesRecved);
-        LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "receive " << numOfBytesRecved << " bytes data from socket: " << recvBuf->getData());
-        LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "buffer length: " << recvBuf->getLength());
-        recvBuf->reset();
-    }
-
-    // TODO handle the new TcpSocket, receives data from the socket (need to register to epoll)
-    
     return TRC_CONTINUE;
 }
 

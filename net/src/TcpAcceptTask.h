@@ -13,14 +13,17 @@
 
 namespace net {
     
+    class TcpServerWorker;
+    
     class TcpAcceptTask : public cm::Task {
     public:
-        TcpAcceptTask(TcpSocket* theSocket);
+        TcpAcceptTask(TcpSocket* theSocket, TcpServerWorker* theWorker);
         virtual ~TcpAcceptTask();
         virtual int execute();  
         
     private:
         TcpSocket* m_tcpSocket;
+        TcpServerWorker* m_tcpServerWorker;
     };
 }
 

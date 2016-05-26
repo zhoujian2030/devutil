@@ -27,18 +27,21 @@ namespace net {
 
         ~Reactor();
         static Reactor* getInstance();
-
+        static void initialize(int numOfReactors = NUM_OF_THREADS);
+        
         void registerInputHandler(Socket* theSocket, SocketEventHandler* theEventHandler);
         void removeInputHandler(Socket* theSocket);
         void removeHandlers(Socket* theSocket);
 
     private:
-        Reactor();
+        Reactor(int numOfReactors = NUM_OF_THREADS);
 
         static Reactor* m_theInstance;
         static cm::MutexLock m_lock;
 
-        ReactorThread m_reactorThreadArray[NUM_OF_THREADS];
+        ReactorThread** m_reactorThreadArray;
+        int m_numOfReactors;
+        // ReactorThread m_reactorThreadArray[NUM_OF_THREADS];
     };
 }
 

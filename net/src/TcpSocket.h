@@ -24,6 +24,8 @@ namespace net {
         // is 0 before
         void addSocketListener(TcpSocketListener* socketListener);
         
+        // @return a hash value generated according to remote ip and port
+        unsigned int getHashValue() const;
         const sockaddr_in& getRemoteAddress() const;
 
     protected:
@@ -42,6 +44,11 @@ namespace net {
         
         TcpSocketListener* m_socketListener;
     };
+    
+    // --------------------------------------------
+    inline unsigned int TcpSocket::getHashValue() const {
+        return m_remoteSa.sin_addr.s_addr + m_remoteSa.sin_port;
+    }
 
     // --------------------------------------------
     inline const sockaddr_in& TcpSocket::getRemoteAddress() const {

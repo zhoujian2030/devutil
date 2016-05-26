@@ -11,6 +11,7 @@
 #include "NetLogger.h"
 #include "Worker.h"
 #include "TcpAcceptTask.h"
+#include "TcpServerWorker.h"
 
 using namespace net;
 using namespace std;
@@ -18,23 +19,35 @@ using namespace cm;
 
 // -------------------------------------------
 TcpServer::TcpServer(
-    string localIp,
     unsigned short localPort,
-    int backlog) 
+    string localIp,
+    int backlog)
+: m_numberOfWorkers(Worker::getNumberOfWorkers())
 {
     NetLogger::initConsoleLog();
-    m_TcpServerSocket = new TcpServerSocket(localIp, localPort, this, backlog);
+    // create the TCP server socket and register itself as the socket listener
+    m_tcpServerSocket = new TcpServerSocket(localIp, localPort, this, backlog);
+    
+    // create the same number of TCP server workers as the Worker thread number
+    m_tcpServerWorkerArray = new TcpServerWorker*[m_numberOfWorkers];
+    for (int i=0; i<m_numberOfWorkers; ++i) {
+        m_tcpServerWorkerArray[i] = new TcpServerWorker();
+    }
 }
 
 // -------------------------------------------
 TcpServer::~TcpServer() {
-    delete m_TcpServerSocket;
+    delete m_tcpServerSocket;
+    for (int i=0; i<m_numberOfWorkers; ++i) {
+        delete m_tcpServerWorkerArray[i];
+    }
+    delete m_tcpServerWorkerArray;
 }
 
 // -------------------------------------------
 void TcpServer::start() {
     m_isRunning = true;
-    m_TcpServerSocket->accept();
+    m_tcpServerSocket->accept();
 }
 
 // -------------------------------------------
@@ -42,8 +55,9 @@ void TcpServer::handleAcceptResult(TcpServerSocket* serverSocket, TcpSocket* new
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpServer::handleAcceptResult, server socket: " << 
         serverSocket->getSocket() << ", accepted socket: " << newSocket->getSocket());
 
-    Worker* worker = Worker::getInstance(newSocket->getRemoteAddress());
-    TcpAcceptTask* task = new TcpAcceptTask(newSocket);
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "index = " << newSocket->getHashValue());
+    Worker* worker = Worker::getInstance(newSocket->getHashValue());
+    TcpAcceptTask* task = new TcpAcceptTask(newSocket, m_tcpServerWorkerArray[worker->getIndex()]);
     worker->addTask(task);
 }
 

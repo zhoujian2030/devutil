@@ -9,6 +9,7 @@
 #define WORKER_H
 
 #include "Thread.h"
+#include "WorkerPool.h"
 #include "MutexLock.h"
 #include "Task.h"
 #include "TaskQueue.h"
@@ -18,22 +19,32 @@
 
 namespace cm {
 
-    class WorkerPool;
-
     class Worker : public Thread {
     public:
+        // @description - get a worker instance by index
+        // @param index - the id pointing to a worker
+        // @return worker instance from WorkerPool by index
+        static Worker* getInstance(unsigned int index);
         static Worker* getInstance(const sockaddr_in& remoteAddr);
-        static void initialize();
+        
+        // @description - by default create NUM_OF_WORKER_THREAD worker threads
+        static void initialize(int numOfWorkers = NUM_OF_WORKER_THREAD);
+        
+        static int getNumberOfWorkers();
         
         bool addTask(Task* theTask);
-
+        int getIndex() const;
+        
     private:
         friend class WorkerPool;
 
+        enum {
+            NUM_OF_WORKER_THREAD = 15
+        };
+        
         Worker(int index);
         virtual ~Worker();
         
-        int getIndex() const;
         virtual unsigned long run();
         
         // index for the worker thread, range 0 ... NUM_OF_WORKER_THREAD-1
@@ -45,6 +56,12 @@ namespace cm {
         static MutexLock m_lock;
     };
     
+    // --------------------------------------------
+    inline int Worker::getNumberOfWorkers() {
+        Worker::initialize();
+        return m_workerPoolInstance->getNumberOfWorkers();
+    }
+    
     // ----------------------------------------
     // Add a new task into the worker's queue and send
     // out indication to notify the worker thread.
@@ -53,31 +70,11 @@ namespace cm {
         m_taskChangeIndicator.set();
         return result;
     }
-    
+          
     // ----------------------------------------
     inline int Worker::getIndex() const {
         return m_index;
-    }
-
-    // ----------------------------------------------
-    class WorkerPool {
-
-    private:
-        friend class Worker;
-
-        WorkerPool();
-        ~WorkerPool();
-
-        Worker* getWorker(const sockaddr_in& remoteAddr);
-
-        enum {
-            NUM_OF_WORKER_THREAD = 15
-        };
-
-        Worker** m_workerArray;
-        int m_numOfWorkers;
-    };
-      
+    }      
 }
 
 #endif

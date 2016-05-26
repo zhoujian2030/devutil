@@ -22,6 +22,7 @@
 #include "TcpServerSocketEventHandlerTest.h"
 #include "TcpServer.h"
 #include "Worker.h"
+#include "Reactor.h"
 
 using namespace std;
 using namespace net;
@@ -104,8 +105,13 @@ void testReactorThread(string ip, short port) {
 
 // ---------------------------------------------
 void testTcpServer(string ip, short port) {
-    Worker::initialize();
-    TcpServer* tcpServer = new TcpServer(ip, port);
+    // only create some reactor and worker threads for test
+    // no need to call below 2 initialize function if you want to 
+    // use default configurations
+    Worker::initialize(2);
+    Reactor::initialize(2);
+    
+    TcpServer* tcpServer = new TcpServer(port);
     tcpServer->start();
 
     while (tcpServer->isRunning()) {
