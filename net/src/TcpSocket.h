@@ -10,6 +10,7 @@
 
 #include "Socket.h"
 #include "TcpSocketListener.h"
+#include "Reactor.h"
 
 namespace net {
 
@@ -26,7 +27,20 @@ namespace net {
         
         // @return a hash value generated according to remote ip and port
         unsigned int getHashValue() const;
+        
         const sockaddr_in& getRemoteAddress() const;
+        
+        // @description called by worker to receive data from socket
+        //  asynchronize mode - save the buffer pointer and register the socket
+        //      to epoll (need to have the socket lister added before)
+        //  synchronize mode - not supported yet TODO
+        // @param theBuffer - the buffer pointer to store received data
+        // @param buffSize - buffer size of the buffer
+        // @return number of bytes received in sync mode, 0 in async mode
+        int receive(char* theBuffer, int buffSize);
+        
+        // @description - close the connection
+        void close();
 
     protected:
         // Only TcpServerSocket is allowed to create a TcpSocket with an
@@ -38,9 +52,27 @@ namespace net {
         virtual void handleInput(Socket* theSocket);
 
     private: 
+        typedef enum {
+            // for new created socket in server side, initialize state 
+            // is TCP_CONNECTED
+            TCP_CONNECTED,
+            
+            // register the socket to epoll for EPOLLIN event, waiting
+            // for data coming
+            TCP_RECEIVING,
+            
+            TCP_CLOSING,
+            TCP_CLOSED,
+            TCP_ERROR
+        } TcpConnectState;
+        
+        TcpConnectState m_tcpState;
+        Reactor* m_reactorInstance;
         std::string m_remoteIp;
         unsigned short m_remotePort;
         struct sockaddr_in m_remoteSa;
+        char* m_recvBuffer;
+        int m_recvBufferSize;
         
         TcpSocketListener* m_socketListener;
     };

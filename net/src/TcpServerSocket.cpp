@@ -31,12 +31,11 @@ TcpServerSocket::TcpServerSocket(
             LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to listen on socket " << this->getSocket());
             m_tcpState = TCP_ERROR;
         }
+        LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "success to bind and listen on socket " << this->getSocket());
     } else {
         LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to bind socket " << this->getSocket());
         m_tcpState = TCP_ERROR;
     }
-
-    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "success to bind and listen on socket " << this->getSocket());
 }
 
 // -------------------------------------------------------
@@ -148,11 +147,12 @@ void TcpServerSocket::handleInput(Socket* theSocket) {
     if (result == SKT_SUCC) {
         newTcpSocket = new TcpSocket(newSocket, remoteAddrPort);
         m_socketListener->handleAcceptResult(this, newTcpSocket);
-    } else if (result == SKT_WAIT) {
-        LOG4CPLUS_WARN(_NET_LOOGER_NAME_, "no new TCP connection accepted.");
-        // TODO only need to acdept again if the server socket is deleted from epoll
+        // TODO only need to accept again if the server socket is deleted from epoll
         // after receiving epoll event on the socket
         //this->accept();
+    } else if (result == SKT_WAIT) {
+        LOG4CPLUS_WARN(_NET_LOOGER_NAME_, "no new TCP connection accepted.");
+        // TODO
     } else {
         LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "error occur on accept(), close the server socket");
         m_reactorInstance->removeHandlers(this);

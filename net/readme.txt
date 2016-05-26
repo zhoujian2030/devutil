@@ -7,7 +7,9 @@ worker线程处理返回，reactor线程之后可以继续以相同方式处理�
 2. TcpServer注册为TcpServerSocket的listener，reactor线程在收到TcpServerSocket的event后调用其handler去accept新TCP连接并创建TcpSocket，
 然后调用listener的handleAcceptResult方法把新的连接作为TcpAcceptTask交给worker thread处理。选取worker thread的策略是根据该TCP连接的remote ip
 和port的网络字节value相加再除worker thread总数得到余数作为获取worker thread的index，这样可以保证同一个worker处理相同连接（remote ip和port）
-的多次请求
+的多次请求.
+每一个worker都会调用其mapping的唯一TcpServerWorker处理该worker负责的TCP连接，也就是说一个TcpServerWorker instance只会被一个worker thread调用，
+该类的代码不会出现多个worker线程冲突的问题
 
 3. worker thread在执行TcpAcceptTask时，有两种模式，一是同步模式，worker线程自己或者另起一个连接处理线程直接调用TcpSocket的recv阻塞接受对端
 的消息，此时该worker线程（或者改连接处理线程）不能再处理其他新的连接请求task，直到当前连接被释放；二是异步模式，worker线程执行的TcpAcceptTask

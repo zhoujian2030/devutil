@@ -31,7 +31,7 @@ TcpServer::TcpServer(
     // create the same number of TCP server workers as the Worker thread number
     m_tcpServerWorkerArray = new TcpServerWorker*[m_numberOfWorkers];
     for (int i=0; i<m_numberOfWorkers; ++i) {
-        m_tcpServerWorkerArray[i] = new TcpServerWorker();
+        m_tcpServerWorkerArray[i] = new TcpServerWorker(Worker::getInstance(i));
     }
 }
 
