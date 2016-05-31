@@ -11,10 +11,13 @@
 #include "TcpSocketListener.h"
 #include "Worker.h" 
 
-namespace net {
-    
-    class TcpSocket;
+namespace cm {
     class DataBuffer;
+}
+
+namespace net {
+        
+    class TcpSocket;
      
     // A TcpServerWorker is only responsible and used for one Worker thread  
     // to handle new TCP connection. So the application should create the 
@@ -42,7 +45,7 @@ namespace net {
     private:
         cm::Worker* m_workerInstance;
         // for test
-        DataBuffer* recvBuf;
+        cm::DataBuffer* recvBuf;
     };
      
 }

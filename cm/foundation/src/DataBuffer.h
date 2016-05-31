@@ -11,7 +11,8 @@
 #include <assert.h>
 #include <string>
 
-namespace net {
+namespace cm {
+     
     class DataBuffer {
     public:
         DataBuffer();

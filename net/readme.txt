@@ -28,10 +28,11 @@ Test:
 TODO:
 -----
 
->> add TcpSocket and TcpServerSocket to support TCP server component
-
 >> add TcpClientSocket to support TCP client
 
 >> consider how to delete Socket and SocketEventHandler object when connection is closed
 
->> 
+Performance
+-----------
+1. TCP短连接，如果由服务器端主动释放连接，产生大量的time_wait，占用端口导致无法建立新连接，如何解决？
+

@@ -21,7 +21,7 @@
 
 using namespace std;
 using namespace net;
-
+using namespace cm;
 
 void showUsage() {
     cout << "Usage: " << endl;

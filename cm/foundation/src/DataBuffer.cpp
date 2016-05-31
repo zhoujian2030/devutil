@@ -9,7 +9,7 @@
 
 #include <string.h>
 
-using namespace net;
+using namespace cm;
 
 const int DataBuffer::InitialBufferSize = 2000;
 
