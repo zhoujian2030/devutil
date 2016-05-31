@@ -4,6 +4,7 @@ TARGET = ipc
 # Directories
 OBJDIR = obj
 SRCDIR = src
+BINDIR = bin
 
 # Libraries
 INC += -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/thread/inc -I$(PROJBASE)/cm/log/inc
@@ -28,10 +29,11 @@ $(TARGET): buildrepo $(OBJS)
 	@mv $(TARGET) $(OBJDIR)
 
 clean:
-	rm -rf ./bin/* $(OBJDIR) $(SRCDIR)/*.o
+	rm -rf $(BINDIR) $(OBJDIR) $(SRCDIR)/*.o
 
 install:
-	mv $(OBJDIR)/$(TARGET) ./bin
+	@mkdir -p $(BINDIR)
+	mv $(OBJDIR)/$(TARGET) $(BINDIR)
 	
 buildrepo:
 	@$(call make-repo)

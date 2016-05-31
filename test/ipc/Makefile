@@ -6,6 +6,7 @@ PTHREAD_TGT = pthreadtest
 OBJDIR = obj
 SRCDIR = src
 DEPDIR = dep
+BINDIR = bin
 
 # Libraries
 INC += -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/thread/inc -I$(PROJBASE)/ipc/src
@@ -35,10 +36,11 @@ $(PTHREAD_TGT):
 	@mv $(PTHREAD_TGT) $(OBJDIR)	
 
 clean:
-	rm -rf ./bin/* $(OBJDIR) $(SRCDIR)/*.o $(DEPDIR)
+	rm -rf $(BINDIR) $(OBJDIR) $(SRCDIR)/*.o $(DEPDIR)
 
 install:
-	mv $(OBJDIR)/$(TARGET) ./bin
+	@mkdir -p $(BINDIR)
+	mv $(OBJDIR)/$(TARGET) $(BINDIR)
 	
 buildrepo:
 	@$(call make-repo)

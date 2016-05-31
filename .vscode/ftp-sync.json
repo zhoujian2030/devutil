@@ -1,0 +1,17 @@
+{
+    "remotePath": "/noname/demo/",
+    "host": "***.***.***.***",
+    "username": "***",
+    "password": "****",
+    "port": 22,
+    "protocol": "sftp",
+    "uploadOnSave": true,
+    "passive": true,
+    "debug": true,
+    "privateKeyPath": null,
+    "ignore": [
+        "\\.vscode",
+        "\\.git",
+        "\\test.tar"
+    ]
+}
