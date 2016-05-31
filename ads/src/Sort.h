@@ -36,6 +36,8 @@ namespace ads {
         //   - more comparisons then insertion sort, but fewer writes - O(n)
         // Space Complexity: O(1)
         static void selectionSort(int array[], int length);
+        
+        static void quickSort(int array[], int length);
 
 
         static void formatPrint(int array[], int length, int numOfColumn);
@@ -47,6 +49,9 @@ namespace ads {
         static void startTimer();
         static void stopTimer();
         static double s_time;
+        
+    private:
+        static void doQuickSort(int* array, int length);
     };
 }
 

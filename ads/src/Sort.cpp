@@ -88,6 +88,55 @@ void Sort::bubbleSort(int array[], int length) {
     LOG4CPLUS_DEBUG(_ADS_LOOGER_NAME_, "n = " << n);
 }
 
+int gQuickN = 0;
+// -------------------------------------------------
+void Sort::quickSort(int array[], int length) {  
+    gQuickN = 0;
+    doQuickSort(array, length);
+    LOG4CPLUS_DEBUG(_ADS_LOOGER_NAME_, "n = " << gQuickN);
+}
+
+// -------------------------------------------------
+void Sort::doQuickSort(int* array, int length) {
+    int left = 0, right = length -1;
+    int temp = array[0];
+    
+    gQuickN++;
+    
+    while (left != right) {
+        while (array[right] >= temp && right > left) {
+            right--;
+            
+            gQuickN++;
+        }
+        
+        while (array[left] <= temp && left < right) {
+            left++;
+            
+            gQuickN++;
+        }
+        
+        if (left < right) {
+            int t = array[right];
+            array[right] = array[left];
+            array[left] = t;
+            
+            gQuickN++;
+        }
+    }
+    
+    // left == right now
+    array[0] = array[left];
+    array[left] = temp;
+    
+    if (left > 1) {
+        doQuickSort(array, left);
+    }
+    if (length-left-1 > 1) {
+        doQuickSort(&array[left+1], length-left-1);
+    }
+}
+
 // ----------------------------------------------
 void Sort::formatPrint(int array[], int length, int numOfColumn) {
     cout << "+------------------------------------------------+" << endl;
