@@ -7,11 +7,7 @@ using namespace std;
 using namespace ads;
 
 // --------------------------------------------
-bool NodeUtil::findLoop(Node* head) {
-    if (head == 0) {
-        return false;
-    }
-    
+bool NodeUtil::findLoop(Node* head) {   
     Node* slow = head;
     Node* fast = head;
     
@@ -60,14 +56,14 @@ Node* NodeUtil::findTail(Node* head) {
     
     // find the tail in loop
     Node* loopNode = slow;
-    Node* tempNode = slow;
+    tail = loopNode;
     while (true) {
         do {
-            if (tempNode->next == head) {
-                return tempNode;
+            if (tail->next == head) {
+                return tail;
             }
-            tempNode = tempNode->next;
-        } while (tempNode != loopNode);
+            tail = tail->next;
+        } while (tail != loopNode);
         
         // tail not found, continue
         head = head->next;
