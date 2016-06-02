@@ -37,6 +37,7 @@ namespace net {
         // @param theBuffer - the buffer pointer to store received data
         // @param buffSize - buffer size of the buffer
         // @return number of bytes received in sync mode, 0 in async mode
+        //      return -1 if error occurrs
         int receive(char* theBuffer, int buffSize);
         
         // @description - close the connection
@@ -79,7 +80,7 @@ namespace net {
     
     // --------------------------------------------
     inline unsigned int TcpSocket::getHashValue() const {
-        return m_remoteSa.sin_addr.s_addr + m_remoteSa.sin_port;
+        return m_remoteSa.sin_addr.s_addr + m_remotePort;
     }
 
     // --------------------------------------------

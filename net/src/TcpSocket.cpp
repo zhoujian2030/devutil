@@ -14,9 +14,9 @@ using namespace std;
 
 // ----------------------------------------------
 TcpSocket::TcpSocket(int socket, Socket::InetAddressPort& theRemoteAddrPort)
-: m_tcpState(TCP_CONNECTED), 
-  m_reactorInstance(Reactor::getInstance()),
-  Socket(socket, SOCK_STREAM), 
+: Socket(socket, SOCK_STREAM),
+  m_tcpState(TCP_CONNECTED), 
+  m_reactorInstance(Reactor::getInstance()), 
   m_socketListener(0) 
 {
     memcpy(&m_remoteSa, &theRemoteAddrPort.addr, sizeof(theRemoteAddrPort.addr));
