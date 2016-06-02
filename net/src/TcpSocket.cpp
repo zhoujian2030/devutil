@@ -90,6 +90,7 @@ void TcpSocket::handleInput(Socket* theSocket) {
     int result = recv(m_recvBuffer, m_recvBufferSize, numOfByteRecved);
     
     assert(m_tcpState == TCP_RECEIVING);
+    m_tcpState = TCP_CONNECTED;
     
     if (result == SKT_SUCC) {
         m_socketListener->handleRecvResult(this, numOfByteRecved);

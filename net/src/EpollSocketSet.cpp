@@ -17,7 +17,8 @@ using namespace cm;
 
 // -------------------------------------------------
 EpollSocketSet::EpollSocketSet()
-: m_epollEvents(0), m_epollFdSize(0), m_epollFd(0), m_numFds(0)
+: m_lock(new MutexLock(true)), m_epollEvents(0), m_epollFdSize(0), 
+  m_epollFd(0), m_numFds(0)
 {
     NetLogger::initConsoleLog();
 
@@ -69,7 +70,7 @@ EpollSocketSet::~EpollSocketSet() {
 
 // -------------------------------------------------
 void EpollSocketSet::updateEvents() {
-    m_lock.lock();
+    m_lock->lock();
 
     // update the sockets in epoll if any
     int eventNumber = m_updateSocketList.size();
@@ -101,7 +102,7 @@ void EpollSocketSet::updateEvents() {
         m_updateSocketList.clear();
     }
 
-    m_lock.unlock();
+    m_lock->unlock();
 }
 
 // -------------------------------------------------
@@ -116,7 +117,6 @@ EpollSocketSet::EpollSocket* EpollSocketSet::poll(int theTimeout) {
     // else return after timeout in millisecond
     m_numFds = epoll_wait(m_epollFd, m_epollEvents, m_epollFdSize, theTimeout);
 
-
     if (m_numFds <= 0) {
         if (m_numFds == -1 && errno != EINTR) {
             LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to wait epoll events. errno = "
@@ -129,7 +129,7 @@ EpollSocketSet::EpollSocket* EpollSocketSet::poll(int theTimeout) {
         }
     }
 
-    m_lock.lock();
+    m_lock->lock();
 
     int readySocketIndex(0);
 
@@ -153,23 +153,27 @@ EpollSocketSet::EpollSocket* EpollSocketSet::poll(int theTimeout) {
                 // events that are not monitored any more
                 m_readySocketArray[readySocketIndex].events = it->second.events & pollEvent;
 
-                // TODO is it necessary to remove the socket event?
-                // if do so, the event handler need to re-register the socket event later
-                // after current event is handled
-
-                // as the socket events are actually removed asynchronously when the reactor thread
-                // calls poll() next time, while the reactor thread calls socket event handler in 
-                // current time and normally the handler needs to re-register the socket event in 
-                // epoll, that means in next time reactor thread will remove then add the same socket
-                // event which must be a waste of time.
-
-                // if (m_readySocketArray[readySocketIndex].events & EPOLLIN) {
-                //     removeInputHandler(it);
-                // }
-                // if (m_readySocketArray[readySocketIndex].events & EPOLLOUT) {
-                //     removeOutputHandler(it);
-                // }
-
+                // the socket events are actually removed asynchronously when the reactor thread
+                // calls poll() in next loop, while for server socket, the reactor thread calls 
+                // socket event handler in current loop and the handler will re-register the socket  
+                // event to epoll, that means in next loop reactor thread will remove then add the 
+                // same server socket event which must be a waste of time. So we will not remove 
+                // any server socket event here.
+                // for new connection socket, as the reactor thread write socket data to a buffer
+                // that processed by worker thread later, to avoid using mutex on the buffer, reactor
+                // must not written data again to the buffer until worker thread process the data
+                // complete. So here it needs to remove the epoll event, and the worker thread registers
+                // the event again once it completes the data processing. TODO if the processing is
+                // slow, and there are heavy traffic load on this socket, what will happen?
+                if (!it->second.socket->isServerSocket()) {
+                    if (m_readySocketArray[readySocketIndex].events & EPOLLIN) {
+                        removeInputHandler(it);
+                    }
+                    if (m_readySocketArray[readySocketIndex].events & EPOLLOUT) {
+                        removeOutputHandler(it);
+                    }
+                }
+                
                 readySocketIndex++;
             } else {
                 // socket is no found, clean up
@@ -182,8 +186,7 @@ EpollSocketSet::EpollSocket* EpollSocketSet::poll(int theTimeout) {
 
     // Set last socket event 0 to indicate ending
     m_readySocketArray[readySocketIndex].events = 0;
-
-    m_lock.unlock();
+    m_lock->unlock();
 
     return m_readySocketArray;
 }

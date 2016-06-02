@@ -59,6 +59,10 @@ Socket::Socket(
         m_localSa.sin_family = saFamily;
         m_localSa.sin_addr.s_addr = inet_addr(m_localIp.c_str());
         m_localSa.sin_port = htons(m_localPort);
+        
+        m_role = SERVER_SOCKET;
+    } else {
+        m_role = CLIENT_SOCKET;
     }
 
     m_state = CREATED;
@@ -77,6 +81,8 @@ Socket::Socket(int socket, int socketType)
         m_localPort = ntohs(m_localSa.sin_port);
         m_localIp = Socket::getHostAddress((struct sockaddr*)&m_localSa);
     }
+    
+    m_role = CONNECT_SOCKET;
 
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "initialize the connected socket, fd = " << m_socket 
         << ", address = " << m_localIp << ":" << m_localPort);

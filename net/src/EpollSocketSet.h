@@ -53,15 +53,17 @@ namespace net {
         int getNumberOfSocket() const;
 
     private:
-
+        
+        // @description - save the sockets registed to epoll
+        //      <fd, EpollSocket>
         typedef std::map<int, EpollSocket> EpollSocketMap;  
 
         void updateEvents();
         void removeInputHandler(EpollSocketMap::iterator it);
         void removeOutputHandler(EpollSocketMap::iterator it);
 
-        // use non-recursive mutex
-        cm::MutexLock m_lock;
+        // use recursive mutex
+        cm::MutexLock* m_lock;
 
         struct epoll_event* m_epollEvents;
         int m_epollFdSize;
@@ -101,7 +103,7 @@ namespace net {
         epollSocket.eventHandler = theEventHandler;
         epollSocket.events = EPOLLIN;
 
-        m_lock.lock();
+        m_lock->lock();
 
         std::pair<EpollSocketMap::iterator, bool> result = 
             m_epollSocketMap.insert(EpollSocketMap::value_type(fd, epollSocket));
@@ -120,7 +122,7 @@ namespace net {
         updateSocket.events = epollSocket.events;
         m_updateSocketList.push_back(updateSocket);
 
-        m_lock.unlock();
+        m_lock->unlock();
     }
 
     // --------------------------------------------
@@ -129,7 +131,7 @@ namespace net {
             return;
         }
 
-        m_lock.lock();
+        m_lock->lock();
 
         int fd = theSocket->getSocket();
         EpollSocketMap::iterator it = m_epollSocketMap.find(fd);
@@ -153,7 +155,7 @@ namespace net {
             m_updateSocketList.push_back(updateSocket);
         }
 
-        m_lock.unlock();
+        m_lock->unlock();
     }
 
     // --------------------------------------------
@@ -172,7 +174,7 @@ namespace net {
             return;
         }
 
-        m_lock.lock();
+        m_lock->lock();
 
         // the user who call this method is responsible to close the socket,
         // and the socket is automatically removed from epoll after socket closed
@@ -182,16 +184,16 @@ namespace net {
             m_epollSocketMap.erase(it);
         }
 
-        m_lock.unlock();
+        m_lock->unlock();
     }
 
     // --------------------------------------------
     inline int EpollSocketSet::getNumberOfSocket() const {
         int num = 0;
 
-        const_cast<EpollSocketSet*>(this)->m_lock.lock();
+        const_cast<EpollSocketSet*>(this)->m_lock->lock();
         num = m_epollSocketMap.size();
-        const_cast<EpollSocketSet*>(this)->m_lock.unlock();
+        const_cast<EpollSocketSet*>(this)->m_lock->unlock();
 
         return num;
     }
@@ -199,7 +201,7 @@ namespace net {
     // ---------------------------------------------
     inline void EpollSocketSet::removeInputHandler(EpollSocketMap::iterator it) {
         if (it != m_epollSocketMap.end()) {
-            m_lock.lock();
+            m_lock->lock();
 
             it->second.events &= (~EPOLLIN);
 
@@ -218,7 +220,7 @@ namespace net {
 
             m_updateSocketList.push_back(updateSocket);
 
-            m_lock.unlock();
+            m_lock->unlock();
         }
     }
 

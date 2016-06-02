@@ -70,6 +70,19 @@ namespace net {
         void makeBlocking();
 
         int getSocket() const;
+        
+        // @description - check if it is a server socket for listening
+        // @return true if it is server socket
+        bool isServerSocket() const;
+        
+        // @description - save user data for further user
+        // @param theUserData - the user data
+        // @param void
+        void setUserData(void* theUserData);
+        
+        // @description - retrieve user data saved before
+        // @return void* - the user data pointer
+        void* getUserData() const;
 
         static std::string getHostAddress(struct sockaddr* sockaddr);
         static void getSockaddrByIpAndPort(struct sockaddr_in* sockaddr, std::string ip, unsigned short port);
@@ -107,11 +120,20 @@ namespace net {
             // already closed
             CLOSED
         } State;
+        
+        enum {
+            SERVER_SOCKET,
+            CONNECT_SOCKET,
+            CLIENT_SOCKET
+        };
 
-        // socket fd of the server of client
+        // socket fd of the server or client
         int m_socket;
-
+        
+        // socket type, like SOCK_STREAM
         int m_socketType;
+        
+        int m_role;
 
         // local ip and port
         std::string m_localIp;
@@ -119,12 +141,29 @@ namespace net {
         struct sockaddr_in m_localSa;
 
         State m_state;
+        
+        void* m_userData;
     };
 
 
     // ----------------------------------------------------------
     inline int Socket::getSocket() const {
         return m_socket;
+    }
+    
+    // ----------------------------------------------------------
+    inline bool Socket::isServerSocket() const {
+        return (m_role == SERVER_SOCKET);
+    }
+    
+    // ----------------------------------------------------------
+    inline void Socket::setUserData(void* theUserData) {
+        m_userData = theUserData;
+    }
+    
+    // ----------------------------------------------------------
+    inline void* Socket::getUserData() const {
+        return m_userData;
     }
 }
 
