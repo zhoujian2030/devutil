@@ -10,10 +10,8 @@
 
 #include "TcpSocketListener.h"
 #include "Worker.h" 
-
-namespace cm {
-    class DataBuffer;
-}
+#include "TcpConnection.h"
+#include <map>
 
 namespace net {
         
@@ -30,23 +28,38 @@ namespace net {
         virtual ~TcpServerWorker();
            
         // @Description - called by TcpAcceptTask to handle new accepted connection
-        //      will always called by the same worker thread 
-        // @return theNewSocket created by reactor for the new 
-        //      accepted connection 
+        //      will always called by the same worker thread. It is only for the async
+        //      mode, as it registers this TcpServerWorker as the socket listener and
+        //      then call receive() to register this socket to reactor's epoll
+        // @param theNewSocket - created by reactor for the new accepted connection
         virtual void onConnectionCreated(TcpSocket* theNewSocket);  
         
         // @description - called by TcpSocket to handle new data received on the socket
         //      could be called by different reactor thread for different socket, need
-        //      to be carefull for thread conflict
+        //      to be carefull of thread conflict
         // @param theSocket - the tcp socket that has data received
         // @param numOfBytesRecved - number bytes of data received
         virtual void handleRecvResult(TcpSocket* theSocket, int numOfBytesRecved);
         
     private:
-        cm::Worker* m_workerInstance;
-        // for test
-        cm::DataBuffer* recvBuf;
+        friend class TcpConnection;
+        
+        void createConnection(TcpSocket* theNewSocket);
+        
+        // @get server worker id 
+        // @return the worker index as the server worker id
+        int getWorkerId() const;
+        
+        cm::Worker* m_worker;
+        unsigned int m_connectionIdCounter;
+        std::map<unsigned int, TcpConnection*> m_connMap;
+
     };
+    
+    // --------------------------------------------------
+    inline int TcpServerWorker::getWorkerId() const {
+        return m_worker->getIndex();
+    }
      
 }
  

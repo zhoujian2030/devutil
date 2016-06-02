@@ -11,11 +11,9 @@
 
 using namespace cm;
 
-const int DataBuffer::InitialBufferSize = 2000;
-
 // -----------------------------------------------
 DataBuffer::DataBuffer() 
-: m_bufferSize(InitialBufferSize)
+: m_bufferSize(INITIAL_BUFFER_SIZE)
 {
     m_buffer = new char[m_bufferSize];
     m_endOfDataPointer = m_buffer;

@@ -9,14 +9,14 @@
 #include "NetLogger.h"
 #include "TcpSocket.h"
 #include "Worker.h"
-#include "DataBuffer.h"
 
 using namespace net;
 using namespace cm;
+using namespace std;
 
 // -------------------------------------------
 TcpServerWorker::TcpServerWorker(Worker* theWorker) 
-: m_workerInstance(theWorker)
+: m_worker(theWorker), m_connectionIdCounter(0)
 {
     NetLogger::initConsoleLog();
 }
@@ -28,14 +28,8 @@ TcpServerWorker::~TcpServerWorker() {
 
 // -------------------------------------------
 void TcpServerWorker::onConnectionCreated(TcpSocket* theNewSocket) {
-    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "onConnectionCreated(), new fd: " << theNewSocket->getSocket());
-    
-    theNewSocket->addSocketListener(this);
-    
-    // TODO create the TCP connection
-    
-    recvBuf = new DataBuffer(); 
-    theNewSocket->receive(recvBuf->getEndOfDataPointer(), recvBuf->getSize() - recvBuf->getLength());
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "onConnectionCreated(), new fd: " << theNewSocket->getSocket());   
+    createConnection(theNewSocket);
 }
 
 // -------------------------------------------
@@ -45,12 +39,48 @@ void TcpServerWorker::handleRecvResult(TcpSocket* theSocket, int numOfBytesRecve
     // TODO add a new task to handle received data in worker thread
     
     // for test
-    if (numOfBytesRecved == 0) {
-        theSocket->close();        
-    } else {
-        recvBuf->increaseDataLength(numOfBytesRecved);
-        LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "receive " << numOfBytesRecved << " bytes data from socket: " << recvBuf->getData());
-        LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "buffer length: " << recvBuf->getLength());
-        recvBuf->reset();
+    map<unsigned int, TcpConnection*>::iterator it = m_connMap.find((size_t)theSocket->getUserData());
+    if (it != m_connMap.end()) {
+        TcpConnection* tcpConn = it->second;
+        tcpConn->onDataReceive(numOfBytesRecved);
+    }
+}
+// -------------------------------------------
+void TcpServerWorker::createConnection(TcpSocket* theNewSocket) {
+    // TODO limit the max connection
+    m_connectionIdCounter++;
+    TcpConnection* newTcpConn = new TcpConnection(theNewSocket, m_connectionIdCounter, this);
+    
+    std::pair<map<unsigned int, TcpConnection*>::iterator, bool> result = 
+        m_connMap.insert(map<unsigned int, TcpConnection*>::value_type(m_connectionIdCounter, newTcpConn));
+    
+    // if the connection id is used, try 1000 times more
+    if (!result.second) {
+        for (int i=0; i<1000; ++i) {
+            m_connectionIdCounter++;
+            result = m_connMap.insert(map<unsigned int, TcpConnection*>::value_type(m_connectionIdCounter, newTcpConn));
+            // if success, update the connection id and exit the loop
+            if (result.second) {
+                newTcpConn->setConnectionId(m_connectionIdCounter);
+                break;
+            }
+        }
+    }
+    
+    // if still fail to find a connection id, consider it as unrecoverable error, crash
+    if (!result.second) {
+        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "Fail to allocate a connection for new connection, exit process.");
+        _exit(-1);
+    }
+    
+    // TODO start timer, disconnect if no heart beat?
+    
+    // set connection id in socket for later use when receiving data from the socket
+    theNewSocket->setUserData((void*)m_connectionIdCounter);
+    
+    // start receiving data from socket. remove the connection if fail to receive
+    if (!newTcpConn->recvDataFromSocket()) {
+        m_connMap.erase(result.first);
+        delete newTcpConn;
     }
 }
