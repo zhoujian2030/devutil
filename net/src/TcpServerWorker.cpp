@@ -15,8 +15,8 @@ using namespace cm;
 using namespace std;
 
 // -------------------------------------------
-TcpServerWorker::TcpServerWorker(Worker* theWorker) 
-: m_worker(theWorker), m_connectionIdCounter(0)
+TcpServerWorker::TcpServerWorker(Worker* theWorker, TcpServerCallback* theServerCallback) 
+: m_worker(theWorker), m_connectionIdCounter(0), m_tcpServerCallback(theServerCallback)
 {
     NetLogger::initConsoleLog();
 }
@@ -29,6 +29,8 @@ TcpServerWorker::~TcpServerWorker() {
 // -------------------------------------------
 void TcpServerWorker::onConnectionCreated(TcpSocket* theNewSocket) {
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "onConnectionCreated(), new fd: " << theNewSocket->getSocket());   
+    // use asynchronous mode to recv socket data
+    theNewSocket->addSocketListener(this);
     createConnection(theNewSocket);
 }
 
@@ -42,14 +44,27 @@ void TcpServerWorker::handleRecvResult(TcpSocket* theSocket, int numOfBytesRecve
     map<unsigned int, TcpConnection*>::iterator it = m_connMap.find((size_t)theSocket->getUserData());
     if (it != m_connMap.end()) {
         TcpConnection* tcpConn = it->second;
-        tcpConn->onDataReceive(numOfBytesRecved);
+        
+        if (numOfBytesRecved != 0) {
+            tcpConn->onDataReceived(numOfBytesRecved);
+        } else {
+            tcpConn->onConnectionClosed();
+            
+            // currently the TcpSocket will close synchronously by removing 
+            // the socket from EpollSocketSet and closing socket directly,
+            // so here needs to release the connection resource
+            // TODO in furture, consider the async close, then may change
+            // to release the connection resource in async callback
+            delete tcpConn;
+            m_connMap.erase(it);
+        }        
     }
 }
 // -------------------------------------------
 void TcpServerWorker::createConnection(TcpSocket* theNewSocket) {
     // TODO limit the max connection
     m_connectionIdCounter++;
-    TcpConnection* newTcpConn = new TcpConnection(theNewSocket, m_connectionIdCounter, this);
+    TcpConnection* newTcpConn = new TcpConnection(theNewSocket, m_connectionIdCounter, this, m_tcpServerCallback);
     
     std::pair<map<unsigned int, TcpConnection*>::iterator, bool> result = 
         m_connMap.insert(map<unsigned int, TcpConnection*>::value_type(m_connectionIdCounter, newTcpConn));

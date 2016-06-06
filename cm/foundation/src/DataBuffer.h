@@ -24,6 +24,7 @@ namespace cm {
         DataBuffer();
         DataBuffer(int bufferLength);
         DataBuffer(const DataBuffer& theReceiveBuffer);
+        DataBuffer(std::string bufferStr);
         virtual ~DataBuffer();
 
         // @description - increase the m_endOfDataPointer to point

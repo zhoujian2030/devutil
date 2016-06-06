@@ -1,0 +1,1 @@
+1. For EventIndicator, if user call set() before wait() is called, what happen?

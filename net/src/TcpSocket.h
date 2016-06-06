@@ -18,6 +18,7 @@ namespace net {
     // or created as a TCP client socket in TCP client (need to call connect() after created)
     class TcpSocket : public Socket {
     public:
+        TcpSocket(std::string remoteIp, unsigned short remotePort);
         virtual ~TcpSocket();
 
         // add a TcpSocketListener to the TCP socket in acync mode
@@ -28,7 +29,7 @@ namespace net {
         // @return a hash value generated according to remote ip and port
         unsigned int getHashValue() const;
         
-        const sockaddr_in& getRemoteAddress() const;
+        const Socket::InetAddressPort& getRemoteAddress() const;
         
         // @description called by worker to receive data from socket
         //  asynchronize mode - save the buffer pointer and register the socket
@@ -39,6 +40,26 @@ namespace net {
         // @return number of bytes received in sync mode, 0 in async mode
         //      return -1 if error occurrs
         int receive(char* theBuffer, int buffSize);
+        
+        // @description called by TCP server/client to send data to peer
+        //  asynchronize mode - try Socket::send(), if not sent, save the 
+        //      buffer pointer and register the EPOLLOUT event
+        //  synchronize mode - block until add data sent out
+        // @param theBuffer - the data buffer to be sent
+        // @param numOfBytesToSend - number of bytes to be sent
+        // @return  number of bytes sent for both sync and async mode if success
+        //          0 if no bytes sent and register EPOLLOUT event done
+        //         -1 if error  occurred for both sync and async mode
+        int send(char* theBuffer, int numOfBytesToSend);
+        
+        // @description called by TCP client to connect to a TCP server
+        //  asynchronize mode -  not supported yet TODO
+        //  synchronize mode - block on connection to TCP server, return
+        //      when connect success or fail
+        // @return  0  async mode
+        //          0 - connect success for sync mode
+        //         -1 - connect fail for sync mode
+        int connect();
         
         // @description - close the connection
         void close();
@@ -54,6 +75,9 @@ namespace net {
 
     private: 
         typedef enum {
+            // for new created socket in client side
+            TCP_IDLE,
+            
             // for new created socket in server side, initialize state 
             // is TCP_CONNECTED
             TCP_CONNECTED,
@@ -62,30 +86,42 @@ namespace net {
             // for data coming
             TCP_RECEIVING,
             
+            // register the socket to epoll for EPOLLOUT event, waiting
+            // for data sending
+            TCP_SENDING,
+            
             TCP_CLOSING,
             TCP_CLOSED,
             TCP_ERROR
         } TcpConnectState;
         
         TcpConnectState m_tcpState;
-        Reactor* m_reactorInstance;
+        Reactor* m_reactor;
         std::string m_remoteIp;
-        unsigned short m_remotePort;
-        struct sockaddr_in m_remoteSa;
+        Socket::InetAddressPort m_remoteAddrAndPort;
+        
+        // pointer of buffer to store receving data
         char* m_recvBuffer;
+        // size of the receiving pointer
         int m_recvBufferSize;
+        
+        // data buffer to be sent
+        char* m_sendBuffer;
+        // number bytes of data to be sent
+        int m_sendBuferSize;
+        int m_numOfBytesSent;
         
         TcpSocketListener* m_socketListener;
     };
     
     // --------------------------------------------
     inline unsigned int TcpSocket::getHashValue() const {
-        return m_remoteSa.sin_addr.s_addr + m_remotePort;
+        return m_remoteAddrAndPort.addr.sin_addr.s_addr + m_remoteAddrAndPort.port;
     }
 
     // --------------------------------------------
-    inline const sockaddr_in& TcpSocket::getRemoteAddress() const {
-        return m_remoteSa;
+    inline const Socket::InetAddressPort& TcpSocket::getRemoteAddress() const {
+        return m_remoteAddrAndPort;
     }
 }
 

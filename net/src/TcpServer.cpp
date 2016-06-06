@@ -12,6 +12,7 @@
 #include "Worker.h"
 #include "TcpAcceptTask.h"
 #include "TcpServerWorker.h"
+#include "TcpServerCallback.h"
 
 using namespace net;
 using namespace std;
@@ -19,10 +20,12 @@ using namespace cm;
 
 // -------------------------------------------
 TcpServer::TcpServer(
+    TcpServerCallback* theServerCallback,
     unsigned short localPort,
     string localIp,
     int backlog)
-: m_numberOfWorkers(Worker::getNumberOfWorkers())
+: m_numberOfWorkers(Worker::getNumberOfWorkers()),
+  m_tcpServerCallback(theServerCallback)
 {
     NetLogger::initConsoleLog();
     // create the TCP server socket and register itself as the socket listener
@@ -31,7 +34,7 @@ TcpServer::TcpServer(
     // create the same number of TCP server workers as the Worker thread number
     m_tcpServerWorkerArray = new TcpServerWorker*[m_numberOfWorkers];
     for (int i=0; i<m_numberOfWorkers; ++i) {
-        m_tcpServerWorkerArray[i] = new TcpServerWorker(Worker::getInstance(i));
+        m_tcpServerWorkerArray[i] = new TcpServerWorker(Worker::getInstance(i), m_tcpServerCallback);
     }
 }
 

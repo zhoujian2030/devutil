@@ -16,6 +16,7 @@
 namespace net {
         
     class TcpSocket;
+    class TcpServerCallback;
      
     // A TcpServerWorker is only responsible and used for one Worker thread  
     // to handle new TCP connection. So the application should create the 
@@ -24,7 +25,7 @@ namespace net {
     // that called by reactor thread when there is data received on the socket
     class TcpServerWorker : public TcpSocketListener {
     public:
-        TcpServerWorker(cm::Worker* theWorker);
+        TcpServerWorker(cm::Worker* theWorker, TcpServerCallback* theServerCallback);
         virtual ~TcpServerWorker();
            
         // @Description - called by TcpAcceptTask to handle new accepted connection
@@ -41,7 +42,7 @@ namespace net {
         // @param numOfBytesRecved - number bytes of data received
         virtual void handleRecvResult(TcpSocket* theSocket, int numOfBytesRecved);
         
-    private:
+    protected:
         friend class TcpConnection;
         
         void createConnection(TcpSocket* theNewSocket);
@@ -53,6 +54,7 @@ namespace net {
         cm::Worker* m_worker;
         unsigned int m_connectionIdCounter;
         std::map<unsigned int, TcpConnection*> m_connMap;
+        TcpServerCallback* m_tcpServerCallback;
 
     };
     

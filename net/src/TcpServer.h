@@ -16,10 +16,15 @@ namespace net {
     class TcpServerWorker;
     class TcpServerSocket;
     class TcpSocket;
+    class TcpServerCallback;
 
     class TcpServer : public TcpServerSocketListener {
     public:
-        TcpServer(unsigned short localPort, std::string localIp = "0.0.0.0", int backlog = 100);
+        TcpServer(
+            TcpServerCallback* theServerCallback,
+            unsigned short localPort, 
+            std::string localIp = "0.0.0.0", 
+            int backlog = 100);
         ~TcpServer();
 
         void start();
@@ -29,11 +34,12 @@ namespace net {
         virtual void handleCloseResult(TcpServerSocket* serverSocket);
 
     private:
+        bool m_isRunning;
         TcpServerSocket* m_tcpServerSocket;       
         // array to store number of TcpServerWorker instances
         TcpServerWorker** m_tcpServerWorkerArray;
         int m_numberOfWorkers;
-        bool m_isRunning;
+        TcpServerCallback* m_tcpServerCallback;
     };
 
     // ----------------------------------------

@@ -8,6 +8,7 @@
 #include "TcpSocket.h"
 #include "TcpServerWorker.h"
 #include "NetLogger.h"
+#include "TcpServerCallback.h"
 
 using namespace net;
 using namespace cm;
@@ -16,17 +17,16 @@ using namespace cm;
 TcpConnection::TcpConnection(
     TcpSocket* theNewSocket,
     unsigned int connectionId,
-    TcpServerWorker* theServerWorker)
+    TcpServerWorker* theServerWorker,
+    TcpServerCallback* theServerCallback)
 : m_tcpSocket(theNewSocket),
   m_connectionId(connectionId),
   m_tcpServerWorker(theServerWorker),
+  m_tcpServerCallback(theServerCallback),
   m_recvBuffer(new DataBuffer()),
   m_recvState(READY_TO_RECV)
 {
     NetLogger::initConsoleLog();
-    
-    // use asynchronous mode to recv socket data
-    m_tcpSocket->addSocketListener(theServerWorker);
 }
 
 // ------------------------------------------------
@@ -56,24 +56,38 @@ bool TcpConnection::recvDataFromSocket() {
 }
 
 // ------------------------------------------------
-void TcpConnection::onDataReceive(int numOfBytesRecved) {
+void TcpConnection::onDataReceived(int numOfBytesRecved) {
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpConnection::onDataReceive, fd: " << 
         m_tcpSocket->getSocket() << ", connection id: " << m_connectionId);
     
-    if (numOfBytesRecved == 0) {
-        close();
-        // TODO how to nodify TcpServerWorker remove the connection
-    } else {
-        m_recvBuffer->increaseDataLength(numOfBytesRecved);
-        LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_,"receive " << numOfBytesRecved << " data: " <<
-            m_recvBuffer->getData());
-        // TODO process the data
+    char* startPointer = m_recvBuffer->getEndOfDataPointer();
+    m_recvBuffer->increaseDataLength(numOfBytesRecved);
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_,"receive " << numOfBytesRecved << " bytes data: " <<
+        m_recvBuffer->getData());
         
-        m_recvState = READY_TO_RECV;
-        recvDataFromSocket();
+    // call user interface to handle the data.
+    // when user is handling the receive data in this connection,
+    // the reactor will not receive any new data on this socket as 
+    // the EPOLLIN event is re-registered after the user handle 
+    // data complete
+    if (m_tcpServerCallback != 0) {
+        m_tcpServerCallback->dataIndication(this->getGlobalConnectionId(), startPointer, numOfBytesRecved);
     }
+    // clear the receive buffer for new receiving data
+    m_recvBuffer->reset();
+    
+    // continue to receive new data
+    m_recvState = READY_TO_RECV;
+    recvDataFromSocket();
 }
 
+// ------------------------------------------------
+void TcpConnection::onConnectionClosed() {
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpConnection::onConnectionClosed, fd: " << 
+        m_tcpSocket->getSocket() << ", connection id: " << m_connectionId);
+        
+    close();
+}
 
 // ------------------------------------------------
 void TcpConnection::close() {
@@ -85,7 +99,7 @@ unsigned int TcpConnection::getGlobalConnectionId() const {
     // aaaaaaaa bbbbbbbb bbbbbbbb bbbbbbbb
     // a - worker id
     // b - sub connection id
-    return (m_tcpServerWorker->getWorkerId() << 24) & m_connectionId;
+    return (m_tcpServerWorker->getWorkerId() << 24) | (m_connectionId & 0x00ffffff);
 }
 
 

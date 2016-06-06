@@ -111,7 +111,7 @@ void testTcpServer(string ip, short port) {
     Worker::initialize(2);
     Reactor::initialize(2);
     
-    TcpServer* tcpServer = new TcpServer(port);
+    TcpServer* tcpServer = new TcpServer(0, port);
     tcpServer->start();
 
     while (tcpServer->isRunning()) {

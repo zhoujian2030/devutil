@@ -3,8 +3,8 @@ Solution:
 1. 对于server socket，reactor线程从epoll中收到某个socket的event后不会把该socket从epoll中删除，直接调用socket的event handler处理event，该event handler
 不能做耗时操作，应该马上消费该event，比如对于TCP server socket，应该调用Socket::accept()接收新连接请求，然后创建新连接的TcpSocket交给
 worker线程处理返回，reactor线程之后可以继续以相同方式处理其他socket event，全部处理完后重新再poll epoll的新event
-对于新建连接的socket，由于socket的数据读写共享buffer，reactor thread写socket到buffer，worker thread再处理该buffer的数据，为了避免使用互斥锁影响效率， 
-在worker thread处理buffer的数据时，reactor thread不能再从epoll读去数据到buffer中，因此reactor线程在收到一个EPOLLIN事件之后应该把该事件从epoll中删除，
+对于新建连接的socket，由于socket的读数据共享buffer，reactor thread写socket到buffer，worker thread再处理该buffer的数据，为了避免使用互斥锁影响效率， 
+在worker thread处理buffer的数据时，reactor thread不能再从epoll读数据写到buffer中，因此reactor线程在收到一个EPOLLIN事件之后应该把该事件从epoll中删除，
 由worker thread在处理完数据后再注册到epoll接收新的EPOLLIN事件
 
 2. TcpServer注册为TcpServerSocket的listener，reactor线程在收到TcpServerSocket的event后调用其handler去accept新TCP连接并创建TcpSocket，
@@ -23,6 +23,7 @@ TBD
 1. server socket和其他新连接的的socket都是注册到reactor thread pool中的某个thread，但是server socket的重要性应该远远高于其他连接socket，如果刚好
 负责监听server socket所在epoll的reactor thread crash掉则会导致无法接受新连接服务。可否考虑另起一个独立进程listen server socket？
 2. use map or hash_map to save the connection?
+3. TCP Server发送数据也采用async nonblocking，是否必要再每次send才注册EPOLLOUT event？
 
 Test:
 ----

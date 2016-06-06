@@ -76,12 +76,13 @@ namespace net {
         Reactor* m_reactorInstance;
         int m_backlog;
         TcpServerState m_tcpState; 
+        
         TcpServerSocketListener* m_socketListener;
-
-        // currently m_tcpState would be changed when accept() or handleInput() is called,
-        // if they could be called by different threads, an mutex is needed. But so far,
-        // after the intializer calls accept() to start, only the reactor thread will call
-        // handleInput() and accept(), so no mutex is needed yet.
+        volatile bool m_isAsync;
+        
+        // currently m_tcpState would be changed when accept() or addSocketListener()
+        // is called in async mode. if they could be called by different threads, a 
+        // mutex is needed.
         cm::Lock* m_lock;
 
     };

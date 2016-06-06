@@ -14,6 +14,7 @@ namespace net {
     
     class TcpSocket;
     class TcpServerWorker;
+    class TcpServerCallback;
     
     // m_recvBuffer is used to stored the data received on the socket,
     // it is written by reactor thread, but processed by worker thread,
@@ -24,7 +25,8 @@ namespace net {
         TcpConnection(
             TcpSocket* theNewSocket,
             unsigned int connectionId,
-            TcpServerWorker* theServerWorker);
+            TcpServerWorker* theServerWorker,
+            TcpServerCallback* theServerCallback);
         virtual ~TcpConnection();
         
         // @description - start to recv data from socket
@@ -32,7 +34,16 @@ namespace net {
         //      sync : block on recving data, return false if error
         bool recvDataFromSocket();
         
-        void onDataReceive(int numOfBytesRecved);
+        
+        
+        // @description - called by TcpServerWorker to handle received data
+        //      in async mode. DO NOT call it in sync mode as it will block
+        // @param numOfBytesRecved - number of bytes received on the socket
+        void onDataReceived(int numOfBytesRecved);
+        
+        // @description - called by TcpServerWorker to close connection when
+        //      disconneted by peer
+        void onConnectionClosed();
         
         // @description - close connection
         void close();
@@ -59,9 +70,11 @@ namespace net {
         TcpSocket* m_tcpSocket;
         unsigned int m_connectionId;
         TcpServerWorker* m_tcpServerWorker;
-        cm::DataBuffer* m_recvBuffer;
-        
+        TcpServerCallback* m_tcpServerCallback;
+        cm::DataBuffer* m_recvBuffer;     
         TcpRecvState m_recvState;
+        
+        
     };
     
     // -------------------------------------------------

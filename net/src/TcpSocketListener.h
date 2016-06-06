@@ -12,6 +12,8 @@ namespace net {
     
     class TcpSocket;
     
+    // The socket lister is both the IN/OUT event listener, which means it should 
+    // listen for both receiving socket data event and sending socket data event
     class TcpSocketListener {
     public:
         virtual void handleRecvResult(TcpSocket* theSocket, int numOfBytesRecved) = 0;

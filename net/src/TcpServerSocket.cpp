@@ -20,7 +20,8 @@ TcpServerSocket::TcpServerSocket(
   m_reactorInstance(Reactor::getInstance()),
   m_backlog(backlog),
   m_tcpState(TCP_LISTENING),
-  m_socketListener(0)
+  m_socketListener(0),
+  m_isAsync(false)
 {
     NetLogger::initConsoleLog();
     
@@ -30,8 +31,9 @@ TcpServerSocket::TcpServerSocket(
         if (!listen(m_backlog)) {
             LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to listen on socket " << this->getSocket());
             m_tcpState = TCP_ERROR;
+        } else {
+            LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "success to bind and listen on socket " << this->getSocket());
         }
-        LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "success to bind and listen on socket " << this->getSocket());
     } else {
         LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to bind socket " << this->getSocket());
         m_tcpState = TCP_ERROR;
@@ -48,7 +50,8 @@ TcpServerSocket::TcpServerSocket(
   m_reactorInstance(Reactor::getInstance()),
   m_backlog(backlog),
   m_tcpState(TCP_LISTENING),
-  m_socketListener(0)
+  m_socketListener(0),
+  m_isAsync(false)
 {
     NetLogger::initConsoleLog();
     
@@ -60,13 +63,13 @@ TcpServerSocket::TcpServerSocket(
         if (!listen(m_backlog)) {
             LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to listen on socket " << this->getSocket());
             m_tcpState = TCP_ERROR;
+        } else {
+            LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "success to bind and listen on socket " << this->getSocket());
         }
     } else {
         LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to bind socket " << this->getSocket());
         m_tcpState = TCP_ERROR;
     }
-
-    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "success to bind and listen on socket " << this->getSocket());
 }
 
 // -------------------------------------------------------
@@ -81,10 +84,20 @@ void TcpServerSocket::addSocketListener(TcpServerSocketListener* socketListener)
             // if previous listener is null, it means the socket is blocking mode currently
             makeNonBlocking();
         }
+        m_isAsync = true;
     } else {
         if (m_socketListener != 0) {
             makeBlocking();
+            
+            // if change from async to sync, remove the socket and event handler from reactor's epoll
+            m_lock->lock();
+            if (m_tcpState == TCP_ACCEPTING) {
+                m_tcpState = TCP_LISTENING;
+                m_lock->unlock();
+                m_reactorInstance->removeHandlers(this);
+            }
         }
+        m_isAsync = false;
     }
 
     m_socketListener = socketListener;
@@ -101,19 +114,19 @@ void TcpServerSocket::close() {
 
 // -------------------------------------------------------
 TcpSocket* TcpServerSocket::accept() {
-    //m_lock->lock();
-
     if (m_tcpState == TCP_LISTENING) {
         // asynchronous mode
-        if (m_socketListener != 0) {
-            //m_tcpState = TCP_ACCEPTING;
-            //m_lock->unlock();
+        if (m_isAsync) {
+            
+            m_lock->lock();
+            m_tcpState = TCP_ACCEPTING;
+            m_lock->unlock();
+            
             m_reactorInstance->registerInputHandler(this, this);
             return 0;
         } 
         // synchronous mode
         else {
-            //m_lock->unlock();
             int newSocket;
             Socket::InetAddressPort remoteAddrPort;
             int result = Socket::accept(newSocket, remoteAddrPort);
@@ -128,7 +141,6 @@ TcpSocket* TcpServerSocket::accept() {
         }
 
     } else {
-        //m_lock->unlock();
         LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "Not allow to accept new connection in state: " << m_tcpState);
         return 0;
     }
@@ -141,7 +153,6 @@ void TcpServerSocket::handleInput(Socket* theSocket) {
     Socket::InetAddressPort remoteAddrPort;
     int result = theSocket->accept(newSocket, remoteAddrPort);
 
-    assert(m_tcpState == TCP_LISTENING);
     TcpSocket* newTcpSocket;
 
     if (result == SKT_SUCC) {

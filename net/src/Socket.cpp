@@ -85,7 +85,7 @@ Socket::Socket(int socket, int socketType)
     m_role = CONNECT_SOCKET;
 
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "initialize the connected socket, fd = " << m_socket 
-        << ", address = " << m_localIp << ":" << m_localPort);
+        << ", local address = " << m_localIp << ":" << m_localPort);
 }
 
 // ------------------------------------------------
@@ -295,8 +295,8 @@ int Socket::send(const char* theBuffer, int numOfBytesToSend, int& numberOfBytes
 
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "Socket::send(), fd = " << m_socket);
 
-    int result = ::send(m_socket, theBuffer, numOfBytesToSend, 0);
-    if (result == -1) {
+    numberOfBytesSent = ::send(m_socket, theBuffer, numOfBytesToSend, 0);
+    if (numberOfBytesSent == -1) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
             // For non-blocking socket, it would return EAGAIN or EWOULDBLOCK 
             // when send buffer is full
@@ -309,7 +309,6 @@ int Socket::send(const char* theBuffer, int numOfBytesToSend, int& numberOfBytes
         }
     }
 
-    numberOfBytesSent = result;
     return SKT_SUCC;
 }
 
