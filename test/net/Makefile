@@ -1,5 +1,6 @@
 SUBDIRS = server \
-	client
+	client \
+	ut
 
 BUILDDIRS = $(SUBDIRS:%=build-%)
 INSTALLDIRS = $(SUBDIRS:%=install-%)

@@ -24,10 +24,11 @@ TBD
 负责监听server socket所在epoll的reactor thread crash掉则会导致无法接受新连接服务。可否考虑另起一个独立进程listen server socket？
 2. use map or hash_map to save the connection?
 3. TCP Server发送数据也采用async nonblocking，是否必要再每次send才注册EPOLLOUT event？
+4. 收到data后调用TcpServerCallback的接口，如果要在TcpServerCallback里发送response，接口如何定义？需要用同样的worker？
 
 Test:
 ----
-
+google unit test framework
 
 TODO:
 -----
