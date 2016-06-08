@@ -73,3 +73,22 @@ void EventIndicator::set() {
 
     pthread_mutex_unlock(&m_mutex);
 }
+
+// --------------------------------------------
+void EventIndicator::reset() {
+    LOG4CPLUS_DEBUG(_CM_LOOGER_NAME_, "EventIndicator::reset()");
+
+    int result = pthread_mutex_lock(&m_mutex);
+    if (result != 0) {
+        LOG4CPLUS_ERROR(_CM_LOOGER_NAME_, "Fail to lock on mutex.");
+        return;
+    }        
+
+    m_eventIsSet = false; 
+    result = pthread_cond_signal(&m_condition);
+    if (result != 0) {
+        LOG4CPLUS_ERROR(_CM_LOOGER_NAME_, "Fail to signal.");
+    }
+
+    pthread_mutex_unlock(&m_mutex);
+}

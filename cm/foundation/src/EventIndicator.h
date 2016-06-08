@@ -23,6 +23,9 @@ namespace cm {
 
         void set();
 
+        // @description - reset the event 
+        void reset();
+
     private: 
         pthread_cond_t m_condition;
         pthread_mutex_t m_mutex;
