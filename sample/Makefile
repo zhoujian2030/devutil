@@ -1,11 +1,4 @@
-SUBDIRS = cm \
-	ipc \
-	net \
-	cpp \
-	dao \
-	ads \
-	sample \
-	test 
+SUBDIRS = net
 
 BUILDDIRS = $(SUBDIRS:%=build-%)
 INSTALLDIRS = $(SUBDIRS:%=install-%)
@@ -35,9 +28,4 @@ $(INSTALLDIRS):
 .PHONY: all install clean
 
 # specify the dependency here
-ipc: cm
-dao: cm
-net: cm
-ads: cm
-test: ipc
-test: net
+

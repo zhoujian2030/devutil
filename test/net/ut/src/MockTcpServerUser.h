@@ -8,7 +8,7 @@ public:
     
     virtual void dataIndication(unsigned int connId, char* buffer, int numOfBytes);
     
-    virtual void closeNotification(unsigned int connId);
+    virtual void closeIndication(unsigned int connId);
 };
 
 #endif

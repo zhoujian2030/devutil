@@ -44,7 +44,7 @@ namespace net {
         // @description called by TCP server/client to send data to peer
         //  asynchronize mode - try Socket::send(), if not sent, save the 
         //      buffer pointer and register the EPOLLOUT event
-        //  synchronize mode - block until add data sent out
+        //  synchronize mode - block until all data sent out
         // @param theBuffer - the data buffer to be sent
         // @param numOfBytesToSend - number of bytes to be sent
         // @return  number of bytes sent for both sync and async mode if success

@@ -5,6 +5,6 @@ void MockTcpServerUser::dataIndication(unsigned int connId, char* buffer, int nu
     
 }
 
-void MockTcpServerUser::closeNotification(unsigned int connId) {
+void MockTcpServerUser::closeIndication(unsigned int connId) {
     
 }

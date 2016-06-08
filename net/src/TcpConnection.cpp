@@ -62,8 +62,6 @@ void TcpConnection::onDataReceived(int numOfBytesRecved) {
     
     char* startPointer = m_recvBuffer->getEndOfDataPointer();
     m_recvBuffer->increaseDataLength(numOfBytesRecved);
-    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_,"receive " << numOfBytesRecved << " bytes data: " <<
-        m_recvBuffer->getData());
         
     // call user interface to handle the data.
     // when user is handling the receive data in this connection,
@@ -85,7 +83,12 @@ void TcpConnection::onDataReceived(int numOfBytesRecved) {
 void TcpConnection::onConnectionClosed() {
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpConnection::onConnectionClosed, fd: " << 
         m_tcpSocket->getSocket() << ", connection id: " << m_connectionId);
-        
+    
+    // close indication to user layer
+    if (m_tcpServerCallback != 0) {
+        m_tcpServerCallback->closeIndication(this->getGlobalConnectionId());
+    }
+
     close();
 }
 

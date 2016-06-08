@@ -36,7 +36,7 @@ void TcpServerWorker::onConnectionCreated(TcpSocket* theNewSocket) {
 
 // -------------------------------------------
 void TcpServerWorker::handleRecvResult(TcpSocket* theSocket, int numOfBytesRecved) {
-    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpServerWorker::handleRecvResult, new fd: " << theSocket->getSocket());
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpServerWorker::handleRecvResult, fd: " << theSocket->getSocket());
     
     // TODO add a new task to handle received data in worker thread
     
@@ -64,6 +64,10 @@ void TcpServerWorker::handleRecvResult(TcpSocket* theSocket, int numOfBytesRecve
 void TcpServerWorker::createConnection(TcpSocket* theNewSocket) {
     // TODO limit the max connection
     m_connectionIdCounter++;
+    // use 24 bits for the sub connection id, the high 8 bits is reserved for global
+    if (m_connectionIdCounter > 0xffffff) {
+        m_connectionIdCounter = 0;
+    }
     TcpConnection* newTcpConn = new TcpConnection(theNewSocket, m_connectionIdCounter, this, m_tcpServerCallback);
     
     std::pair<map<unsigned int, TcpConnection*>::iterator, bool> result = 
