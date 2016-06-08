@@ -54,25 +54,8 @@ void Worker::initialize(int numOfWorkers) {
 unsigned long Worker::run() {
     LOG4CPLUS_DEBUG(_CM_LOOGER_NAME_, this->getName() << " " << this->getIndex() << " is running.");
 
-    // fix the race condition when reactor thread receives
-    // new connection before worker thread come up to wait
-    // the event if queue is empty
-    // the issue is that, the reactor adds task to worker's
-    // queue and set the event indicator, then worker thread
-    // starts to run, and handle the new task without waiting
-    // event as the queue is not empty. but it will wait the
-    // event in next loop as the queue becomes empty, then it
-    // receives empty queue event and exits running    
-    m_taskChangeIndicator.reset();
-
     int result = TRC_CONTINUE;
-    while (result == TRC_CONTINUE) {
-        // if the task queue is empty, block and wait until there 
-        // is new task available
-        if (m_taskQueue.getLength() == 0) {
-            m_taskChangeIndicator.wait();
-        } 
-        
+    while (result == TRC_CONTINUE) {        
         result = m_taskQueue.executeTask();        
     }
 

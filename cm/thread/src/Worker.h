@@ -13,7 +13,6 @@
 #include "MutexLock.h"
 #include "Task.h"
 #include "TaskQueue.h"
-#include "EventIndicator.h"
 
 #include <arpa/inet.h>
 
@@ -50,7 +49,6 @@ namespace cm {
         // index for the worker thread, range 0 ... NUM_OF_WORKER_THREAD-1
         int m_index;
         TaskQueue m_taskQueue;
-        EventIndicator m_taskChangeIndicator;
 
         static WorkerPool* m_workerPoolInstance;
         static MutexLock m_lock;
@@ -67,7 +65,6 @@ namespace cm {
     // out indication to notify the worker thread.
     inline bool Worker::addTask(Task* theTask) {
         bool result = m_taskQueue.addTask(theTask);
-        m_taskChangeIndicator.set();
         return result;
     }
           

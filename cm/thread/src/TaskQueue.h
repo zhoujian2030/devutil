@@ -8,7 +8,7 @@
 #ifndef TASK_QUEUE_H
 #define TASK_QUEUE_H
 
-#include "MutexLock.h"
+#include <pthread.h>
 
 namespace cm {
     
@@ -29,12 +29,13 @@ namespace cm {
         bool addTask(Task* theTask);
         int getLength() const;
         
-    private:
-        MutexLock m_lock;
-        
+    private:        
         Task* m_firstTask;   
         Task* m_lastTask; 
         int m_length;
+
+        pthread_cond_t m_condition;
+        pthread_mutex_t m_mutex;
     };
     
     // ---------------------------------

@@ -16,6 +16,17 @@ TaskQueue::TaskQueue()
 : m_firstTask(0), m_lastTask(0), m_length(0)
 {
     CMLogger::initConsoleLog();
+
+    int result = pthread_mutex_init(&m_mutex, 0);
+    if (result == 0) {
+        result = pthread_cond_init(&m_condition, 0);
+        if (result != 0) {
+            LOG4CPLUS_ERROR(_CM_LOOGER_NAME_, "Fail to init pthread_cond_t"); 
+            pthread_mutex_destroy(&m_mutex);
+        }
+    } else {
+        LOG4CPLUS_ERROR(_CM_LOOGER_NAME_, "Fail to init pthread_mutex_t"); 
+    }
 }
  
 // ------------------------------------
@@ -27,17 +38,28 @@ TaskQueue::~TaskQueue() {
     }
     
     m_lastTask = 0;
+
+    pthread_mutex_destroy(&m_mutex);
+    pthread_cond_destroy(&m_condition);  
 }
 
 // ------------------------------------
 int TaskQueue::executeTask() {          
-    m_lock.lock();
+    int result = pthread_mutex_lock(&m_mutex);
+    if (result != 0) {
+        LOG4CPLUS_ERROR(_CM_LOOGER_NAME_, "Fail to lock on mutex.");
+        return TRC_END;
+    }
     
-    if (m_length == 0) {
-        // should not happen
-        LOG4CPLUS_WARN(_CM_LOOGER_NAME_, "Empty queue!");       
-        m_lock.unlock();
-        return TRC_EMPTY;
+    // block until there is available task in queue
+    while (m_length == 0) {
+        LOG4CPLUS_WARN(_CM_LOOGER_NAME_, "Empty queue, wait!");       
+        result = pthread_cond_wait(&m_condition, &m_mutex);
+        if (result != 0) {
+            LOG4CPLUS_ERROR(_CM_LOOGER_NAME_, "Fail to wait on condition.");
+            pthread_mutex_unlock(&m_mutex);
+            return TRC_END;
+        }
     }
     
     if (m_firstTask != 0) {
@@ -48,15 +70,20 @@ int TaskQueue::executeTask() {
         }
         m_length--;
         
-        m_lock.unlock();
-        
+        pthread_mutex_unlock(&m_mutex);
+        if (result != 0) {
+            LOG4CPLUS_ERROR(_CM_LOOGER_NAME_, "Fail to unlock mutex.");
+            return TRC_END;
+        }
+
+        // execute the first task
         int result = task->execute();
         delete task;
         return result;
     } else {
         // should not happen
         LOG4CPLUS_WARN(_CM_LOOGER_NAME_, "No available task!");
-        m_lock.unlock();
+        pthread_mutex_unlock(&m_mutex);
         return TRC_EMPTY;
     }
 }
@@ -68,7 +95,11 @@ bool TaskQueue::addTask(Task* theTask) {
     }
     
     LOG4CPLUS_DEBUG(_CM_LOOGER_NAME_, "add new task into queue.");
-    m_lock.lock();
+    int result = pthread_mutex_lock(&m_mutex);
+    if (result != 0) {
+        LOG4CPLUS_ERROR(_CM_LOOGER_NAME_, "Fail to lock on mutex.");
+        return false;
+    } 
     
     if (m_lastTask == 0) {
         // the queue is empty
@@ -82,7 +113,18 @@ bool TaskQueue::addTask(Task* theTask) {
     
     m_length++;
     
-    m_lock.unlock();
+    result = pthread_cond_signal(&m_condition);
+    if (result != 0) {
+        pthread_mutex_unlock(&m_mutex);
+        LOG4CPLUS_ERROR(_CM_LOOGER_NAME_, "Fail to signal.");
+        return false;
+    }
+
+    pthread_mutex_unlock(&m_mutex);
+    if (result != 0) {
+        LOG4CPLUS_ERROR(_CM_LOOGER_NAME_, "Fail to unlock mutex.");
+        return false;
+    }
     
     return true;
 }
