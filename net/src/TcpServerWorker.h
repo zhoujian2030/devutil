@@ -34,6 +34,7 @@ namespace net {
         //      then call receive() to register this socket to reactor's epoll
         // @param theNewSocket - created by reactor for the new accepted connection
         virtual void onConnectionCreated(TcpSocket* theNewSocket);  
+        virtual void onDataReceived(TcpSocket* theSocket, int numOfBytesRecved);
         
         // @description - called by TcpSocket to handle new data received on the socket
         //      could be called by different reactor thread for different socket, need

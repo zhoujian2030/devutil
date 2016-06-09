@@ -15,6 +15,8 @@ namespace net {
     
     class TcpServerWorker;
     
+    // create by TcpServer reactor thread to let worker thread 
+    // establish new TCP connection
     class TcpAcceptTask : public cm::Task {
     public:
         TcpAcceptTask(TcpSocket* theSocket, TcpServerWorker* theWorker);

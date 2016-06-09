@@ -9,6 +9,7 @@
 #include "NetLogger.h"
 #include "TcpSocket.h"
 #include "Worker.h"
+#include "TcpDataReceivedTask.h"
 
 using namespace net;
 using namespace cm;
@@ -35,12 +36,10 @@ void TcpServerWorker::onConnectionCreated(TcpSocket* theNewSocket) {
 }
 
 // -------------------------------------------
-void TcpServerWorker::handleRecvResult(TcpSocket* theSocket, int numOfBytesRecved) {
-    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpServerWorker::handleRecvResult, fd: " << theSocket->getSocket());
-    
-    // TODO add a new task to handle received data in worker thread
-    
-    // for test
+void TcpServerWorker::onDataReceived(TcpSocket* theSocket, int numOfBytesRecved) {
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpServerWorker::onDataReceived, " << numOfBytesRecved <<
+        " bytes received,  fd: " << theSocket->getSocket());
+
     map<unsigned int, TcpConnection*>::iterator it = m_connMap.find((size_t)theSocket->getUserData());
     if (it != m_connMap.end()) {
         TcpConnection* tcpConn = it->second;
@@ -60,6 +59,16 @@ void TcpServerWorker::handleRecvResult(TcpSocket* theSocket, int numOfBytesRecve
         }        
     }
 }
+
+// -------------------------------------------
+void TcpServerWorker::handleRecvResult(TcpSocket* theSocket, int numOfBytesRecved) {
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpServerWorker::handleRecvResult, " << numOfBytesRecved <<
+        " bytes received,  fd: " << theSocket->getSocket());
+    
+    TcpDataReceivedTask* task = new TcpDataReceivedTask(theSocket, this, numOfBytesRecved);
+    m_worker->addTask(task);
+}
+
 // -------------------------------------------
 void TcpServerWorker::createConnection(TcpSocket* theNewSocket) {
     // TODO limit the max connection

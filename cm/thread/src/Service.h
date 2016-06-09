@@ -23,6 +23,7 @@ namespace cm {
         Service(std::string serviceName);
         virtual ~Service();
 
+        // @description - start the service thread as joinable
         void init();
     };
 
