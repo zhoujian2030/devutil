@@ -194,9 +194,8 @@ void testSocket(string ip) {
     // Test non-blocking socket
     socket->makeNonBlocking();
     while (true) {
-        int result = socket->accept(newSocketFd, remoteAddrAndPort);
-        assert(result != SKT_ERR);
-        if (result == SKT_SUCC) {
+        bool result = socket->accept(newSocketFd, remoteAddrAndPort);
+        if (result) {
             Socket* newSocket = new Socket(newSocketFd);
             newSocket->makeNonBlocking();
             DataBuffer* recvBuf = new DataBuffer();
@@ -240,43 +239,40 @@ void testSocket(string ip) {
 
     // Test blocking socket
     socket->makeBlocking();
-    int result = socket->accept(newSocketFd, remoteAddrAndPort);
-    assert(result != SKT_ERR);
-    if (result == SKT_SUCC) {
-        Socket* newSocket = new Socket(newSocketFd);
-        DataBuffer* recvBuf = new DataBuffer();
+    bool result = socket->accept(newSocketFd, remoteAddrAndPort);
+    assert(result);
+    Socket* newSocket = new Socket(newSocketFd);
+    DataBuffer* recvBuf = new DataBuffer();
 
-        int numOfBytesRecved = 0;
+    int numOfBytesRecved = 0;
 
-        while (true) {
-            int result = newSocket->read(recvBuf->getEndOfDataPointer(), recvBuf->getSize() - recvBuf->getLength(), numOfBytesRecved);
-            assert(result != SKT_ERR);
-            if (result == SKT_SUCC) {
-                if (numOfBytesRecved == 0) {
-                    newSocket->close();
-                    delete newSocket;
-                    newSocket = 0;
-                    cout << "socket is disconnected by peer: " << endl;
-                    break;
-                }
-
-                recvBuf->increaseDataLength(numOfBytesRecved);
-                cout << "receive " << numOfBytesRecved << " bytes data from socket: " << recvBuf->getData() << endl;
-                cout << "buffer length: " << recvBuf->getLength() << endl;
-
-                char respData[] = "TCP server response";
-                int numOfBytesSent;
-                assert(SKT_SUCC == newSocket->send(respData, strlen(respData), numOfBytesSent));
-                assert(numOfBytesSent == strlen(respData));
-                cout << "send " << numOfBytesSent << " bytes data to socket: " << respData << endl;
-
-                recvBuf->reset();
-            } else {
-                cm::Thread::sleep(1);
+    while (true) {
+        int result = newSocket->read(recvBuf->getEndOfDataPointer(), recvBuf->getSize() - recvBuf->getLength(), numOfBytesRecved);
+        assert(result != SKT_ERR);
+        if (result == SKT_SUCC) {
+            if (numOfBytesRecved == 0) {
+                newSocket->close();
+                delete newSocket;
+                newSocket = 0;
+                cout << "socket is disconnected by peer: " << endl;
+                break;
             }
+
+            recvBuf->increaseDataLength(numOfBytesRecved);
+            cout << "receive " << numOfBytesRecved << " bytes data from socket: " << recvBuf->getData() << endl;
+            cout << "buffer length: " << recvBuf->getLength() << endl;
+
+            char respData[] = "TCP server response";
+            int numOfBytesSent;
+            assert(SKT_SUCC == newSocket->send(respData, strlen(respData), numOfBytesSent));
+            assert(numOfBytesSent == strlen(respData));
+            cout << "send " << numOfBytesSent << " bytes data to socket: " << respData << endl;
+
+            recvBuf->reset();
+        } else {
+            cm::Thread::sleep(1);
         }
     }
-
 }
 
 // --------------------------------------------------
@@ -287,8 +283,8 @@ void testSctpSocket(string ip) {
 
     Socket::InetAddressPort remoteAddrAndPort;
     int newSocketFd = -1;
-    int result = socket->accept(newSocketFd, remoteAddrAndPort);
-    assert(result == SKT_SUCC);
+    bool result = socket->accept(newSocketFd, remoteAddrAndPort);
+    assert(result);
     SctpSocket* newSocket = new SctpSocket(newSocketFd);
     DataBuffer* recvBuf = new DataBuffer();
     int numOfBytesRecved = 0;

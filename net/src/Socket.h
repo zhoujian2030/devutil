@@ -34,8 +34,12 @@ namespace net {
             unsigned short port;
         };
 
-        // @protocol: 0 - TCP/UDP
+        // Create a socket of TCP, UDP or SCTP
+        //  protocol: 0 - TCP/UDP
         //            132 (IPPROTO_SCTP) - SCTP
+        //
+        // Exception:
+        //  IoException - if fail to create socket
         Socket(
             std::string localIp, 
             unsigned short localPort, 
@@ -46,23 +50,94 @@ namespace net {
         Socket(int socket, int socketType = SOCK_STREAM);
         virtual ~Socket();
 
-        // Only applicable for TCP server socket
-        bool bind();
-        bool listen(int backlog=10000);
-        int accept(int& theSocket, InetAddressPort& theRemoteAddrPort);
+        // Only applicable for TCP server socket to bind local
+        // ip and port before listen.
+        // 
+        // Return: void
+        // 
+        // Exception:
+        //  IoException - if error occurrs in bind
+        void bind();
 
-        // Only applicable for TCP client socket
-        int connect(const InetAddressPort& theRemoteAddrPort);
+        // Listen on the socket in server side.
+        //
+        // Arguments:
+        //  backlog - max number of connection supported 
+        //            default 10000
+        // 
+        // Return: void
+        // 
+        // Exception:
+        //  IoException - if error occurrs in listen
+        void listen(int backlog=10000);
+
+        // Accept a new connection from remote client. If the socket
+        // is set nonblocking, it will return SKT_WAIT immediately if
+        // no new connection.
+        //
+        // Arguments:
+        //  theSocket - new socket for the new connection
+        //  theRemoteAddrPort - ip and port of the remote client
+        // 
+        // Return:
+        //  true  - if accept new connection
+        //  false - if no connection accepted for nonblocking mode
+        //
+        // Exception:
+        //  IoException - if error occurrs in accept
+        bool accept(int& theSocket, InetAddressPort& theRemoteAddrPort);
+
+        // Only applicable for TCP client to connect to remote server.
+        // If the socket is set nonblocking, it will return SKT_WAIT
+        // immediately if connect not complete (need 3 handshake)
+        //
+        // Arguments:
+        //  theRemoteAddrPort - ip and port of remote server
+        //
+        // Return:
+        //  true  - if connect success
+        //  false - if not connect complete for nonblocking mode
+        // 
+        // Exception:
+        //  IoException - if error occurrs in connect
+        bool connect(const InetAddressPort& theRemoteAddrPort);
 
         // Close socket
         void close();
 
-        // Receive data from socket
+        // Receive data from socket to a pre-allocated buffer
+        //
+        // Arguments:
+        //  theBuffer - pointer of the buffer to save the received data
+        //  buffSize - size of the buffer to save the data
+        //  numOfBytesReceived - actual number bytes of data received
+        //  flags - default 0
+        // 
+        // Return:
+        //  SKT_SUCC - if recv data success on the socket
+        //  SKT_WAIT - no data available on the socket for nonblocking mode
+        //  SKT_ERR  - error occurrs when recv
+        // 
+        // Exception:
+        //  std::invalid_argument - if theBuffer is null pointer
         virtual int recv(char* theBuffer, int buffSize, int& numOfBytesReceived, int flags = 0);
         // Identical to recv() with flags set to 0
         int read(char* theBuffer, int buffSize, int& numOfBytesReceived);
 
-        // Send data to socket
+        // Send data from a buffer to peer on socket
+        //
+        // Arguments:
+        //  theBuffer - pointer of the buffer to be sent
+        //  numOfBytesToSend - number of bytes to be sent
+        //  numberOfBytesSent - actual number bytes of data sent
+        // 
+        // Return:
+        //  SKT_SUCC - if send data success on the socket
+        //  SKT_WAIT - no data sent on the socket for nonblocking mode
+        //  SKT_ERR  - error occurrs when send
+        // 
+        // Exception:
+        //  std::invalid_argument - if theBuffer is null pointer
         virtual int send(const char* theBuffer, int numOfBytesToSend, int& numberOfBytesSent);
         int write(const char* theBuffer, int numOfBytesToSend, int& numberOfBytesSent);
 

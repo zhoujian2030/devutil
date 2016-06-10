@@ -7,6 +7,7 @@
 
 #include "Socket.h"
 #include "NetLogger.h"
+#include "IoException.h"
 
 #include <errno.h>
 #include <string.h>
@@ -14,9 +15,11 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <stdexcept>
 
 using namespace std;
 using namespace net;
+using namespace cm;
 
 // ------------------------------------------------
 Socket::Socket(
@@ -35,9 +38,7 @@ Socket::Socket(
     if (m_socket == -1) {
         LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to create socket. errno = " << errno 
             << " - " << strerror(errno));
-
-        // _exit() ??
-        return;
+        throw IoException();
     }
 
     // set the socket reuse address by default to avoid the port is locked after a system crash
@@ -50,11 +51,8 @@ Socket::Socket(
     // for client socket, m_localPort is set to 0, m_localIp is unspecified ?
     if (m_localPort != 0) {
         // check if the ip is valid
-        if (INADDR_NONE == inet_addr(m_localIp.c_str())) {
-            LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "IP is not valid: " << m_localIp);
-            close();
-            return;
-        }
+        assert(INADDR_NONE != inet_addr(m_localIp.c_str()));
+
         memset(&m_localSa, 0, sizeof(struct sockaddr_in));
         m_localSa.sin_family = saFamily;
         m_localSa.sin_addr.s_addr = inet_addr(m_localIp.c_str());
@@ -94,60 +92,47 @@ Socket::~Socket() {
 }
 
 // ------------------------------------------------
-bool Socket::bind() {
-    if (m_state == CREATED && m_localPort != 0) {
-        int result = ::bind(m_socket, (struct sockaddr *)&m_localSa, sizeof(struct sockaddr_in));
-        if (result == -1) {
-            LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to bind socket, fd = " << m_socket << ", address = " << m_localIp << 
-                ":" << m_localPort << ". errno = " << errno << " - " << strerror(errno));
-            close();
-            return false;
-        }
-        m_state = BINDED;
-        LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "success to bind socket: " << m_socket);
-    } else if (m_state == CLOSED) {
-        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "socket is not created yet or already closed: " << m_socket);
-        return false;
-    } else {
+void Socket::bind() {
+    if (m_state == BINDED || m_localPort == 0) {
         LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "no need to bind socket: " << m_socket);
+        return;
     }
-    
-    return true;
+    assert(m_state == CREATED);
+
+    int result = ::bind(m_socket, (struct sockaddr *)&m_localSa, sizeof(struct sockaddr_in));
+    if (result == -1) {
+        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to bind socket, fd = " << m_socket << ", address = " << m_localIp << 
+            ":" << m_localPort << ". errno = " << errno << " - " << strerror(errno));
+        close();
+        throw IoException();
+    }
+    m_state = BINDED;
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "success to bind socket: " << m_socket);
 }
 
 // ------------------------------------------------
-bool Socket::listen(int backlog) {
+void Socket::listen(int backlog) {
     if (m_state == LISTENING) {
         LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "socket is already listening: " << m_socket);
-        return true;
+        return;
     }
+    assert(m_state == BINDED);
 
-    if (m_state == BINDED) {
-        int result = ::listen(m_socket, backlog);
-        if (result == -1) {
-            LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to listen socket, fd = " << m_socket 
-                << ". errno = " << errno << " - " << strerror(errno));
-            close();
-            return false;
-        }
-        m_state = LISTENING;
-        LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "success to listen socket: " << m_socket);
-    } else {
-        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "socket is not ready to listen: " << m_socket);
-        return false;
+    int result = ::listen(m_socket, backlog);
+    if (result == -1) {
+        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to listen socket, fd = " << m_socket 
+            << ". errno = " << errno << " - " << strerror(errno));
+        close();
+        throw IoException();
     }
-
-    return true;
+    m_state = LISTENING;
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "success to listen socket: " << m_socket);
 }
 
 // ------------------------------------------------
-int Socket::accept(int& theSocket, InetAddressPort& theRemoteAddrPort) {
+bool Socket::accept(int& theSocket, InetAddressPort& theRemoteAddrPort) {
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "Socket::accept(), fd = " << m_socket);
-
-    if (m_state != LISTENING) {
-        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "socket is not ready to accept connection: " << m_socket);
-        return SKT_ERR;
-    }
+    assert(m_state == LISTENING);
 
     struct sockaddr_in remoteAddr;
     socklen_t length = sizeof(remoteAddr);
@@ -157,12 +142,11 @@ int Socket::accept(int& theSocket, InetAddressPort& theRemoteAddrPort) {
             // For non-blocking socket, it would return EAGAIN or EWOULDBLOCK 
             // when no data read from socket
             LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "no new connection coming now, fd = " << m_socket);
-            return SKT_WAIT;
+            return false;
         } else {
             LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to accept for socket: " << m_socket <<
                 ". errno = " << errno << " - " << strerror(errno));
-            // TODO throw io exception ??
-            return SKT_ERR;
+            throw IoException();
         }
     }
 
@@ -173,28 +157,22 @@ int Socket::accept(int& theSocket, InetAddressPort& theRemoteAddrPort) {
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "accept new connection, fd = " << theSocket << ", remote address = " 
         << Socket::getHostAddress((struct sockaddr*)&theRemoteAddrPort.addr) << ":" << theRemoteAddrPort.port);
 
-    return SKT_SUCC;
+    return true;
 }
 
 // ------------------------------------------------
-int Socket::connect(const InetAddressPort& theRemoteAddrPort) {
+bool Socket::connect(const InetAddressPort& theRemoteAddrPort) {
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "Socket::connect(), fd = " << m_socket);
-
-    if (m_state != CREATED || m_state == CONNECTED) {
-        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "socket is not ready to connect server: " << m_socket);
-        return SKT_ERR;
-    }
 
     int result = ::connect(m_socket, (struct sockaddr*)&theRemoteAddrPort.addr, sizeof(theRemoteAddrPort.addr));
     if (result == -1) {
         if (errno == EINPROGRESS) {
             LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "connecting, fd = " << m_socket << ", " << strerror(errno));
-            return SKT_WAIT;
+            return false;
         } else {
             LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to connect on socket: " << m_socket <<
                 ". errno = " << errno << " - " << strerror(errno));
-            // TODO throw io exception ??
-            return SKT_ERR;
+            throw IoException();
         }
     }
 
@@ -207,11 +185,11 @@ int Socket::connect(const InetAddressPort& theRemoteAddrPort) {
             << m_localPort << ", fd = " << m_socket);
 
         m_state = CONNECTED;
-        return SKT_SUCC;
+        return true;
     } else {
         LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to getsockname on socket: " << m_socket <<
             ". errno = " << errno << " - " << strerror(errno));
-        return SKT_ERR;
+        throw IoException();
     }
 }
 
@@ -229,14 +207,11 @@ void Socket::close() {
 // -------------------------------------------------
 int Socket::recv(char* theBuffer, int buffSize, int& numOfBytesReceived, int flags) {
     if (theBuffer == 0) {
-        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "null pointer buffer!");
-        return SKT_ERR;
+        throw std::invalid_argument("theBuffer is a null pointer!");
     }
-
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "Socket::recv(), fd = " << m_socket);
 
     int result = ::recv(m_socket, theBuffer, buffSize, flags);
-
     if (result == -1) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
             // For non-blocking socket, it would return EAGAIN or EWOULDBLOCK 
@@ -259,8 +234,7 @@ int Socket::recv(char* theBuffer, int buffSize, int& numOfBytesReceived, int fla
 // -------------------------------------------------
 int Socket::read(char* theBuffer, int buffSize, int& numOfBytesReceived) {
     if (theBuffer == 0) {
-        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "null pointer buffer!");
-        return SKT_ERR;
+        throw std::invalid_argument("theBuffer is a null pointer!");
     }
 
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "Socket::read(), fd = " << m_socket);    
@@ -289,8 +263,7 @@ int Socket::read(char* theBuffer, int buffSize, int& numOfBytesReceived) {
 // -------------------------------------------------
 int Socket::send(const char* theBuffer, int numOfBytesToSend, int& numberOfBytesSent) {
     if (theBuffer == 0) {
-        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "null pointer buffer!");
-        return SKT_ERR;
+        throw std::invalid_argument("theBuffer is a null pointer!");
     }
 
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "Socket::send(), fd = " << m_socket);

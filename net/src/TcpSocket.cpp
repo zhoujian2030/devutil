@@ -7,11 +7,12 @@
 
 #include "TcpSocket.h"
 #include "NetLogger.h"
+#include "IoException.h"
 #include <string.h>
 
 using namespace net;
 using namespace std;
-
+using namespace cm;
 
 // ----------------------------------------------
 TcpSocket::TcpSocket(std::string remoteIp, unsigned short remotePort) 
@@ -130,34 +131,31 @@ int TcpSocket::send(char* theBuffer, int numOfBytesToSend) {
 }
 
 // ----------------------------------------------
-int TcpSocket::connect() {
-    // sync mode
+void TcpSocket::connect() {
+    // async mode
     if (m_socketListener != 0) {
         // TODO
         LOG4CPLUS_WARN(_NET_LOOGER_NAME_, "Not support async mode yet");
-        return -1;
     } 
     // sync mode
     else {
-        if (SKT_SUCC != Socket::connect(m_remoteAddrAndPort)) {
-            LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to connect to TCP server");
-            m_tcpState = TCP_ERROR; 
-            return -1;
-        } else {   
+        try {
+            assert(Socket::connect(m_remoteAddrAndPort));
             m_tcpState = TCP_CONNECTED; 
-            return 0;
+        } catch (IoException& e) {
+            LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to connect to TCP server");
+            close();
+            throw e;
         }
     }
 }
 
 // ----------------------------------------------
 void TcpSocket::close() {
-    if (m_tcpState == TCP_CONNECTED || m_tcpState == TCP_RECEIVING) {
-        LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpSocket::close(), fd = " << this->getSocket());
-        m_tcpState = TCP_CLOSED;
-        m_reactor->removeHandlers(this);
-        Socket::close();
-    }
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpSocket::close(), fd = " << this->getSocket());
+    m_tcpState = TCP_CLOSED;
+    m_reactor->removeHandlers(this);
+    Socket::close();
 }
 
 // ----------------------------------------------

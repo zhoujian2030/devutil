@@ -49,13 +49,24 @@ namespace net {
         void addSocketListener(TcpServerSocketListener* socketListener);
 
         // accept a new TCP connection
-        // synchronous mode:
-        // the calling thread will be blocked until a new TCP socket connection is
-        // accepted and return the new created TcpSocket.
-        // asynchronous mode:
-        // the calling thread registers the server socket and its input event handler
-        // to epoll, when there is new connection request coming in, the reactor 
-        // thread calls the event handler's handleInput() to accept the connection
+        //  synchronous mode:
+        //      the calling thread will be blocked until a new TCP socket connection is
+        //      accepted and return the new created TcpSocket. 
+        //  asynchronous mode:
+        //      the calling thread registers the server socket and its input event handler
+        //      to epoll, when there is new connection request coming in, the reactor 
+        //      thread calls the event handler's handleInput() to accept the connection
+        //
+        // Arguments: N/A 
+        //
+        // Return:
+        //  TcpSocket* - the new connected TCP socket in synchronous mode
+        //           0 - zero pointer in asynchronous mode
+        // 
+        // Exceptions:
+        //  IoException - if error occurrs on accept() in synchronous mode.
+        //      The application should handle this exception as it may happen in some cases
+        //      like too many connection created (too many open files)  
         TcpSocket* accept();
 
         // close server socket

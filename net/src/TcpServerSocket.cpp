@@ -7,6 +7,7 @@
 
 #include "TcpServerSocket.h"
 #include "NetLogger.h"
+#include "IoException.h"
 
 using namespace net;
 using namespace cm;
@@ -27,17 +28,9 @@ TcpServerSocket::TcpServerSocket(
     
     m_lock = new MutexLock(true);
 
-    if (bind()) {
-        if (!listen(m_backlog)) {
-            LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to listen on socket " << this->getSocket());
-            m_tcpState = TCP_ERROR;
-        } else {
-            LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "success to bind and listen on socket " << this->getSocket());
-        }
-    } else {
-        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to bind socket " << this->getSocket());
-        m_tcpState = TCP_ERROR;
-    }
+    bind();
+    listen(m_backlog);
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "success to bind and listen on socket " << this->getSocket());
 }
 
 // -------------------------------------------------------
@@ -59,17 +52,9 @@ TcpServerSocket::TcpServerSocket(
 
     addSocketListener(socketListener);
 
-    if (bind()) {
-        if (!listen(m_backlog)) {
-            LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to listen on socket " << this->getSocket());
-            m_tcpState = TCP_ERROR;
-        } else {
-            LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "success to bind and listen on socket " << this->getSocket());
-        }
-    } else {
-        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to bind socket " << this->getSocket());
-        m_tcpState = TCP_ERROR;
-    }
+    bind();
+    listen(m_backlog);
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "success to bind and listen on socket " << this->getSocket());
 }
 
 // -------------------------------------------------------
@@ -129,14 +114,15 @@ TcpSocket* TcpServerSocket::accept() {
         else {
             int newSocket;
             Socket::InetAddressPort remoteAddrPort;
-            int result = Socket::accept(newSocket, remoteAddrPort);
-            if (result == SKT_SUCC) {
+            try {
+                // As the socket is blocking mode, can not be SKT_WAIT!
+                assert(Socket::accept(newSocket, remoteAddrPort));
                 LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "accept a new TCP connection, new fd = " << newSocket);
                 return new TcpSocket(newSocket, remoteAddrPort);
-            } else {
-                LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to accept(), result = " << result);
+            } catch (IoException& e) {
+                LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "error occurred on accept()");
                 close();
-                return 0;
+                throw e;
             }
         }
 
@@ -151,20 +137,19 @@ TcpSocket* TcpServerSocket::accept() {
 void TcpServerSocket::handleInput(Socket* theSocket) {
     int newSocket;
     Socket::InetAddressPort remoteAddrPort;
-    int result = theSocket->accept(newSocket, remoteAddrPort);
-
-    TcpSocket* newTcpSocket;
-
-    if (result == SKT_SUCC) {
-        newTcpSocket = new TcpSocket(newSocket, remoteAddrPort);
-        m_socketListener->handleAcceptResult(this, newTcpSocket);
-        // TODO only need to accept again if the server socket is deleted from epoll
-        // after receiving epoll event on the socket
-        //this->accept();
-    } else if (result == SKT_WAIT) {
-        LOG4CPLUS_WARN(_NET_LOOGER_NAME_, "no new TCP connection accepted.");
-        // TODO
-    } else {
+    
+    try {
+        if (Socket::accept(newSocket, remoteAddrPort)) {
+            TcpSocket* newTcpSocket = new TcpSocket(newSocket, remoteAddrPort);
+            m_socketListener->handleAcceptResult(this, newTcpSocket);
+            // TODO only need to accept again if the server socket is deleted from epoll
+            // after receiving epoll event on the socket
+            //this->accept();
+        } else {
+            LOG4CPLUS_WARN(_NET_LOOGER_NAME_, "no new TCP connection accepted.");
+            // TODO
+        } 
+    } catch (IoException& e) {
         LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "error occur on accept(), close the server socket");
         m_reactorInstance->removeHandlers(this);
         close();

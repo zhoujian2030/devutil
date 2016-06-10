@@ -90,11 +90,7 @@ namespace net {
     };
 
     // --------------------------------------------
-    inline void EpollSocketSet::registerInputHandler(Socket* theSocket, SocketEventHandler* theEventHandler) {
-        if (theSocket == 0) {
-            return;
-        }        
-
+    inline void EpollSocketSet::registerInputHandler(Socket* theSocket, SocketEventHandler* theEventHandler) {    
         int fd = theSocket->getSocket();
         int operation = EPOLL_CTL_ADD;
 
@@ -127,10 +123,6 @@ namespace net {
 
     // --------------------------------------------
     inline void EpollSocketSet::removeInputHandler(Socket* theSocket) {
-        if (theSocket == 0) {
-            return;
-        }
-
         m_lock->lock();
 
         int fd = theSocket->getSocket();
@@ -170,10 +162,6 @@ namespace net {
 
     // --------------------------------------------
     inline void EpollSocketSet::removeHandlers(Socket* theSocket) {
-        if (theSocket == 0) {
-            return;
-        }
-
         m_lock->lock();
 
         // the user who call this method is responsible to close the socket,

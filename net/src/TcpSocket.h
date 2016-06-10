@@ -52,14 +52,25 @@ namespace net {
         //         -1 if error  occurred for both sync and async mode
         int send(char* theBuffer, int numOfBytesToSend);
         
-        // @description called by TCP client to connect to a TCP server
-        //  asynchronize mode -  not supported yet TODO
-        //  synchronize mode - block on connection to TCP server, return
-        //      when connect success or fail
-        // @return  0  async mode
-        //          0 - connect success for sync mode
-        //         -1 - connect fail for sync mode
-        int connect();
+        // Called by TCP client to connect to a TCP server
+        //  asynchronize mode:
+        //      not supported yet TODO
+        //  synchronize mode:
+        //      block on connection to TCP server, return after connect success.
+        //
+        // Arguments: N/A 
+        //
+        // Return: 
+        //  void
+        //
+        // Exceptions:
+        //  IoException - If error occurrs on connect(). The socket is closed before
+        //      throw this exception. The application should handle this exception as
+        //      it may happen when network condition is bad or remote server is unreachable.
+        //
+        // Note:
+        //  if need connect retry, need to create a new TcpSocket
+        void connect();
         
         // @description - close the connection
         void close();

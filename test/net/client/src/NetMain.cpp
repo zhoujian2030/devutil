@@ -72,9 +72,8 @@ void testSocket(string ip, unsigned short port) {
 
     socket->makeNonBlocking();
     while (true) {
-        int result  = socket->connect(remoteAddrAndPort);
-        assert(result != SKT_ERR);
-        if (SKT_SUCC == result) {
+        bool result  = socket->connect(remoteAddrAndPort);
+        if (result) {
             cout << "connect success!" << endl;
 
             cm::Thread::sleep(100);

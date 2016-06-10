@@ -1,4 +1,5 @@
 #include "MockTcpClient.h"
+#include "IoException.h"
 
 using namespace net;
 using namespace std;
@@ -16,7 +17,12 @@ MockTcpClient::~MockTcpClient() {
 
 // ------------------------------------
 bool MockTcpClient::connect() {
-    return (m_tcpSocket->connect() == 0);
+    try {
+        m_tcpSocket->connect();
+        return true;
+    } catch (IoException& e) {
+        return false;
+    }
 }
 
 int MockTcpClient::send(string data) {
