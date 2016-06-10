@@ -13,6 +13,8 @@
 #include "TcpAcceptTask.h"
 #include "TcpServerWorker.h"
 #include "TcpServerCallback.h"
+#include "TcpDataSendTask.h"
+#include <stdexcept>
 
 using namespace net;
 using namespace std;
@@ -66,4 +68,22 @@ void TcpServer::handleAcceptResult(TcpServerSocket* serverSocket, TcpSocket* new
 
 void TcpServer::handleCloseResult(TcpServerSocket* serverSocket) {
     // TODO
+}
+
+// -------------------------------------------
+void TcpServer::sendData(TcpData* theTcpData) {
+    if (theTcpData == 0) {
+        throw std::invalid_argument("null pointer");
+    }
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpServer::sendData(), global connection id = " <<
+        std::hex << theTcpData->getGlobalConnId());
+    
+    int workerIndex = theTcpData->getGlobalConnId() >> 24;
+    if (workerIndex >= m_numberOfWorkers) {
+        throw std::invalid_argument("Inavlid global connection id");
+    }
+
+    Worker* worker = Worker::getInstance(workerIndex);
+    TcpDataSendTask* task = new TcpDataSendTask(m_tcpServerWorkerArray[workerIndex], theTcpData);
+    worker->addTask(task);
 }

@@ -34,6 +34,7 @@ unsigned long SampleService::run() {
 
     AppProxyLayer proxyLayer;
     TcpServer tcpServer(&proxyLayer, 12345);
+    proxyLayer.init(&tcpServer);
     tcpServer.start();
 
     m_stopEvent.wait();

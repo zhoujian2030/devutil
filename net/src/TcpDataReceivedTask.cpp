@@ -31,7 +31,7 @@ TcpDataReceivedTask::~TcpDataReceivedTask() {
 
 // --------------------------------
 int TcpDataReceivedTask::execute() {
-    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpAcceptTask::execute()");
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpDataReceivedTask::execute()");
     
     m_tcpServerWorker->onDataReceived(m_tcpSocket, m_numOfBytesReceived);
         

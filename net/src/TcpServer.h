@@ -9,6 +9,7 @@
 #define TCP_SERVER_H
 
 #include "TcpServerSocketListener.h"
+#include "TcpServerInterface.h"
 #include <string>
 
 namespace net {
@@ -18,7 +19,7 @@ namespace net {
     class TcpSocket;
     class TcpServerCallback;
 
-    class TcpServer : public TcpServerSocketListener {
+    class TcpServer : public TcpServerSocketListener, public TcpServerInterface {
     public:
         TcpServer(
             TcpServerCallback* theServerCallback,
@@ -32,6 +33,8 @@ namespace net {
 
         virtual void handleAcceptResult(TcpServerSocket* serverSocket, TcpSocket* newSocket);
         virtual void handleCloseResult(TcpServerSocket* serverSocket);
+
+        virtual void sendData(TcpData* theTcpData);
 
     private:
         bool m_isRunning;

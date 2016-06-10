@@ -27,7 +27,8 @@ bool MockTcpClient::connect() {
 
 int MockTcpClient::send(string data) {
     m_sendBuffer = new DataBuffer(data);
-    int result = m_tcpSocket->send(m_sendBuffer->getStartOfDataPointer(), m_sendBuffer->getLength());
+    const char* buffer = m_sendBuffer->getStartOfDataPointer();
+    int result = m_tcpSocket->send(buffer, m_sendBuffer->getLength());
     delete m_sendBuffer;
     return result;
 }

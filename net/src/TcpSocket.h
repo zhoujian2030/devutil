@@ -11,6 +11,7 @@
 #include "Socket.h"
 #include "TcpSocketListener.h"
 #include "Reactor.h"
+#include "MutexLock.h"
 
 namespace net {
 
@@ -50,7 +51,7 @@ namespace net {
         // @return  number of bytes sent for both sync and async mode if success
         //          0 if no bytes sent and register EPOLLOUT event done
         //         -1 if error  occurred for both sync and async mode
-        int send(char* theBuffer, int numOfBytesToSend);
+        int send(const char* theBuffer, int numOfBytesToSend);
         
         // Called by TCP client to connect to a TCP server
         //  asynchronize mode:
@@ -100,6 +101,10 @@ namespace net {
             // register the socket to epoll for EPOLLOUT event, waiting
             // for data sending
             TCP_SENDING,
+
+            // register the socket to epoll for both EPOLLIN and EPOLLOUT
+            // event
+            TCP_SENDING_RECEIVING,
             
             TCP_CLOSING,
             TCP_CLOSED,
@@ -117,12 +122,14 @@ namespace net {
         int m_recvBufferSize;
         
         // data buffer to be sent
-        char* m_sendBuffer;
+        const char* m_sendBuffer;
         // number bytes of data to be sent
         int m_sendBuferSize;
         int m_numOfBytesSent;
         
         TcpSocketListener* m_socketListener;
+
+        cm::Lock* m_lock;
     };
     
     // --------------------------------------------

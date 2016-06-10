@@ -112,3 +112,17 @@ void TcpServerWorker::createConnection(TcpSocket* theNewSocket) {
         delete newTcpConn;
     }
 }
+
+// -------------------------------------------
+void TcpServerWorker::sendData(TcpData* theTcpData) {
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpServerWorker::sendData()");
+
+    unsigned int connId = theTcpData->getGlobalConnId() & 0x00ffffff;
+
+    map<unsigned int, TcpConnection*>::iterator it = m_connMap.find(connId);
+    if (it != m_connMap.end()) {
+        it->second->sendDataToSocket(theTcpData);
+    } else {
+        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "Tcp connection not exists, connection id = 0x" << std::hex << connId);
+    }
+}

@@ -9,6 +9,7 @@
 #include "TcpServerWorker.h"
 #include "NetLogger.h"
 #include "TcpServerCallback.h"
+#include "TcpData.h"
 
 using namespace net;
 using namespace cm;
@@ -58,7 +59,7 @@ bool TcpConnection::recvDataFromSocket() {
 // ------------------------------------------------
 void TcpConnection::onDataReceived(int numOfBytesRecved) {
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpConnection::onDataReceive, fd: " << 
-        m_tcpSocket->getSocket() << ", connection id: " << m_connectionId);
+        m_tcpSocket->getSocket() << ", connection id: 0x" << std::hex << m_connectionId);
     
     char* startPointer = m_recvBuffer->getEndOfDataPointer();
     m_recvBuffer->increaseDataLength(numOfBytesRecved);
@@ -80,9 +81,19 @@ void TcpConnection::onDataReceived(int numOfBytesRecved) {
 }
 
 // ------------------------------------------------
+void TcpConnection::sendDataToSocket(TcpData* theTcpData) {
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpConnection::sendDataToSocket(), fd: " << 
+        m_tcpSocket->getSocket() << ", connection id: 0x" << std::hex << m_connectionId);
+
+    int numOfBytesToSend;
+    const char* buffer = theTcpData->getData(numOfBytesToSend);
+    m_tcpSocket->send(buffer, numOfBytesToSend);
+}
+
+// ------------------------------------------------
 void TcpConnection::onConnectionClosed() {
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpConnection::onConnectionClosed, fd: " << 
-        m_tcpSocket->getSocket() << ", connection id: " << m_connectionId);
+        m_tcpSocket->getSocket() << ", connection id: ox" << std::hex << m_connectionId);
     
     // close indication to user layer
     if (m_tcpServerCallback != 0) {

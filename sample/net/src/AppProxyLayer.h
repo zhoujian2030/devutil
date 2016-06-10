@@ -9,6 +9,7 @@
 #define APP_PROXY_LAYER_H
 
 #include "TcpServerCallback.h"
+#include "TcpServerInterface.h"
 
 namespace sample {
 
@@ -17,9 +18,14 @@ namespace sample {
         AppProxyLayer();
         virtual ~AppProxyLayer();
         
-        virtual void dataIndication(unsigned int connId, char* buffer, int numOfBytes);
+        virtual void dataIndication(unsigned int globalConnId, char* buffer, int numOfBytes);
         
-        virtual void closeIndication(unsigned int connId);
+        virtual void closeIndication(unsigned int globalConnId);
+
+        void init(net::TcpServerInterface* theTcpServer);
+
+    private:
+        net::TcpServerInterface* m_tcpServer;
     };
 }
 

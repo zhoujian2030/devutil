@@ -24,6 +24,7 @@ TcpSocket::TcpSocket(std::string remoteIp, unsigned short remotePort)
 {
     Socket::getSockaddrByIpAndPort(&m_remoteAddrAndPort.addr, remoteIp, remotePort);
     m_remoteAddrAndPort.port = remotePort;
+    m_lock = new MutexLock(true);
     
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "Create TCP client socket to connect to " << m_remoteIp << ":" 
         << m_remoteAddrAndPort.port);
@@ -38,6 +39,7 @@ TcpSocket::TcpSocket(int socket, Socket::InetAddressPort& theRemoteAddrPort)
 {
     memcpy(&m_remoteAddrAndPort, &theRemoteAddrPort, sizeof(theRemoteAddrPort));
     m_remoteIp = Socket::getHostAddress((struct sockaddr*)&theRemoteAddrPort.addr);
+    m_lock = new MutexLock(true);
     
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "Create TCP socket, local addr = " << m_localIp << ":" 
         << m_localPort << ", remote addr = " << m_remoteIp << ":" << m_remoteAddrAndPort.port);
@@ -69,12 +71,22 @@ void TcpSocket::addSocketListener(TcpSocketListener* socketListener) {
 int TcpSocket::receive(char* theBuffer, int buffSize) {
     // async mode
     if (m_socketListener != 0) {
-        if (m_tcpState == TCP_CONNECTED) {
-            m_tcpState = TCP_RECEIVING;
+        m_lock->lock();
+
+        if (m_tcpState == TCP_CONNECTED || m_tcpState == TCP_SENDING) {
+            if (m_tcpState == TCP_CONNECTED) {
+                m_tcpState = TCP_RECEIVING;
+            } else {
+                m_tcpState = TCP_SENDING_RECEIVING;
+            }
+            m_lock->unlock();
+            
             m_recvBuffer = theBuffer;
             m_recvBufferSize = buffSize;
             m_reactor->registerInputHandler(this, this);
         } else {
+            m_lock->unlock();
+
             LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "error TCP connect state: " << m_tcpState);
         }
         
@@ -89,14 +101,22 @@ int TcpSocket::receive(char* theBuffer, int buffSize) {
 }
 
 // ----------------------------------------------
-int TcpSocket::send(char* theBuffer, int numOfBytesToSend) {
+int TcpSocket::send(const char* theBuffer, int numOfBytesToSend) {
     // async mode
     if (m_socketListener != 0) {
-        if (m_tcpState == TCP_CONNECTED) {
+        m_lock->lock();
+
+        if (m_tcpState == TCP_CONNECTED || TCP_RECEIVING) {
             int numberOfBytesSent;
             int result = Socket::send(theBuffer, numOfBytesToSend, numberOfBytesSent);
             if (result == SKT_WAIT) {
-                m_tcpState = TCP_SENDING;
+                if (m_tcpState == TCP_CONNECTED) {
+                    m_tcpState = TCP_SENDING;
+                } else {
+                    m_tcpState = TCP_SENDING_RECEIVING;
+                }
+                m_lock->unlock();
+
                 m_sendBuffer = theBuffer;
                 m_sendBuferSize = numOfBytesToSend;
                 m_numOfBytesSent = 0;
@@ -106,9 +126,11 @@ int TcpSocket::send(char* theBuffer, int numOfBytesToSend) {
             } else {
                 // if success, numberOfBytesSent is set actual number of bytes sent, 
                 // or it is set -1 in Socket::send
+                m_lock->unlock();
                 return numberOfBytesSent;
             }
         } else {
+            m_lock->unlock();
             LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "error TCP connect state: " << m_tcpState);
         }
         
@@ -161,21 +183,30 @@ void TcpSocket::close() {
 // ----------------------------------------------
 void TcpSocket::handleInput(Socket* theSocket) {
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpSocket::handleInput(), fd = " << theSocket->getSocket());
+   
+    m_lock->lock();
 
+    assert(m_tcpState == TCP_RECEIVING || m_tcpState == TCP_SENDING_RECEIVING);
     int numOfByteRecved;
     int result = recv(m_recvBuffer, m_recvBufferSize, numOfByteRecved);
-    
-    assert(m_tcpState == TCP_RECEIVING);
-    m_tcpState = TCP_CONNECTED;
-    
     if (result == SKT_SUCC) {
+        if (m_tcpState == TCP_RECEIVING) {
+            m_tcpState = TCP_CONNECTED;
+        } else {
+            m_tcpState = TCP_SENDING;
+        }
+        m_lock->unlock();
+
         m_socketListener->handleRecvResult(this, numOfByteRecved);
     } else if (result == SKT_WAIT) {
+        m_lock->unlock();
         LOG4CPLUS_WARN(_NET_LOOGER_NAME_, "no new TCP data received");
-        // TODO
+        // TODO close or ignore it?
     } else {
+        m_lock->unlock();
         LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "error occur on recv(), close the connection");
         close();
+        // TODO use async close ?
     }
 }
 

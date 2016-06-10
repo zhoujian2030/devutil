@@ -11,6 +11,7 @@
 #include "TcpSocketListener.h"
 #include "Worker.h" 
 #include "TcpConnection.h"
+#include "TcpData.h"
 #include <map>
 
 namespace net {
@@ -43,6 +44,9 @@ namespace net {
         // @param numOfBytesRecved - number bytes of data received
         virtual void handleRecvResult(TcpSocket* theSocket, int numOfBytesRecved);
         
+        // Send response data to client
+        virtual void sendData(TcpData* theTcpData);
+
     protected:
         friend class TcpConnection;
         

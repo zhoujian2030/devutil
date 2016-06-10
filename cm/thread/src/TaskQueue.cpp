@@ -53,7 +53,7 @@ int TaskQueue::executeTask() {
     
     // block until there is available task in queue
     while (m_length == 0) {
-        LOG4CPLUS_WARN(_CM_LOOGER_NAME_, "Empty queue, wait!");       
+        LOG4CPLUS_DEBUG(_CM_LOOGER_NAME_, "Empty queue, wait!");       
         result = pthread_cond_wait(&m_condition, &m_mutex);
         if (result != 0) {
             LOG4CPLUS_ERROR(_CM_LOOGER_NAME_, "Fail to wait on condition.");
