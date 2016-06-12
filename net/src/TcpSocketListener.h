@@ -17,6 +17,7 @@ namespace net {
     class TcpSocketListener {
     public:
         virtual void handleRecvResult(TcpSocket* theSocket, int numOfBytesRecved) = 0;
+        virtual void handleSendResult(TcpSocket* theSocket, int numOfBytesSent) = 0;
     };
 }
 

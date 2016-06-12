@@ -80,6 +80,7 @@ void TcpServer::sendData(TcpData* theTcpData) {
     
     int workerIndex = theTcpData->getGlobalConnId() >> 24;
     if (workerIndex >= m_numberOfWorkers) {
+        delete theTcpData;
         throw std::invalid_argument("Inavlid global connection id");
     }
 

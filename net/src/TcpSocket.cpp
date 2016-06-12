@@ -109,6 +109,32 @@ int TcpSocket::send(const char* theBuffer, int numOfBytesToSend) {
         if (m_tcpState == TCP_CONNECTED || TCP_RECEIVING) {
             int numberOfBytesSent;
             int result = Socket::send(theBuffer, numOfBytesToSend, numberOfBytesSent);
+
+            if (result == SKT_SUCC) {
+                // complete sending all data (normal case)
+                if (numberOfBytesSent >= numOfBytesToSend) {
+                    m_lock->unlock();
+                    m_socketListener->handleSendResult(this, numberOfBytesSent);
+                    return numberOfBytesSent;
+                }
+
+                // not send data complete due to send buffer full
+                if (m_tcpState == TCP_CONNECTED) {
+                    m_tcpState = TCP_SENDING;
+                } else {
+                    m_tcpState = TCP_SENDING_RECEIVING;
+                }
+                m_lock->unlock();
+
+                m_sendBuffer = theBuffer + numberOfBytesSent;
+                m_sendBuferSize = numOfBytesToSend - numberOfBytesSent;
+                m_numOfBytesSent = numberOfBytesSent;
+                LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "register EPOLLOUT event for sendind data");
+                m_reactor->registerOutputHandler(this, this);
+                return numberOfBytesSent;
+            }
+
+            // no data sent due to send buffer full, register to reactor epoll
             if (result == SKT_WAIT) {
                 if (m_tcpState == TCP_CONNECTED) {
                     m_tcpState = TCP_SENDING;
@@ -121,21 +147,19 @@ int TcpSocket::send(const char* theBuffer, int numOfBytesToSend) {
                 m_sendBuferSize = numOfBytesToSend;
                 m_numOfBytesSent = 0;
                 LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "register EPOLLOUT event for sendind data");
-                // TODO register the EPOLLOUT event?
-                exit(0); // exit for test
-            } else {
-                // if success, numberOfBytesSent is set actual number of bytes sent, 
-                // or it is set -1 in Socket::send
-                m_lock->unlock();
-                return numberOfBytesSent;
+                m_reactor->registerOutputHandler(this, this);
+                return 0;
             }
-        } else {
+
+            // error happen
             m_lock->unlock();
-            LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "error TCP connect state: " << m_tcpState);
+            LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "error on send()");
+            return -1;
         }
-        
-        // async send now or socket not ready for sending, return 0 immediately
-        return 0;
+
+        m_lock->unlock();
+        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "error TCP connect state: " << m_tcpState);
+        return -1;
     } 
     // sync mode
     else {

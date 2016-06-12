@@ -88,6 +88,8 @@ void TcpConnection::sendDataToSocket(TcpData* theTcpData) {
     int numOfBytesToSend;
     const char* buffer = theTcpData->getData(numOfBytesToSend);
     m_tcpSocket->send(buffer, numOfBytesToSend);
+
+    // TODO async send, free the theTcpData after send complete?
 }
 
 // ------------------------------------------------

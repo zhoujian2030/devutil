@@ -24,6 +24,7 @@ namespace net {
         void registerInputHandler(Socket* theSocket, SocketEventHandler* theEventHandler);
         void removeInputHandler(Socket* theSocket);
         void removeHandlers(Socket* theSocket);
+        void registerOutputHandler(Socket* theSocket, SocketEventHandler* theEventHandler);
 
     private:
         virtual unsigned long run();
@@ -47,6 +48,12 @@ namespace net {
     // ---------------------------------------------------------
     inline void ReactorThread::removeHandlers(Socket* theSocket) {
         m_epollSocketSet.removeHandlers(theSocket);
+    }
+
+    // ---------------------------------------------------------
+    inline void ReactorThread::registerOutputHandler(Socket* theSocket, SocketEventHandler* theEventHandler) {
+        m_epollSocketSet.registerOutputHandler(theSocket, theEventHandler);
+        m_socketSetChangeEvent.set();
     }
 }
 

@@ -25,7 +25,8 @@ namespace net {
     class EpollSocketSet {
     public:
 
-        // 
+        // data structure for socket registered to epoll and its event handler,
+        // only support an event handler for all events of the socket.
         struct EpollSocket {
             Socket*  socket;
             SocketEventHandler* eventHandler;
@@ -59,6 +60,7 @@ namespace net {
         typedef std::map<int, EpollSocket> EpollSocketMap;  
 
         void updateEvents();
+        void registerSocketEvent(Socket* theSocket, SocketEventHandler* theEventHandler, int event);
         void removeInputHandler(EpollSocketMap::iterator it);
         void removeOutputHandler(EpollSocketMap::iterator it);
 
@@ -91,34 +93,7 @@ namespace net {
 
     // --------------------------------------------
     inline void EpollSocketSet::registerInputHandler(Socket* theSocket, SocketEventHandler* theEventHandler) {    
-        int fd = theSocket->getSocket();
-        int operation = EPOLL_CTL_ADD;
-
-        EpollSocket epollSocket;
-        epollSocket.socket = theSocket;
-        epollSocket.eventHandler = theEventHandler;
-        epollSocket.events = EPOLLIN;
-
-        m_lock->lock();
-
-        std::pair<EpollSocketMap::iterator, bool> result = 
-            m_epollSocketMap.insert(EpollSocketMap::value_type(fd, epollSocket));
-        if (!result.second) {
-            // The socket is already registered in epoll, update it
-            operation = EPOLL_CTL_MOD;
-            (result.first)->second.events |= epollSocket.events;
-            (result.first)->second.socket = epollSocket.socket;
-            (result.first)->second.eventHandler = epollSocket.eventHandler;
-            epollSocket.events = (result.first)->second.events;
-        }
-
-        UpdateSocket updateSocket;
-        updateSocket.fd = fd;
-        updateSocket.op = operation;
-        updateSocket.events = epollSocket.events;
-        m_updateSocketList.push_back(updateSocket);
-
-        m_lock->unlock();
+        registerSocketEvent(theSocket, theEventHandler, EPOLLIN);
     }
 
     // --------------------------------------------
@@ -152,7 +127,7 @@ namespace net {
 
     // --------------------------------------------
     inline void EpollSocketSet::registerOutputHandler(Socket* theSocket, SocketEventHandler* theEventHandler) {
-        //TODO
+        registerSocketEvent(theSocket, theEventHandler, EPOLLOUT);
     }
 
     // --------------------------------------------
@@ -184,6 +159,42 @@ namespace net {
         const_cast<EpollSocketSet*>(this)->m_lock->unlock();
 
         return num;
+    }
+
+    // ---------------------------------------------
+    inline void EpollSocketSet::registerSocketEvent(
+        Socket* theSocket, 
+        SocketEventHandler* theEventHandler, 
+        int event) 
+    {
+        int fd = theSocket->getSocket();
+        int operation = EPOLL_CTL_ADD;
+
+        EpollSocket epollSocket;
+        epollSocket.socket = theSocket;
+        epollSocket.eventHandler = theEventHandler;
+        epollSocket.events = event;
+
+        m_lock->lock();
+
+        std::pair<EpollSocketMap::iterator, bool> result = 
+            m_epollSocketMap.insert(EpollSocketMap::value_type(fd, epollSocket));
+        if (!result.second) {
+            // The socket is already registered in epoll, update it
+            operation = EPOLL_CTL_MOD;
+            (result.first)->second.events |= epollSocket.events;
+            (result.first)->second.socket = epollSocket.socket;
+            (result.first)->second.eventHandler = epollSocket.eventHandler;
+            epollSocket.events = (result.first)->second.events;
+        }
+
+        UpdateSocket updateSocket;
+        updateSocket.fd = fd;
+        updateSocket.op = operation;
+        updateSocket.events = epollSocket.events;
+        m_updateSocketList.push_back(updateSocket);
+
+        m_lock->unlock();    
     }
 
     // ---------------------------------------------

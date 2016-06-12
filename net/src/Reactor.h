@@ -32,6 +32,7 @@ namespace net {
         void registerInputHandler(Socket* theSocket, SocketEventHandler* theEventHandler);
         void removeInputHandler(Socket* theSocket);
         void removeHandlers(Socket* theSocket);
+        void registerOutputHandler(Socket* theSocket, SocketEventHandler* theEventHandler);
 
     private:
         Reactor(int numOfReactors = NUM_OF_THREADS);

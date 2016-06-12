@@ -70,6 +70,14 @@ void TcpServerWorker::handleRecvResult(TcpSocket* theSocket, int numOfBytesRecve
 }
 
 // -------------------------------------------
+void TcpServerWorker::handleSendResult(TcpSocket* theSocket, int numOfBytesSent) {
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpServerWorker::handleSendResult, " << numOfBytesSent <<
+        " bytes sent,  fd: " << theSocket->getSocket());    
+
+    // TODO
+}
+
+// -------------------------------------------
 void TcpServerWorker::createConnection(TcpSocket* theNewSocket) {
     // TODO limit the max connection
     m_connectionIdCounter++;
@@ -124,5 +132,6 @@ void TcpServerWorker::sendData(TcpData* theTcpData) {
         it->second->sendDataToSocket(theTcpData);
     } else {
         LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "Tcp connection not exists, connection id = 0x" << std::hex << connId);
+        delete theTcpData;
     }
 }

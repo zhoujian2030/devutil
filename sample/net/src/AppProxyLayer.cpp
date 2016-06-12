@@ -33,6 +33,11 @@ void AppProxyLayer::dataIndication(unsigned int globalConnId, char* buffer, int 
     // Test
     std::string respStr;
     respStr.append(buffer, numOfBytes);
+    // for (int i=0; i<16384  ; ++i) {
+    //     respStr.append("!");
+    // }
+    // respStr.append("end");
+
     TcpResponse* tcpResponse = new TcpResponse(globalConnId);
     tcpResponse->setData(respStr);
     m_tcpServer->sendData(tcpResponse);

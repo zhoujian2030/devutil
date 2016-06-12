@@ -37,12 +37,27 @@ namespace net {
         virtual void onConnectionCreated(TcpSocket* theNewSocket);  
         virtual void onDataReceived(TcpSocket* theSocket, int numOfBytesRecved);
         
-        // @description - called by TcpSocket to handle new data received on the socket
-        //      could be called by different reactor thread for different socket, need
-        //      to be carefull of thread conflict
-        // @param theSocket - the tcp socket that has data received
-        // @param numOfBytesRecved - number bytes of data received
+        // Called by TcpSocket to handle new data received on the socket. Could
+        // be called by different reactor thread for different socket, need to 
+        // be carefull of thread conflict
+        // 
+        // Arguments:
+        //  theSocket - the tcp socket that has data received
+        //	numOfBytesRecved - number of bytes received
+        //
+        // Return: 
+        //  void
         virtual void handleRecvResult(TcpSocket* theSocket, int numOfBytesRecved);
+
+        // Called by TcpSocket to notify tcp data sent result.
+        // 
+        // Arguments:
+        //  theSocket - the tcp socket that has data received
+        //	numOfBytesSent - number of bytes sent
+        //
+        // Return: 
+        //  void     
+        virtual void handleSendResult(TcpSocket* theSocket, int numOfBytesSent);
         
         // Send response data to client
         virtual void sendData(TcpData* theTcpData);

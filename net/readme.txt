@@ -18,13 +18,16 @@ worker线程处理返回，reactor线程之后可以继续以相同方式处理�
 的消息，此时该worker线程（或者改连接处理线程）不能再处理其他新的连接请求task，直到当前连接被释放；二是异步模式，worker线程执行的TcpAcceptTask
 不会阻塞在recv上，而是把该TcpSocket注册到epoll的EPOLLIN事件，由reactor线程接收epoll event后再调用该TcpSocket的event handler接收处理消息。
 
+4. TcpServer类继承TcpServerInterface接口，提供sendData接口发送数据到client。因此TcpServer的应用层user需要保存TcpServer的对象指针，在需要发送
+数据时调用改接口发送。TcpServer会根据发送数据提供的global connection id找到相应的worker进行异步发送
+
 TBD
 ---
 1. server socket和其他新连接的的socket都是注册到reactor thread pool中的某个thread，但是server socket的重要性应该远远高于其他连接socket，如果刚好
 负责监听server socket所在epoll的reactor thread crash掉则会导致无法接受新连接服务。可否考虑另起一个独立进程listen server socket？
 2. use map or hash_map to save the connection?
 3. TCP Server发送数据也采用async nonblocking，是否必要再每次send才注册EPOLLOUT event？
-4. 收到data后调用TcpServerCallback的接口，如果要在TcpServerCallback里发送response，接口如何定义？需要用同样的worker？
+4. TcpSocket状态设置？由于会被worker和reactor调用，互斥的设置？
 
 Test:
 ----

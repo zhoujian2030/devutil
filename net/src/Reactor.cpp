@@ -70,11 +70,30 @@ void Reactor::registerInputHandler(Socket* theSocket, SocketEventHandler* theEve
 }
 
 // ---------------------------------------------------
+void Reactor::removeInputHandler(Socket* theSocket) {
+    size_t index = (((size_t)theSocket) >> NUM_OF_BIT_SHIFT) % m_numOfReactors;
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "remove socket(" << theSocket->getSocket() << ") from " << 
+        m_reactorThreadArray[index]->getName() << " " << index);
+
+    //TODO
+}
+
+// ---------------------------------------------------
 void Reactor::removeHandlers(Socket* theSocket) {
     size_t index = (((size_t)theSocket) >> NUM_OF_BIT_SHIFT) % m_numOfReactors;
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "remove socket(" << theSocket->getSocket() << ") from " << 
         m_reactorThreadArray[index]->getName() << " " << index);
 
     m_reactorThreadArray[index]->removeHandlers(theSocket);
+}
 
+// ---------------------------------------------------
+void Reactor::registerOutputHandler(Socket* theSocket, SocketEventHandler* theEventHandler) {
+    // make sure the same Socket object is registered to the same reactor thread if it is 
+    // registered for multiple times
+    size_t index = (((size_t)theSocket) >> NUM_OF_BIT_SHIFT) % m_numOfReactors;
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "register socket(" << theSocket->getSocket() << ") to " << 
+        m_reactorThreadArray[index]->getName() << " " << index);
+
+    m_reactorThreadArray[index]->registerOutputHandler(theSocket, theEventHandler);
 }
