@@ -57,6 +57,11 @@ unsigned long ReactorThread::run() {
                 if (epollSocket->events & EPOLLOUT) {
                     eventHandler->handleOutput(socket);
                     sleep = false;
+                    // if socket has been closed by the output handler 
+                    // due to socket error, skip possible input event
+                    if (!socket->isReady()) {
+                        continue;
+                    }
                 }
 
                 // handle input event

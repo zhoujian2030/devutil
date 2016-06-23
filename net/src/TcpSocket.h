@@ -73,7 +73,7 @@ namespace net {
         //  if need connect retry, need to create a new TcpSocket
         void connect();
         
-        // @description - close the connection
+        // Called by reactor or worker thread to close the TCP socket.
         void close();
 
     protected:
@@ -84,6 +84,7 @@ namespace net {
         TcpSocket(int socket, Socket::InetAddressPort& theRemoteAddrPort);
 
         virtual void handleInput(Socket* theSocket);
+        virtual void handleOutput(Socket* theSocket);
 
     private: 
         typedef enum {
@@ -93,6 +94,9 @@ namespace net {
             // for new created socket in server side, initialize state 
             // is TCP_CONNECTED
             TCP_CONNECTED,
+
+            // client connects to server asynchronously
+            TCP_CONNECTING,
             
             // register the socket to epoll for EPOLLIN event, waiting
             // for data coming

@@ -13,9 +13,11 @@ public:
     bool connect();   
     
     int send(std::string data);
+    std::string receive();
     
     net::TcpSocket* m_tcpSocket;
     cm::DataBuffer* m_sendBuffer;
+    cm::DataBuffer* m_recvBuffer;
     // int m_sendBufferSize;
 };
 

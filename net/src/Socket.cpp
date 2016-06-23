@@ -307,7 +307,48 @@ void Socket::makeBlocking() {
         LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to set blocking by fcntl. errno = " 
             << errno << " - " << strerror(errno));
     }
+}
 
+// -------------------------------------------------
+void Socket::setSendBufferSize(int size) {
+    if (setsockopt(m_socket, SOL_SOCKET, SO_SNDBUF, (const char*)&size, sizeof(size)) != 0) {
+        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to set SO_SNDBUF. errno = " << errno
+            << " - " << strerror(errno));
+    }    
+}
+
+// -------------------------------------------------
+int Socket::getSendBufferSize() {
+    int bufferSize = 0;
+    socklen_t size = sizeof(int);
+    if (getsockopt(m_socket, SOL_SOCKET, SO_SNDBUF, (char*)&bufferSize, &size) != 0) {
+        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to get SO_SNDBUF. errno = " << errno
+            << " - " << strerror(errno));
+        bufferSize = -1;
+    }    
+
+    return bufferSize;
+}
+
+// -------------------------------------------------
+void Socket::setRecvBufferSize(int size) {
+    if (setsockopt(m_socket, SOL_SOCKET, SO_RCVBUF, (const char*)&size, sizeof(size)) != 0) {
+        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to set SO_RCVBUF. errno = " << errno
+            << " - " << strerror(errno));
+    }    
+}
+
+// -------------------------------------------------
+int Socket::getRecvBufferSize() {
+    int bufferSize = 0;
+    socklen_t size = sizeof(int);
+    if (getsockopt(m_socket, SOL_SOCKET, SO_RCVBUF, (char*)&bufferSize, &size) != 0) {
+        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to get SO_SNDBUF. errno = " << errno
+            << " - " << strerror(errno));
+        bufferSize = -1;
+    }    
+
+    return bufferSize;
 }
 
 // ------------------------------------------------

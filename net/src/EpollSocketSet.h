@@ -132,7 +132,31 @@ namespace net {
 
     // --------------------------------------------
     inline void EpollSocketSet::removeOutputHandler(Socket* theSocket) {
-        // TODO
+        m_lock->lock();
+
+        int fd = theSocket->getSocket();
+        EpollSocketMap::iterator it = m_epollSocketMap.find(fd);
+
+        if (it != m_epollSocketMap.end()) {
+            it->second.events &= (~EPOLLOUT);
+
+            UpdateSocket updateSocket;
+            updateSocket.fd = fd;
+            
+            // if no events, remove the socket from EpollSocketMap
+            if (it->second.events == 0) {
+                m_epollSocketMap.erase(it);
+                updateSocket.op = EPOLL_CTL_DEL;
+                updateSocket.events = 0;
+            } else {
+                updateSocket.op = EPOLL_CTL_MOD;
+                updateSocket.events = it->second.events;
+            }
+
+            m_updateSocketList.push_back(updateSocket);
+        }
+
+        m_lock->unlock();
     }
 
     // --------------------------------------------
@@ -225,7 +249,28 @@ namespace net {
 
     // ---------------------------------------------
     inline void EpollSocketSet::removeOutputHandler(EpollSocketMap::iterator it) {
-        // TODO
+        if (it != m_epollSocketMap.end()) {
+            m_lock->lock();
+
+            it->second.events &= (~EPOLLOUT);
+
+            UpdateSocket updateSocket;
+            updateSocket.fd = (it->second.socket)->getSocket();
+            
+            // if no events, remove the socket from EpollSocketMap
+            if (it->second.events == 0) {
+                m_epollSocketMap.erase(it);
+                updateSocket.op = EPOLL_CTL_DEL;
+                updateSocket.events = 0;
+            } else {
+                updateSocket.op = EPOLL_CTL_MOD;
+                updateSocket.events = it->second.events;
+            }
+
+            m_updateSocketList.push_back(updateSocket);
+
+            m_lock->unlock();
+        }
     }
 
 }

@@ -24,6 +24,11 @@ AppProxyLayer::~AppProxyLayer() {
 }
 
 // --------------------------------------------------
+void AppProxyLayer::deliveryResult(unsigned int globalConnId, bool status) {
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "CONNECTION (0x" << std::hex << globalConnId << ") deliver status: " << status);    
+} 
+
+// --------------------------------------------------
 void AppProxyLayer::dataIndication(unsigned int globalConnId, char* buffer, int numOfBytes) {
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "CONNECTION (0x" << std::hex << globalConnId << ") receive " << numOfBytes << " bytes data: " 
         << buffer);
@@ -32,11 +37,11 @@ void AppProxyLayer::dataIndication(unsigned int globalConnId, char* buffer, int 
 
     // Test
     std::string respStr;
-    respStr.append(buffer, numOfBytes);
-    // for (int i=0; i<16384  ; ++i) {
-    //     respStr.append("!");
-    // }
-    // respStr.append("end");
+    // respStr.append(buffer, numOfBytes);
+    for (int i=0; i<169160  ; ++i) {
+        respStr.append("!");
+    }
+    respStr.append("end");
 
     TcpResponse* tcpResponse = new TcpResponse(globalConnId);
     tcpResponse->setData(respStr);

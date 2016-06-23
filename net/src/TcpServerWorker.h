@@ -35,7 +35,27 @@ namespace net {
         //      then call receive() to register this socket to reactor's epoll
         // @param theNewSocket - created by reactor for the new accepted connection
         virtual void onConnectionCreated(TcpSocket* theNewSocket);  
+
+        // Called by TcpDataReceivedTask to handle received socket data. It is always
+        // called by the same worker thread for async mode.
+        //
+        // Arguments:
+        //  theSocket - the tcp socket that has data received
+        //  numOfBytesRecved - number of bytes received
+        //
+        // Return:
+        //  void
         virtual void onDataReceived(TcpSocket* theSocket, int numOfBytesRecved);
+
+        // Called by TcpSendResultTask to notify send data to socket result
+        //
+        // Arguments:
+        //  theSocket - the tcp socket that sent the data
+        //  numOfBytesSent - number of bytes received
+        //
+        // Return:
+        //  void        
+        virtual void onSendResult(TcpSocket* theSocket, int numOfBytesSent);
         
         // Called by TcpSocket to handle new data received on the socket. Could
         // be called by different reactor thread for different socket, need to 

@@ -21,6 +21,8 @@ namespace net {
 
         unsigned long getGlobalConnId() const;
 
+        int getLength() const;
+
     protected:
         std::string m_data;
         // global tcp connection id
@@ -30,6 +32,11 @@ namespace net {
     // -----------------------------------------
     inline unsigned long TcpData::getGlobalConnId() const {
         return m_globalConnId;
+    }
+
+    // -----------------------------------------
+    inline int TcpData::getLength() const {
+        return m_data.length();
     }
 }
 

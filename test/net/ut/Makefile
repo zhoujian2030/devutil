@@ -10,7 +10,7 @@ BINDIR = bin
 # Libraries
 # gtest include
 INCGTEST = -I$(PROJBASE)/test/lib/gtest/include
-INC += $(INCGTEST) -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/thread/inc -I$(PROJBASE)/cm/log/inc -I$(PROJBASE)/net/inc
+INC += $(INCGTEST) -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/thread/inc -I$(PROJBASE)/cm/util/inc -I$(PROJBASE)/cm/log/inc -I$(PROJBASE)/net/inc
 # MUST place libnet.a ahead of liblog.a because libnet depends on liblog.a
 LIBS = $(PROJBASE)/net/lib/libnet.a $(PROJBASE)/cm/lib/libcm.a 
 

@@ -144,6 +144,51 @@ namespace net {
         void makeNonBlocking();
         void makeBlocking();
 
+        // Set send buffer size of the socket
+        //
+        // Arguments:
+        //  size - size of the send buffer (in byte)
+        //
+        // Return:
+        //  void
+        void setSendBufferSize(int size);
+
+        // Get send buffer size of the socket
+        //
+        // Arguments:
+        //  N/A
+        //
+        // Return:
+        //  int - size (in byte) of the send buffer
+        int getSendBufferSize();
+
+        // Set receive buffer size of the socket
+        //
+        // Arguments:
+        //  size - size of the receive buffer (in byte)
+        //
+        // Return:
+        //  void
+        void setRecvBufferSize(int size);
+
+        // Get receive buffer size of the socket
+        //
+        // Arguments:
+        //  N/A
+        //
+        // Return:
+        //  int - size (in byte) of the receive buffer
+        int getRecvBufferSize();
+
+        // Check if the socket is ready to handle read/write event
+        //
+        // Arguments:
+        //  N/A
+        // 
+        // Return:
+        //  bool - true if ready
+        bool isReady() const;
+
         int getSocket() const;
         
         // @description - check if it is a server socket for listening
@@ -220,6 +265,14 @@ namespace net {
         void* m_userData;
     };
 
+    // ----------------------------------------------------------
+    inline bool Socket::isReady() const {
+        if (!isServerSocket()) {
+            return (m_state == CONNECTED);
+        } else {
+            return (m_state != CLOSED);
+        }
+    }
 
     // ----------------------------------------------------------
     inline int Socket::getSocket() const {

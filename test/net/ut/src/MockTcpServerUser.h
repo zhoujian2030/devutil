@@ -5,6 +5,8 @@
 
 class MockTcpServerUser : public net::TcpServerCallback {
 public:
+
+    virtual void deliveryResult(unsigned int globalConnId, bool status);
     
     virtual void dataIndication(unsigned int connId, char* buffer, int numOfBytes);
     

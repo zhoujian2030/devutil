@@ -13,6 +13,7 @@ namespace net {
     class TcpServerCallback {
     public:
 
+        virtual void deliveryResult(unsigned int globalConnId, bool status) = 0;
         // @description - this method is called when data is received on a socket
         //      all data in the buffer must be copied out by the receiver as the buffer
         //      will be cleared in lower layer after return

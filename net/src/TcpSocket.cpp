@@ -94,8 +94,12 @@ int TcpSocket::receive(char* theBuffer, int buffSize) {
     } 
     // sync mode
     else {
-        LOG4CPLUS_WARN(_NET_LOOGER_NAME_, "Not supported synchronize mode now!");
-        // TODO
+        int numOfByteRecved;
+        int result = Socket::recv(theBuffer, buffSize, numOfByteRecved);
+        if (result == SKT_SUCC) {
+            return numOfByteRecved;
+        }
+        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "error occurred on recv()");
         return -1;
     }
 }
@@ -129,7 +133,7 @@ int TcpSocket::send(const char* theBuffer, int numOfBytesToSend) {
                 m_sendBuffer = theBuffer + numberOfBytesSent;
                 m_sendBuferSize = numOfBytesToSend - numberOfBytesSent;
                 m_numOfBytesSent = numberOfBytesSent;
-                LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "register EPOLLOUT event for sendind data");
+                LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "send " << numberOfBytesSent << " bytes, register EPOLLOUT event for sendind data");
                 m_reactor->registerOutputHandler(this, this);
                 return numberOfBytesSent;
             }
@@ -186,7 +190,7 @@ void TcpSocket::connect() {
     // sync mode
     else {
         try {
-            assert(Socket::connect(m_remoteAddrAndPort));
+            Socket::connect(m_remoteAddrAndPort);
             m_tcpState = TCP_CONNECTED; 
         } catch (IoException& e) {
             LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to connect to TCP server");
@@ -212,7 +216,7 @@ void TcpSocket::handleInput(Socket* theSocket) {
 
     assert(m_tcpState == TCP_RECEIVING || m_tcpState == TCP_SENDING_RECEIVING);
     int numOfByteRecved;
-    int result = recv(m_recvBuffer, m_recvBufferSize, numOfByteRecved);
+    int result = Socket::recv(m_recvBuffer, m_recvBufferSize, numOfByteRecved);
     if (result == SKT_SUCC) {
         if (m_tcpState == TCP_RECEIVING) {
             m_tcpState = TCP_CONNECTED;
@@ -230,7 +234,53 @@ void TcpSocket::handleInput(Socket* theSocket) {
         m_lock->unlock();
         LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "error occur on recv(), close the connection");
         close();
-        // TODO use async close ?
+        // TODO need to notify listener to release resources
     }
 }
 
+// ----------------------------------------------
+void TcpSocket::handleOutput(Socket* theSocket) {
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpSocket::handleOutput(), fd = " << theSocket->getSocket());
+    m_lock->lock();
+
+    assert(m_tcpState == TCP_SENDING || m_tcpState == TCP_SENDING_RECEIVING || m_tcpState == TCP_CONNECTING);
+    
+    if (m_tcpState == TCP_SENDING || m_tcpState == TCP_SENDING_RECEIVING) {
+        int numOfBytesSent;
+        int result = Socket::send(m_sendBuffer, m_sendBuferSize, numOfBytesSent);
+        
+        // SKT_WAIT should not happen as epoll notify the socket is ready to send
+        if (result != SKT_SUCC) {
+            m_lock->unlock();
+            close();
+            // notify listener to release 
+            // TODO
+            // m_socketListener->handleErrorResult(this);
+        } else {
+            m_sendBuffer += numOfBytesSent;
+            m_sendBuferSize -= numOfBytesSent;
+            m_numOfBytesSent += numOfBytesSent;
+            if (m_sendBuferSize == 0) {
+                if (m_tcpState == TCP_SENDING) {
+                    m_tcpState = TCP_CONNECTED;
+                } else {
+                    m_tcpState = TCP_RECEIVING;
+                }
+                m_lock->unlock();
+                
+                // notify the listener send complete
+                m_socketListener->handleSendResult(this, m_numOfBytesSent);
+            } else {
+                m_lock->unlock();
+
+                // register the EPOLLOUT again to continue to send remaining data
+                m_reactor->registerOutputHandler(this, this);
+            }
+        }
+    } else {
+        // TODO connecting
+        m_lock->unlock();
+    }
+
+    
+}

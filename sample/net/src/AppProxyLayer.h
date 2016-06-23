@@ -18,6 +18,8 @@ namespace sample {
         AppProxyLayer();
         virtual ~AppProxyLayer();
         
+        virtual void deliveryResult(unsigned int globalConnId, bool status);
+
         virtual void dataIndication(unsigned int globalConnId, char* buffer, int numOfBytes);
         
         virtual void closeIndication(unsigned int globalConnId);

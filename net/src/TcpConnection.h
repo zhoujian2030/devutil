@@ -40,7 +40,18 @@ namespace net {
         // @param numOfBytesRecved - number of bytes received on the socket
         void onDataReceived(int numOfBytesRecved);
 
+        // Called by TcpServerWorker to send socket data
         void sendDataToSocket(TcpData* theTcpData);
+
+        // Called by TcpServerWorker (worker thread) to handle the tcp socket
+        // data send result.
+        //
+        // Arguments:
+        //  numOfByteSent - the number of bytes sent
+        //
+        // Return:
+        //  void
+        void onSendResult(int numOfByteSent);
         
         // @description - called by TcpServerWorker to close connection when
         //      disconneted by peer
@@ -75,7 +86,8 @@ namespace net {
         cm::DataBuffer* m_recvBuffer;     
         TcpRecvState m_recvState;
         
-        
+        // store the data to be sent out
+        TcpData* m_sendData;
     };
     
     // -------------------------------------------------

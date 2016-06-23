@@ -25,10 +25,24 @@ bool MockTcpClient::connect() {
     }
 }
 
+// -------------------------------------
 int MockTcpClient::send(string data) {
     m_sendBuffer = new DataBuffer(data);
     const char* buffer = m_sendBuffer->getStartOfDataPointer();
     int result = m_tcpSocket->send(buffer, m_sendBuffer->getLength());
     delete m_sendBuffer;
     return result;
+}
+
+// --------------------------------------
+string MockTcpClient::receive() {
+    m_recvBuffer = new DataBuffer(10240);
+    int recvLength = m_tcpSocket->receive(m_recvBuffer->getEndOfDataPointer(), m_recvBuffer->getRemainBufferSize());
+    if (recvLength != -1) {
+        m_recvBuffer->increaseDataLength(recvLength);
+        return m_recvBuffer->getData();
+    }
+
+    delete m_recvBuffer;
+    return "";
 }

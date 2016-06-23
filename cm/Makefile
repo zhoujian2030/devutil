@@ -4,7 +4,8 @@ LIBDIR = lib
 SUBDIRS = log \
 	foundation \
 	thread \
-	mq
+	mq \
+	util
 
 BUILDDIRS = $(SUBDIRS:%=build-%)
 INSTALLDIRS = $(SUBDIRS:%=install-%)
@@ -36,7 +37,7 @@ $(INSTALLDIRS):
 
 .PHONY: all install clean
 
-OBJS = log/obj/* foundation/obj/* thread/obj/* mq/obj/*
+OBJS = log/obj/* foundation/obj/* thread/obj/* mq/obj/* util/obj/*
 
 .PHONY: $(POSTBUILD)
 $(POSTBUILD): 

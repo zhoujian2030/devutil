@@ -25,7 +25,8 @@ TcpConnection::TcpConnection(
   m_tcpServerWorker(theServerWorker),
   m_tcpServerCallback(theServerCallback),
   m_recvBuffer(new DataBuffer()),
-  m_recvState(READY_TO_RECV)
+  m_recvState(READY_TO_RECV),
+  m_sendData(0)
 {
     NetLogger::initConsoleLog();
 }
@@ -34,6 +35,10 @@ TcpConnection::TcpConnection(
 TcpConnection::~TcpConnection() {
     delete m_tcpSocket;
     delete m_recvBuffer;
+    if (m_sendData != 0) {
+        delete m_sendData;
+        m_sendData = 0;
+    }
 }
 
 // ------------------------------------------------
@@ -89,7 +94,27 @@ void TcpConnection::sendDataToSocket(TcpData* theTcpData) {
     const char* buffer = theTcpData->getData(numOfBytesToSend);
     m_tcpSocket->send(buffer, numOfBytesToSend);
 
-    // TODO async send, free the theTcpData after send complete?
+    // free the memory first to avoid memory leak
+    if (m_sendData != 0) {
+        delete m_sendData;
+    }
+    m_sendData = theTcpData;
+}
+
+// ------------------------------------------------
+void TcpConnection::onSendResult(int numOfByteSent) {
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpConnection::onSendResult, fd: " << 
+        m_tcpSocket->getSocket() << ", connection id: 0x" << std::hex << m_connectionId);    
+
+    if (numOfByteSent == m_sendData->getLength()) {
+        LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "Send TCP data complete.");
+        m_tcpServerCallback->deliveryResult(this->getGlobalConnectionId(), true);
+    } else {
+        // TODO
+        // currently, the output handler notifies listener only if all data sent complete
+        // so is should not come here
+        assert(false);
+    }
 }
 
 // ------------------------------------------------

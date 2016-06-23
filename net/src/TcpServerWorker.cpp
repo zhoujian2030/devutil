@@ -10,6 +10,7 @@
 #include "TcpSocket.h"
 #include "Worker.h"
 #include "TcpDataReceivedTask.h"
+#include "TcpSendResultTask.h"
 
 using namespace net;
 using namespace cm;
@@ -61,6 +62,18 @@ void TcpServerWorker::onDataReceived(TcpSocket* theSocket, int numOfBytesRecved)
 }
 
 // -------------------------------------------
+void TcpServerWorker::onSendResult(TcpSocket* theSocket, int numOfBytesSent) {
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpServerWorker::onSendResult, " << numOfBytesSent <<
+        " bytes received,  fd: " << theSocket->getSocket());    
+
+    map<unsigned int, TcpConnection*>::iterator it = m_connMap.find((size_t)theSocket->getUserData());
+    if (it != m_connMap.end()) {
+        TcpConnection* tcpConn = it->second;
+        tcpConn->onSendResult(numOfBytesSent);
+    }
+}
+
+// -------------------------------------------
 void TcpServerWorker::handleRecvResult(TcpSocket* theSocket, int numOfBytesRecved) {
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpServerWorker::handleRecvResult, " << numOfBytesRecved <<
         " bytes received,  fd: " << theSocket->getSocket());
@@ -73,8 +86,9 @@ void TcpServerWorker::handleRecvResult(TcpSocket* theSocket, int numOfBytesRecve
 void TcpServerWorker::handleSendResult(TcpSocket* theSocket, int numOfBytesSent) {
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpServerWorker::handleSendResult, " << numOfBytesSent <<
         " bytes sent,  fd: " << theSocket->getSocket());    
-
-    // TODO
+    
+    TcpSendResultTask* task = new TcpSendResultTask(this, theSocket, numOfBytesSent);
+    m_worker->addTask(task);
 }
 
 // -------------------------------------------
