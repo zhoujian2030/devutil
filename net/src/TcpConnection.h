@@ -19,7 +19,7 @@ namespace net {
     
     // m_recvBuffer is used to stored the data received on the socket,
     // it is written by reactor thread, but processed by worker thread,
-    // so we must make sure reactor thread won't written data until worker
+    // so we must make sure reactor thread won't write data until worker
     // thread calls onDataReceive() to process the data
     class TcpConnection {
     public:

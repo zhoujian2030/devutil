@@ -30,6 +30,9 @@ ReactorThread::~ReactorThread() {
 // --------------------------------------------------
 unsigned long ReactorThread::run() {
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, this->getName() << " is running.");
+    if (m_epollSocketSet.getNumberOfSocket() > 0) {
+        m_socketSetChangeEvent.reset();
+    }
 
     while (true) {
         // if no socket registered in epoll, wait

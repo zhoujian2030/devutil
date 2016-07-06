@@ -202,10 +202,40 @@ void TcpSocket::connect() {
 
 // ----------------------------------------------
 void TcpSocket::close() {
-    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpSocket::close(), fd = " << this->getSocket());
-    m_tcpState = TCP_CLOSED;
-    m_reactor->removeHandlers(this);
-    Socket::close();
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpSocket::close(), fd = " << this->getSocket());  
+    if (this->getSocket() < 0) {
+        return;
+    }
+
+    if (m_socketListener != 0) {
+        // async mode
+        m_lock->lock();
+        if (m_tcpState != TCP_CLOSED) {
+            int preState = m_tcpState;
+            m_tcpState = TCP_CLOSED;
+            m_lock->unlock();
+
+            m_reactor->removeHandlers(this);
+            Socket::close();
+
+            // notify listener to release 
+            if (preState == TCP_ERROR_CLOSING) {
+                m_socketListener->handleErrorResult(this);
+            } else {
+                m_socketListener->handleCloseResult(this);
+            }
+        } else {
+            m_lock->unlock();
+        }
+    } else {
+        // sync mode
+        // TODO
+        if (m_tcpState != TCP_CLOSED) {
+            m_reactor->removeHandlers(this);
+            Socket::close();
+            m_tcpState = TCP_CLOSED;   
+        }   
+    }
 }
 
 // ----------------------------------------------
@@ -234,7 +264,6 @@ void TcpSocket::handleInput(Socket* theSocket) {
         m_lock->unlock();
         LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "error occur on recv(), close the connection");
         close();
-        // TODO need to notify listener to release resources
     }
 }
 
@@ -251,11 +280,9 @@ void TcpSocket::handleOutput(Socket* theSocket) {
         
         // SKT_WAIT should not happen as epoll notify the socket is ready to send
         if (result != SKT_SUCC) {
+            m_tcpState = TCP_ERROR_CLOSING;
             m_lock->unlock();
             close();
-            // notify listener to release 
-            // TODO
-            // m_socketListener->handleErrorResult(this);
         } else {
             m_sendBuffer += numOfBytesSent;
             m_sendBuferSize -= numOfBytesSent;

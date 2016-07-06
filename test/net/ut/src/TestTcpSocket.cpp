@@ -14,6 +14,84 @@ using namespace net;
 using namespace cm;
 using namespace std;
 
+TEST_F(TestTcpSocket, BlockingIO_CloseSocketInServerSide) {
+    ASSERT_TRUE(m_tcpServer != 0);
+    ASSERT_GT(m_tcpServer->m_tcpServerSocket->getSocket(), 0);
+
+    // client connect to server
+    MockTcpClient* tcpClient = new MockTcpClient("127.0.0.1", 12345);
+    EXPECT_TRUE(tcpClient->connect());
+
+    // server accept the connection
+    m_tcpSocket = m_tcpServer->accept();
+    ASSERT_TRUE(m_tcpSocket != 0);
+
+    // client send data to server
+    string testData("Test Data");
+    int expectLength = testData.length();
+    tcpClient->send(testData);
+    Thread::sleep(2);
+
+    // server receive data from socket
+    ASSERT_EQ(m_tcpSocket->receive(m_buffer->getEndOfDataPointer(), m_buffer->getRemainBufferSize()), expectLength);
+    m_buffer->reset();
+
+    // client close connection
+    delete tcpClient;
+    Thread::sleep(1);
+    ASSERT_TRUE(m_tcpSocket->receive(m_buffer->getEndOfDataPointer(), m_buffer->getRemainBufferSize()) == 0);
+    m_tcpSocket->close();
+    ASSERT_TRUE(m_tcpSocketListener->m_closeCount == 0);
+    ASSERT_TRUE(m_tcpSocket->getSocket() == -1);
+
+    // server close again the TcpSocket after it is closed
+    m_tcpSocket->close();
+    ASSERT_TRUE(m_tcpSocketListener->m_closeCount == 0);
+    ASSERT_TRUE(m_tcpSocket->getSocket() == -1);
+    delete m_tcpSocket;
+}
+
+TEST_F(TestTcpSocket, NonblockingIO_CloseSocketInServerSide) {
+    ASSERT_TRUE(m_tcpServer != 0);
+    ASSERT_GT(m_tcpServer->m_tcpServerSocket->getSocket(), 0);
+
+    // client connect to server
+    MockTcpClient* tcpClient = new MockTcpClient("127.0.0.1", 12345);
+    EXPECT_TRUE(tcpClient->connect());
+
+    // server accept the connection
+    m_tcpSocket = m_tcpServer->accept();
+    ASSERT_TRUE(m_tcpSocket != 0);
+
+    // server register EPOLLIN event to epoll
+    m_tcpSocket->addSocketListener(m_tcpSocketListener);
+    ASSERT_EQ(m_tcpSocket->receive(m_buffer->getEndOfDataPointer(), m_buffer->getRemainBufferSize()), 0);
+
+    // client send data to server
+    string testData("Test Data");
+    int expectLength = testData.length();
+    tcpClient->send(testData);
+    Thread::sleep(3);
+    ASSERT_TRUE(m_tcpSocketListener->m_recvDataLength == expectLength);
+    m_buffer->reset();
+    ASSERT_EQ(m_tcpSocket->receive(m_buffer->getEndOfDataPointer(), m_buffer->getRemainBufferSize()), 0);
+
+    // client close connection
+    delete tcpClient;
+    Thread::sleep(3);
+    ASSERT_TRUE(m_tcpSocketListener->m_recvDataLength == 0);
+    m_tcpSocket->close();
+    ASSERT_TRUE(m_tcpSocketListener->m_closeCount == 1);
+    ASSERT_TRUE(m_tcpSocket->getSocket() == -1);
+    m_tcpSocketListener->m_closeCount = 0;
+
+    // server close again the TcpSocket after it is closed
+    m_tcpSocket->close();
+    ASSERT_TRUE(m_tcpSocketListener->m_closeCount == 0);
+    ASSERT_TRUE(m_tcpSocket->getSocket() == -1);
+    delete m_tcpSocket;
+}
+
 TEST_F(TestTcpSocket, NonblockingIO_SendBufferFull) {
     ASSERT_TRUE(m_tcpServer != 0);
     ASSERT_GT(m_tcpServer->m_tcpServerSocket->getSocket(), 0);

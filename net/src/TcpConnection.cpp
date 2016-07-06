@@ -106,13 +106,15 @@ void TcpConnection::onSendResult(int numOfByteSent) {
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpConnection::onSendResult, fd: " << 
         m_tcpSocket->getSocket() << ", connection id: 0x" << std::hex << m_connectionId);    
 
-    if (numOfByteSent == m_sendData->getLength()) {
+    // numOfByteSent could be >= m_sendData->getLength() if there is remaining data
+    // to be sent in previous transaction
+    if (numOfByteSent >= m_sendData->getLength()) {
         LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "Send TCP data complete.");
         m_tcpServerCallback->deliveryResult(this->getGlobalConnectionId(), true);
     } else {
         // TODO
         // currently, the output handler notifies listener only if all data sent complete
-        // so is should not come here
+        // so it should not come here
         assert(false);
     }
 }

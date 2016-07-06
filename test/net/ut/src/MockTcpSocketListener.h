@@ -13,8 +13,14 @@
 
 class MockTcpSocketListener : public net::TcpSocketListener {
 public:
+    MockTcpSocketListener();
     virtual void handleRecvResult(net::TcpSocket* theSocket, int numOfBytesRecved);
     virtual void handleSendResult(net::TcpSocket* theSocket, int numOfBytesSent);
+    virtual void handleCloseResult(net::TcpSocket* theSocket);
+    virtual void handleErrorResult(net::TcpSocket* theSocket);
+
+    int m_recvDataLength;
+    int m_closeCount;
 };
 
 #endif

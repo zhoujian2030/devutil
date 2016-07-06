@@ -11,6 +11,7 @@
 #include "Worker.h"
 #include "TcpDataReceivedTask.h"
 #include "TcpSendResultTask.h"
+#include "TcpCloseTask.h"
 
 using namespace net;
 using namespace cm;
@@ -74,6 +75,19 @@ void TcpServerWorker::onSendResult(TcpSocket* theSocket, int numOfBytesSent) {
 }
 
 // -------------------------------------------
+void TcpServerWorker::onConnectionClosed(TcpSocket* theSocket) {
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpServerWorker::onConnectionClosed, fd = " << theSocket->getSocket());
+
+    map<unsigned int, TcpConnection*>::iterator it = m_connMap.find((size_t)theSocket->getUserData());
+    if (it != m_connMap.end()) {
+        TcpConnection* tcpConn = it->second;
+        tcpConn->onConnectionClosed();
+        delete tcpConn;
+        m_connMap.erase(it);
+    }
+}
+
+// -------------------------------------------
 void TcpServerWorker::handleRecvResult(TcpSocket* theSocket, int numOfBytesRecved) {
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpServerWorker::handleRecvResult, " << numOfBytesRecved <<
         " bytes received,  fd: " << theSocket->getSocket());
@@ -88,6 +102,24 @@ void TcpServerWorker::handleSendResult(TcpSocket* theSocket, int numOfBytesSent)
         " bytes sent,  fd: " << theSocket->getSocket());    
     
     TcpSendResultTask* task = new TcpSendResultTask(this, theSocket, numOfBytesSent);
+    m_worker->addTask(task);
+}
+
+// --------------------------------------------
+void TcpServerWorker::handleCloseResult(TcpSocket* theSocket) {
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpServerWorker::handleCloseResult, fd = " << theSocket->getSocket());
+
+    TcpCloseTask* task = new TcpCloseTask(this, theSocket);
+    m_worker->addTask(task);
+}
+
+// --------------------------------------------
+void TcpServerWorker::handleErrorResult(TcpSocket* theSocket) {
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "TcpServerWorker::handleErrorResult, fd = " << theSocket->getSocket());
+
+    // TODO
+    // Test
+    TcpCloseTask* task = new TcpCloseTask(this, theSocket);
     m_worker->addTask(task);
 }
 

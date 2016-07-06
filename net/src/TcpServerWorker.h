@@ -56,6 +56,15 @@ namespace net {
         // Return:
         //  void        
         virtual void onSendResult(TcpSocket* theSocket, int numOfBytesSent);
+
+        // Called by TcpCloseTask to handle socket close
+        //
+        // Arguments:
+        //  theSocket - the tcp socket that is closed
+        //
+        // Return:
+        //  void
+        virtual void onConnectionClosed(TcpSocket* theSocket);
         
         // Called by TcpSocket to handle new data received on the socket. Could
         // be called by different reactor thread for different socket, need to 
@@ -78,6 +87,24 @@ namespace net {
         // Return: 
         //  void     
         virtual void handleSendResult(TcpSocket* theSocket, int numOfBytesSent);
+
+        // Called by TcpSocket to handle socket close
+        //
+        // Arguments:
+        //  theSocket - the tcp socket that is closed
+        // 
+        // Return:
+        //  void
+        virtual void handleCloseResult(TcpSocket* theSocket);
+
+        // Called by TcpSocket to handle socket error
+        //
+        // Arguments:
+        //  theSocket - the tcp socket that has error occurred
+        // 
+        // Return:
+        //  void        
+        virtual void handleErrorResult(TcpSocket* theSocket);
         
         // Send response data to client
         virtual void sendData(TcpData* theTcpData);

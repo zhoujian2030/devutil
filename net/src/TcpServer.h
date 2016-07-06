@@ -34,6 +34,18 @@ namespace net {
         virtual void handleAcceptResult(TcpServerSocket* serverSocket, TcpSocket* newSocket);
         virtual void handleCloseResult(TcpServerSocket* serverSocket);
 
+        // Called by TCP server user to send data to peer
+        //
+        // Arguments:
+        //  theTcpData - The data object to be sent, must be allocated
+        //      in heap memory with "new" as it will be free with "delete"
+        //      when complete
+        //
+        // Return:
+        //  void
+        //
+        // Exceptions:
+        //  std::invalid_argument - if pointer is 0 or connection id is invalid
         virtual void sendData(TcpData* theTcpData);
 
     private:

@@ -109,6 +109,9 @@ namespace net {
             // register the socket to epoll for both EPOLLIN and EPOLLOUT
             // event
             TCP_SENDING_RECEIVING,
+
+            // close after error
+            TCP_ERROR_CLOSING,
             
             TCP_CLOSING,
             TCP_CLOSED,
