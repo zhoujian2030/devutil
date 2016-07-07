@@ -28,7 +28,7 @@ namespace net {
             int backlog = 100);
         ~TcpServer();
 
-        void start();
+        void listen();
         bool isRunning() const;
 
         virtual void handleAcceptResult(TcpServerSocket* serverSocket, TcpSocket* newSocket);

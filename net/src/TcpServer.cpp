@@ -50,7 +50,7 @@ TcpServer::~TcpServer() {
 }
 
 // -------------------------------------------
-void TcpServer::start() {
+void TcpServer::listen() {
     m_isRunning = true;
     m_tcpServerSocket->accept();
 }
