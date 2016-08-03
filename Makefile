@@ -4,6 +4,7 @@ SUBDIRS = cm \
 	cpp \
 	dao \
 	ads \
+	http \
 	sample \
 	test 
 
@@ -41,3 +42,4 @@ net: cm
 ads: cm
 test: ipc
 test: net
+http: net

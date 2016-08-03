@@ -1,6 +1,7 @@
 SUBDIRS = log \
 	ipc \
 	net \
+	http \
 	str \
 	cm
 

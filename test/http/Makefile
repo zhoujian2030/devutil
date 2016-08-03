@@ -1,5 +1,4 @@
-SUBDIRS = net \
-	http
+SUBDIRS = ut
 
 BUILDDIRS = $(SUBDIRS:%=build-%)
 INSTALLDIRS = $(SUBDIRS:%=install-%)

@@ -261,6 +261,7 @@ void TcpSocket::handleInput(Socket* theSocket) {
         LOG4CPLUS_WARN(_NET_LOOGER_NAME_, "no new TCP data received");
         // TODO close or ignore it?
     } else {
+        m_tcpState = TCP_ERROR_CLOSING;
         m_lock->unlock();
         LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "error occur on recv(), close the connection");
         close();

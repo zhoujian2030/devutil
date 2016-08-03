@@ -26,7 +26,11 @@ TcpServerWorker::TcpServerWorker(Worker* theWorker, TcpServerCallback* theServer
 
 // -------------------------------------------
 TcpServerWorker::~TcpServerWorker() {
-    // Empty
+    for (map<unsigned int, TcpConnection*>::iterator it = m_connMap.begin(); it != m_connMap.end(); ++it) {
+        if (it->second != 0) {
+            delete it->second;
+        }
+    }
 }
 
 // -------------------------------------------

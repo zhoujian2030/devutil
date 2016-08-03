@@ -1,0 +1,2 @@
+- Test Command
+curl -H "Content-Type: application/json" -X POST -d '{"primary-imsi":"400139000150003", "csn":"ts15_Ipad_csn", "imei":"ts15_Ipad_imei", "meid":"ts15_Ipad_meid", "device-type":"Ipad", "iccid-status":"Exist_Sub", "activation-status":"New", "imsi":"001123450000000","msisdn":"13922110000", "iccid":"ts15_Ipad_iccid", "esim-allocation-count":2, "primary-msisdn":"400139000150003" }' http://127.0.0.1:12345/test/v1.0
