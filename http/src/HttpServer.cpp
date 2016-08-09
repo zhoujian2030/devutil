@@ -6,7 +6,7 @@
  */
 
 #include "HttpServer.h"
-#include "HttpServerCallback.h"
+#include "TcpServerCallbackImpl.h"
 #include "HttpResponse.h"
 
 using namespace http;
@@ -19,7 +19,7 @@ HttpServer::HttpServer(
     std::string localIp, 
     int backlog)
 {
-    HttpServerCallback* serverCallback = new HttpServerCallback(httpUser);
+    TcpServerCallbackImpl* serverCallback = new TcpServerCallbackImpl(httpUser);
     m_tcpServer = new TcpServer(serverCallback, localPort, localIp, backlog);
 }
 

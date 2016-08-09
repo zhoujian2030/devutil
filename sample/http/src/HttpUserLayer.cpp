@@ -8,8 +8,11 @@
 #include "HttpUserLayer.h"
 #include "HttpLogger.h"
 
+#include <string>
+
 using namespace service;
 using namespace http;
+using namespace std;
 
 // ------------------------------------------------
 HttpUserLayer::HttpUserLayer() {
@@ -32,6 +35,9 @@ void HttpUserLayer::requestIndication(http::HttpRequest* httpRequest) {
     LOG4CPLUS_DEBUG(_HTTP_LOOGER_NAME_, "HttpUserLayer::requestIndication(), CONNECTION (0x" << std::hex << httpRequest->getConnId() << ")");
     LOG4CPLUS_DEBUG(_HTTP_LOOGER_NAME_, "Received HTTP request: ");
     httpRequest->show();
+
+    const string body = httpRequest->getBodyStr();
+    LOG4CPLUS_DEBUG(_HTTP_LOOGER_NAME_, "body content (" << body.size() << ") bytes: " << body);
     // TODO
 }
 

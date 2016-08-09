@@ -38,6 +38,9 @@ namespace http {
 
         const HeaderMap & getHeaders() const;
 
+        void setBodyStr(char* body, int bodyLength);
+        const std::string & getBodyStr() const;
+
         void show();
 
         void setParseError();
@@ -54,6 +57,8 @@ namespace http {
         std::string m_version;
 
         HeaderMap m_headerMap;
+
+        std::string m_bodyStr;
 
         bool m_isParseError;
     };
@@ -91,6 +96,17 @@ namespace http {
     // ------------------------------------------
     inline std::string HttpRequest::getVersion() const {
         return this->m_version;
+    }
+
+    // ------------------------------------------
+    inline void HttpRequest::setBodyStr(char* body, int bodyLength) {
+        m_bodyStr.clear();
+        m_bodyStr.append(body, bodyLength);
+    }
+
+    // ------------------------------------------
+    inline const std::string & HttpRequest::getBodyStr() const {
+        return m_bodyStr;
     }
 
     // ------------------------------------------

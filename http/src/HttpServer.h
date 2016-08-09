@@ -13,7 +13,7 @@
 
 namespace http {
 
-    class HttpServerCallback;
+    class TcpServerCallbackImpl;
     class HttpServerUserInterface;
 
     class HttpServer : public HttpServerInterface {

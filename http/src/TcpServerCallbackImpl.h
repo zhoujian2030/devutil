@@ -1,5 +1,5 @@
 /*
- * HttpServerCallback.h
+ * TcpServerCallbackImpl.h
  *
  *  Created on: July 7, 2016
  *      Author: z.j
@@ -18,10 +18,10 @@ namespace http {
     class HttpHeaderParser;
     class HttpRequestLineParser;
 
-    class HttpServerCallback : public net::TcpServerCallback {
+    class TcpServerCallbackImpl : public net::TcpServerCallback {
     public:
-        HttpServerCallback(HttpServerUserInterface* httpUser);
-        virtual ~HttpServerCallback();
+        TcpServerCallbackImpl(HttpServerUserInterface* httpUser);
+        virtual ~TcpServerCallbackImpl();
 
         virtual void deliveryResult(unsigned int globalConnId, bool status);
         
@@ -30,7 +30,6 @@ namespace http {
         virtual void closeIndication(unsigned int globalConnId);
 
     private:
-        // void parseData(unsigned int globalConnId, char* buffer, int numOfBytes);
 
         HttpServerUserInterface* m_httpUser;
         HttpRequestLineParser m_httpRequestLineParser;
