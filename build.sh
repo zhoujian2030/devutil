@@ -12,3 +12,4 @@ elif [[ $COMMAND = "install" ]]; then
 else
     make
 fi
+
