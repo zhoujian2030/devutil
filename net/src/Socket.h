@@ -124,6 +124,24 @@ namespace net {
         // Identical to recv() with flags set to 0
         int read(char* theBuffer, int buffSize, int& numOfBytesReceived);
 
+        // Receive data from UDP socket to a pre-allocated buffer
+        //
+        // Arguments:
+        //  theBuffer - pointer of the buffer to save the received data
+        //  buffSize - size of the buffer to save the data
+        //  numOfBytesReceived - actual number bytes of data received
+        //  flags - default 0
+        //  theRemoteAddrPort - the remote address who sends the UDP data
+        // 
+        // Return:
+        //  SKT_SUCC - if recv data success on the socket
+        //  SKT_WAIT - no data available on the socket for nonblocking mode
+        //  SKT_ERR  - error occurrs when recv
+        // 
+        // Exception:
+        //  std::invalid_argument - if theBuffer is null pointer
+        virtual int recvfrom(char* theBuffer, int buffSize, int& numOfBytesReceived, InetAddressPort& theRemoteAddrPort);
+
         // Send data from a buffer to peer on socket
         //
         // Arguments:
@@ -140,6 +158,23 @@ namespace net {
         //  std::invalid_argument - if theBuffer is null pointer
         virtual int send(const char* theBuffer, int numOfBytesToSend, int& numberOfBytesSent);
         int write(const char* theBuffer, int numOfBytesToSend, int& numberOfBytesSent);
+
+        // Send data from a buffer to peer on UDP socket
+        //
+        // Arguments:
+        //  theBuffer - pointer of the buffer to be sent
+        //  numOfBytesToSend - number of bytes to be sent
+        //  numberOfBytesSent - actual number bytes of data sent
+        //  theRemoteAddrPort - the peer address that data to be sent to
+        // 
+        // Return:
+        //  SKT_SUCC - if send data success on the socket
+        //  SKT_WAIT - no data sent on the socket for nonblocking mode
+        //  SKT_ERR  - error occurrs when send
+        // 
+        // Exception:
+        //  std::invalid_argument - if theBuffer is null pointer
+        virtual int sendto(const char* theBuffer, int numOfBytesToSend, int& numberOfBytesSent, InetAddressPort& theRemoteAddrPort);
 
         void makeNonBlocking();
         void makeBlocking();
@@ -216,6 +251,7 @@ namespace net {
 
         friend class SctpSocket;
         friend class TcpSocket;
+        friend class UdpSocket;
         
         typedef enum {
             // The socket is successfull created by socket()

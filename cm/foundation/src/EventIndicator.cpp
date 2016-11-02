@@ -14,6 +14,7 @@ using namespace cm;
 EventIndicator::EventIndicator(bool eventIsSet) 
 : m_eventIsSet(eventIsSet)
 {
+    CMLogger::initConsoleLog();
     int result = pthread_mutex_init(&m_mutex, 0);
     if (result == 0) {
         result = pthread_cond_init(&m_condition, 0);

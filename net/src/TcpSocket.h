@@ -35,7 +35,7 @@ namespace net {
         // @description called by worker to receive data from socket
         //  asynchronize mode - save the buffer pointer and register the socket
         //      to epoll (need to have the socket lister added before)
-        //  synchronize mode - not supported yet TODO
+        //  synchronize mode - store received data in theBuffer
         // @param theBuffer - the buffer pointer to store received data
         // @param buffSize - buffer size of the buffer
         // @return number of bytes received in sync mode, 0 in async mode

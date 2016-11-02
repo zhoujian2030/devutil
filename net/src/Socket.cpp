@@ -261,6 +261,42 @@ int Socket::read(char* theBuffer, int buffSize, int& numOfBytesReceived) {
 }
 
 // -------------------------------------------------
+int Socket::recvfrom(
+    char* theBuffer, 
+    int buffSize, 
+    int& numOfBytesReceived, 
+    InetAddressPort& theRemoteAddrPort) 
+{
+    if (theBuffer == 0) {
+        throw std::invalid_argument("theBuffer is a null pointer!");
+    }
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "Socket::recvfrom(), fd = " << m_socket);
+
+    struct sockaddr_in remoteAddr;
+    socklen_t length = sizeof(remoteAddr);
+    int result = ::recvfrom(m_socket, theBuffer, buffSize, 0, (struct sockaddr*)&remoteAddr, &length);
+    numOfBytesReceived = result;
+    if (result == -1) {
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            // For non-blocking socket, it would return EAGAIN or EWOULDBLOCK 
+            // when no data read from socket
+            LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "no data received from the socket now, fd = " << m_socket
+                << ", " << strerror(errno));           
+            return SKT_WAIT;
+        } else {
+            LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to recv data from socket: " << m_socket
+                << ", errno = " << errno << " - " << strerror(errno));
+            // TODO throw io exception ??
+            return SKT_ERR;
+        }
+    }
+    
+    memcpy(&theRemoteAddrPort.addr, &remoteAddr, sizeof(theRemoteAddrPort.addr));
+    theRemoteAddrPort.port = ntohs(remoteAddr.sin_port);
+    return SKT_SUCC;
+}
+
+// -------------------------------------------------
 int Socket::send(const char* theBuffer, int numOfBytesToSend, int& numberOfBytesSent) {
     if (theBuffer == 0) {
         throw std::invalid_argument("theBuffer is a null pointer!");
@@ -273,7 +309,7 @@ int Socket::send(const char* theBuffer, int numOfBytesToSend, int& numberOfBytes
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
             // For non-blocking socket, it would return EAGAIN or EWOULDBLOCK 
             // when send buffer is full
-            LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "no data read from the socket now, fd = " << m_socket);
+            LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "no data sent to the socket now, fd = " << m_socket);
             return SKT_WAIT;
         } else {
             LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to send data to socket: " << m_socket
@@ -289,6 +325,39 @@ int Socket::send(const char* theBuffer, int numOfBytesToSend, int& numberOfBytes
 int Socket::write(const char* theBuffer, int numOfBytesToSend, int& numberOfBytesSent) {
     // TODO
     return false;
+}
+
+// -------------------------------------------------
+int Socket::sendto(
+    const char* theBuffer, 
+    int numOfBytesToSend, 
+    int& numberOfBytesSent, 
+    InetAddressPort& theRemoteAddrPort)
+{
+    if (theBuffer == 0) {
+        throw std::invalid_argument("theBuffer is a null pointer!");
+    }
+
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "Socket::send(), fd = " << m_socket);
+
+    socklen_t length = sizeof(theRemoteAddrPort.addr);
+    numberOfBytesSent = ::sendto(m_socket, theBuffer, numOfBytesToSend, 
+        0, (struct sockaddr*)&theRemoteAddrPort.addr, length);
+
+    if (numberOfBytesSent == -1) {
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            // For non-blocking socket, it would return EAGAIN or EWOULDBLOCK 
+            // when send buffer is full
+            LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "no data send to the socket now, fd = " << m_socket);
+            return SKT_WAIT;
+        } else {
+            LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "fail to send data to socket: " << m_socket
+                << ", errno = " << errno << " - " << strerror(errno));    
+            return SKT_ERR;        
+        }
+    }
+
+    return SKT_SUCC;
 }
 
 // -------------------------------------------------
