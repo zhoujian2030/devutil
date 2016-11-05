@@ -43,6 +43,8 @@ TEST_F(TestUdpSocket, BlockingIO_NormalTest) {
     ASSERT_EQ(m_udpClientSocket->send(m_buffer->getStartOfDataPointer(), m_buffer->getLength(), serverAddress), -1);
     ASSERT_EQ(m_udpServerSocket->receive(m_buffer->getEndOfDataPointer(), m_buffer->getRemainBufferSize(), remoteAddress), -1);
     cout << "<<<<< close socket and return error from send or receive" << endl;
+
+    delete m_buffer;
 }
 
 TEST_F(TestUdpSocket, NonBlockingIO_NormalTest) {

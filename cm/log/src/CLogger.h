@@ -18,19 +18,19 @@
 
 #define LOG_DEBUG(moduleId, fmt, args...){\
         (void)moduleId;\
-        printf("[yyyy-mm-dd hh:mm:ss.xxx] [DEBUG] [%s] [%u] [%s:%d] - ",moduleId, pthread_self(), FILENAME,LINE);\
+        printf("[yyyy-mm-dd hh:mm:ss.xxx] [DEBUG] [%s] [%u] [%s:%d] - ",moduleId, (unsigned int)(pthread_self()), FILENAME,LINE);\
         printf(fmt,##args);}
 #define LOG_INFO(moduleId,fmt,args...){\
         (void)moduleId;\
-        printf("[yyyy-mm-dd hh:mm:ss.xxx] [INFO ] [%s] [%u] [%s:%d] - ",moduleId, pthread_self(), FILENAME,LINE);\
+        printf("[yyyy-mm-dd hh:mm:ss.xxx] [INFO ] [%s] [%u] [%s:%d] - ",moduleId, (unsigned int)(pthread_self()), FILENAME,LINE);\
         printf(fmt,##args);}
 #define LOG_WARN(moduleId, fmt,args...){\
         (void)moduleId;\
-        printf("[yyyy-mm-dd hh:mm:ss.xxx] [WARN ] [%s] [%u] [%s:%d] - ",moduleId, pthread_self(), FILENAME,LINE);\
+        printf("[yyyy-mm-dd hh:mm:ss.xxx] [WARN ] [%s] [%u] [%s:%d] - ",moduleId, (unsigned int)(pthread_self()), FILENAME,LINE);\
         printf(fmt,##args);}
 #define LOG_ERROR(moduleId, fmt, args...){\
         (void)moduleId;\
-        printf("[yyyy-mm-dd hh:mm:ss.xxx] [ERROR] [%s] [%u] [%s:%d] - ",moduleId, pthread_self(), FILENAME,LINE);\
+        printf("[yyyy-mm-dd hh:mm:ss.xxx] [ERROR] [%s] [%u] [%s:%d] - ",moduleId, (unsigned int)(pthread_self()), FILENAME,LINE);\
         printf(fmt,##args);}
 
 

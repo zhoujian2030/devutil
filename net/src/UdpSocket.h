@@ -64,6 +64,11 @@ namespace net {
 
         const socket_address& getLocalAddress() const;
 
+        // async does not mean non-blocking, sync mode can also be non-blocking
+        // for async mode, user should call addSocketListener() to register the
+        // socket listener with Reactor initialized
+        void addSocketHandlerForNonAsync(UdpSocketListener* socketListener, char* theBuffer, int bufferSize);
+
     protected:
         virtual void handleInput(Socket* theSocket);
         virtual void handleOutput(Socket* theSocket);
@@ -73,6 +78,7 @@ namespace net {
             // for new created socket in client side
             UDP_IDLE,
             
+            UDP_OPEN,
 
             // close after error
             UDP_ERROR_CLOSING,

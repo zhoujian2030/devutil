@@ -23,6 +23,7 @@ UdpSocket::UdpSocket(std::string localIp, unsigned short localPort)
 {
     m_lock = new MutexLock(true);
     bind();
+    m_udpState = UDP_OPEN;
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "Create UDP Server socket: " << localIp << ":" 
         << localPort);
 }
@@ -35,7 +36,7 @@ UdpSocket::UdpSocket()
   m_socketListener(0)
 {
     m_lock = new MutexLock(true);
-    
+    m_udpState = UDP_OPEN;
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "Create UDP client socket");
 }
 
@@ -66,7 +67,7 @@ void UdpSocket::addSocketListener(UdpSocketListener* socketListener) {
 int UdpSocket::receive(char* theBuffer, int buffSize, InetAddressPort& theRemoteAddrPort) {
     // async mode
     if (m_socketListener != 0) {
-        // TODO        
+        // TODO
         return 0;
     } 
     // sync mode
@@ -123,7 +124,10 @@ void UdpSocket::close() {
 
     if (m_socketListener != 0) {
         // async mode
-        // TODO
+        if (m_udpState != UDP_CLOSED) {
+            // TODO
+        }
+        
     } else {
         // sync mode
         if (m_udpState != UDP_CLOSED) {
@@ -134,9 +138,45 @@ void UdpSocket::close() {
 }
 
 // ----------------------------------------------
+void UdpSocket::addSocketHandlerForNonAsync(
+    UdpSocketListener* socketListener, 
+    char* theBuffer, 
+    int bufferSize)
+{
+    if (socketListener != 0) {
+        if (theBuffer == 0) {
+            return;
+        }
+        if (m_socketListener == 0) {
+            // if previous listener is null, it means the socket is blocking mode currently
+            makeNonBlocking();
+            m_recvBuffer = theBuffer;
+            m_recvBufferSize = bufferSize;
+        }
+    } else {
+        if (m_socketListener != 0) {
+            makeBlocking();
+        }
+    }
+
+    m_socketListener = socketListener;    
+}
+
+// ----------------------------------------------
 void UdpSocket::handleInput(Socket* theSocket) {
     LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "UdpSocket::handleInput(), fd = " << theSocket->getSocket());
-    // TODO
+    int numOfByteRecved;
+    InetAddressPort remoteAddrPort;
+    int result = Socket::recvfrom(m_recvBuffer, m_recvBufferSize, numOfByteRecved, remoteAddrPort);
+    if (result != SKT_ERR) {
+        if (numOfByteRecved > 0) {
+            m_socketListener->handleRecvResult(this, numOfByteRecved);
+        } else {
+            LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "No data receive");
+        }
+    } else {
+        LOG4CPLUS_ERROR(_NET_LOOGER_NAME_, "error occurred on recvfrom()");
+    }
 }
 
 // ----------------------------------------------
