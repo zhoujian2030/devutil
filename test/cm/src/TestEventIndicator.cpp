@@ -6,6 +6,7 @@
  */
 
 #include "DemoThread.h"
+#include "SubscriberThread.h"
 #include "CPPLogger.h"
 #include <iostream>
 
@@ -13,6 +14,7 @@ using namespace std;
 using namespace cm;
 
 int main(int argc, char* argv[]) {
+#if 0
     log4cplus::Logger logger = log4cplus::Logger::getInstance("CMTEST");
     CPPLogger::initConsoleLog(logger);
 
@@ -40,4 +42,30 @@ int main(int argc, char* argv[]) {
 
     LOG4CPLUS_DEBUG("CMTEST", th.getName() << " exited " << th.getExitStatus());
     return 0;
+
+#else
+    log4cplus::Logger logger = log4cplus::Logger::getInstance("CMTEST");
+    CPPLogger::initConsoleLog(logger);
+
+    EventBroadcasting* eventBroadcast = new EventBroadcasting();
+    SubscriberThread* t1 = new SubscriberThread("Subscriber 1", eventBroadcast);
+    SubscriberThread* t2 = new SubscriberThread("Subscriber 2", eventBroadcast);
+    SubscriberThread* t3 = new SubscriberThread("Subscriber 3", eventBroadcast);
+    t1->start();
+    t2->start();
+    t3->start();
+
+    Thread::sleep(100);
+    
+    while(1) {
+        LOG4CPLUS_DEBUG("CMTEST", "-------------------------------------------------------------");
+        
+        eventBroadcast->notifyAll();
+        Thread::sleep(5);
+    }
+
+    t1->wait();
+    LOG4CPLUS_DEBUG("CMTEST", "t1 waiting thread termination.");
+
+#endif
 }
