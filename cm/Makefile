@@ -41,7 +41,7 @@ OBJS = log/obj/* foundation/obj/* thread/obj/* mq/obj/* util/obj/*
 
 .PHONY: $(POSTBUILD)
 $(POSTBUILD): 
-	ar q $(LIBA) $(OBJS)
+	$(AR) q $(LIBA) $(OBJS)
 	@mkdir -p $(LIBDIR)
 	@mv $(LIBA) $(LIBDIR)
 

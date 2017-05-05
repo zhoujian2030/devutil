@@ -1,3 +1,6 @@
+ifeq ($(GTEST_SUPPORT), TRUE)
+
+ifeq ($(DB_SUPPORT), TRUE)
 SUBDIRS = cm \
 	ipc \
 	net \
@@ -7,6 +10,39 @@ SUBDIRS = cm \
 	http \
 	sample \
 	test 
+else
+SUBDIRS = cm \
+	ipc \
+	net \
+	cpp \
+	ads \
+	http \
+	sample \
+	test 
+endif
+
+else
+
+ifeq ($(DB_SUPPORT), TRUE)
+SUBDIRS = cm \
+	ipc \
+	net \
+	cpp \
+	dao \
+	ads \
+	http \
+	sample
+else
+SUBDIRS = cm \
+	ipc \
+	net \
+	cpp \
+	ads \
+	http \
+	sample
+endif
+
+endif
 
 BUILDDIRS = $(SUBDIRS:%=build-%)
 INSTALLDIRS = $(SUBDIRS:%=install-%)

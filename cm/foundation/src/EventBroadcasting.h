@@ -13,7 +13,7 @@
 namespace cm {
 
     // Thread A calls wait() and blocks if m_eventIsSet is never set "true" before
-    // Thread B calls set() to set m_eventIsSet and send notification to Thread A
+    // Thread B calls notifyAll() to set m_eventSet and send notification to Thread A
     class EventBroadcasting {
     public:
         EventBroadcasting();

@@ -13,6 +13,7 @@
 
 using namespace net;
 
+#ifdef SCTP_SUPPORT
 // ----------------------------------------------
 SctpSocket::SctpSocket(std::string localIp, short localPort, int saFamily)
 : Socket(localIp, localPort, SOCK_STREAM, IPPROTO_SCTP, AF_INET)
@@ -68,3 +69,5 @@ int SctpSocket::recv(char* theBuffer, int buffSize, int& numOfBytesReceived, int
 int SctpSocket::send(const char* theBuffer, int numOfBytesToSend, int& numberOfBytesSent) {
     return SKT_SUCC;
 }
+
+#endif

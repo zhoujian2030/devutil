@@ -18,11 +18,14 @@ OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
 #DEPOBJS := $(PROJBASE)/cm/obj/*.o
 
 include ../cm/global.mk
+ifeq ($(SCTP_SUPPORT), TRUE)
+CFLAGS += -DSCTP_SUPPORT
+endif
 
 all: $(LIBA)
 
 $(LIBA): buildrepo $(OBJS)
-	ar q $@ $(OBJS)
+	$(AR) q $@ $(OBJS)
 	@mkdir -p $(LIBDIR)
 	@mv $(LIBA) $(LIBDIR)
 	@mkdir -p $(INCDIR)

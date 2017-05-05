@@ -22,7 +22,11 @@ all: $(TARGET)
 
 # Targets
 $(TARGET): buildrepo $(OBJS)
+ifeq ($(SCTP_SUPPORT), TRUE)
 	$(CXX) $(OBJS) -o $@ -lrt -lsctp -pthread $(LIBS)
+else
+	$(CXX) $(OBJS) -o $@ -lrt -pthread $(LIBS)
+endif
 	@mv $(TARGET) $(OBJDIR)
 
 clean:

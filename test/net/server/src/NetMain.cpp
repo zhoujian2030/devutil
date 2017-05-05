@@ -34,7 +34,9 @@ void showUsage() {
     cout << "  1 : Test ReactorThread" << endl;
     cout << "  2 : Test EpollSocketSet" << endl;
     cout << "  3 : Test Socket" << endl;
+#ifdef SCTP_SUPPORT
     cout << "  4 : Test SctpSocket" << endl;
+#endif
     cout << "  5 : Test TcpServer" << endl;
 }
 
@@ -277,6 +279,7 @@ void testSocket(string ip) {
 
 // --------------------------------------------------
 void testSctpSocket(string ip) {
+#ifdef SCTP_SUPPORT
     SctpSocket* socket = new SctpSocket(ip, 62324);
     socket->bind();
     socket->listen(5);
@@ -309,5 +312,6 @@ void testSctpSocket(string ip) {
         } else {
             cm::Thread::sleep(1);
         }
-    }    
+    }   
+#endif 
 }

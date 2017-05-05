@@ -126,3 +126,4 @@ void* Thread::entry(void* theParameter) {
 #endif
     return (void*)result;
 }
+

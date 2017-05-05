@@ -22,9 +22,9 @@ all: $(LIBA)
 
 # Targets
 $(LIBA): buildrepo $(OBJS)
-	ar x $(LIBS) 
+	$(AR) x $(LIBS) 
 	@mv *.o $(OBJDIR)
-	ar q $@ $(OBJDIR)/*.o
+	$(AR) q $@ $(OBJDIR)/*.o
 	@mkdir -p $(LIBDIR)
 	@mv $(LIBA) $(LIBDIR)
 	@mkdir -p $(INCDIR)

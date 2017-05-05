@@ -21,7 +21,7 @@ all: $(LIBA)
 
 # Targets
 $(LIBA): buildrepo $(OBJS)
-	ar q $@ $(OBJS)
+	$(AR) q $@ $(OBJS)
 	@mkdir -p $(LIBDIR)
 	@mv $(LIBA) $(LIBDIR)
 	@mkdir -p $(INCDIR)

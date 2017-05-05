@@ -1,12 +1,13 @@
 #!/bin/sh
 
-export PLATFORM_CXX=g++
-export PLATFORM_CC=gcc
-export PLATFORM_AR=ar
+export PATH=$PATH:/omap/eldk/usr/bin/
+export PLATFORM_CXX=arm-linux-g++
+export PLATFORM_CC=arm-linux-gcc
+export PLATFORM_AR=arm-linux-ar
 
-export GTEST_SUPPORT=TRUE
-export SCTP_SUPPORT=TRUE
-export DB_SUPPORT=TRUE
+export GTEST_SUPPORT=FALSE
+export SCTP_SUPPORT=FALSE
+export DB_SUPPORT=FALSE
 
 export PROJBASE=$(cd `dirname "${BASH_SOURCE[0]}"` && pwd)
 echo "Current directory: $PROJBASE"
