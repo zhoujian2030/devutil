@@ -14,7 +14,7 @@ namespace http {
     public:
         HttpConnection(unsigned long connId);
         ~HttpConnection();
-    }
+    };
 
 }
 

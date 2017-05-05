@@ -4,6 +4,7 @@ export PATH=$PATH:/omap/eldk/usr/bin/
 export PLATFORM_CXX=arm-linux-g++
 export PLATFORM_CC=arm-linux-gcc
 export PLATFORM_AR=arm-linux-ar
+ export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:/usr/local/include
 
 export GTEST_SUPPORT=FALSE
 export SCTP_SUPPORT=FALSE
