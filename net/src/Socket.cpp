@@ -338,7 +338,7 @@ int Socket::sendto(
         throw std::invalid_argument("theBuffer is a null pointer!");
     }
 
-    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "Socket::send(), fd = " << m_socket);
+    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "Socket::sendto(), fd = " << m_socket);
 
     socklen_t length = sizeof(theRemoteAddrPort.addr);
     numberOfBytesSent = ::sendto(m_socket, theBuffer, numOfBytesToSend, 
