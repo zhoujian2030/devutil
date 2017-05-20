@@ -1,44 +1,32 @@
-# Target  name
-TARGET = cmtest 
+SUBDIRS = ft \
+	ut
 
-# Directories
-OBJDIR = obj
-SRCDIR = src
-BINDIR = bin
+BUILDDIRS = $(SUBDIRS:%=build-%)
+INSTALLDIRS = $(SUBDIRS:%=install-%)
+CLEANDIRS = $(SUBDIRS:%=clean-%)
 
-# Libraries
-INC += -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/thread/inc -I$(PROJBASE)/cm/log/inc
-# MUST place libnet.a ahead of liblog.a because libnet depends on liblog.a
-LIBS = $(PROJBASE)/cm/lib/libcm.a
+# build target
+all: $(BUILDDIRS)
+$(SUBDIRS): $(BUILDDIRS)
+$(BUILDDIRS):
+	$(MAKE) -C $(@:build-%=%)
 
-# Files and folders
-SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)
-OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
+# clean target
+clean: $(CLEANDIRS)
+$(CLEANDIRS): 
+	$(MAKE) -C $(@:clean-%=%) clean
 
-include $(PROJBASE)/cm/global.mk
+# install target
+install: $(INSTALLDIRS) all
+$(INSTALLDIRS):
+	$(MAKE) -C $(@:install-%=%) install
 
-all: $(TARGET)
+.PHONY: subdirs $(SUBDIRS)
+.PHONY: subdirs $(BUILDDIRS)
+.PHONY: subdirs $(INSTALLDIRS)
+.PHONY: subdirs $(CLEANDIRS)
 
-# Targets
-$(TARGET): buildrepo $(OBJS)
-	$(CXX) $(OBJS) $(DEPOBJS) -o $@ -lrt -pthread $(LIBS)
-	@mv $(TARGET) $(OBJDIR)
+.PHONY: all install clean
 
-clean:
-	rm -rf $(BINDIR) $(OBJDIR) $(SRCDIR)/*.o
+# specify the dependency here
 
-install:
-	mkdir -p $(BINDIR)
-	cp $(OBJDIR)/$(TARGET) $(BINDIR)
-	
-buildrepo:
-	@$(call make-repo)
-
-# Create obj directory structure
-define make-repo
-	mkdir -p $(OBJDIR)
-	for dir in $(SRCDIRS); \
-	do \
-		mkdir -p $(OBJDIR)/$$dir; \
-	done
-endef
