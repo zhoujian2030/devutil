@@ -17,8 +17,8 @@ LIBS = $(PROJBASE)/http/lib/libhttp.a $(PROJBASE)/net/lib/libnet.a $(PROJBASE)/c
 LIBAGTEST = $(PROJBASE)/test/lib/gtest/lib/libgtest.a $(PROJBASE)/test/lib/gtest/lib/libgtest_main.a
 LIBSOGTEST = -L$(PROJBASE)/test/lib/gtest/lib -lgtest -lgtest_main
 
-LIBABOOST = /usr/local/lib/libboost_system.a
-LIBSOBOOST = -L/usr/local/lib -lboost_system
+LIBABOOST = /usr/local/boostx86/lib/libboost_system.a
+LIBSOBOOST = -L/usr/local//boostx86/lib -lboost_system
 
 # Files and folders
 SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)

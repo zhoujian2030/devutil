@@ -10,7 +10,11 @@ LIBDIR = lib
 
 # Libraries
 INC += 
-LIBS = /usr/local/lib/liblog4cplus.a
+ifeq ($(PLATFORM), arm)
+LIBS = /usr/local/log4cplusarm/lib/liblog4cplus.a
+else
+LIBS = /usr/local/log4cplusx86/lib/liblog4cplus.a
+endif
 
 # Files and folders
 SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)
