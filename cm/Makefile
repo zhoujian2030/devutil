@@ -44,6 +44,7 @@ $(POSTBUILD):
 	$(AR) q $(LIBA) $(OBJS)
 	@mkdir -p $(LIBDIR)
 	@mv $(LIBA) $(LIBDIR)
+	@sh ./postbuild.sh libcm
 
 .PHONY: $(POSTCLEAN)
 $(POSTCLEAN):

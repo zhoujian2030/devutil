@@ -30,6 +30,7 @@ $(LIBA): buildrepo $(OBJS)
 	@mv $(LIBA) $(LIBDIR)
 	@mkdir -p $(INCDIR)
 	@cp $(SRCDIR)/*.h $(INCDIR)
+	@sh ./postbuild.sh libnet
 
 clean:
 	rm -rf $(LIBDIR) $(INCDIR) $(OBJDIR) $(SRCDIR)/*.o

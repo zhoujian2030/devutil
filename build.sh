@@ -1,5 +1,6 @@
 #!/bin/sh
 
+export PLATFORM=x86
 export PLATFORM_CXX=g++
 export PLATFORM_CC=gcc
 export PLATFORM_AR=ar

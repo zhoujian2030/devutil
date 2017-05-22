@@ -1,5 +1,6 @@
 #!/bin/sh
 
+export PLATFORM=arm
 export PATH=$PATH:/omap/eldk/usr/bin/
 export PLATFORM_CXX=arm-linux-g++
 export PLATFORM_CC=arm-linux-gcc
@@ -22,4 +23,5 @@ elif [[ $COMMAND = "install" ]]; then
 else
     make
 fi
+
 
