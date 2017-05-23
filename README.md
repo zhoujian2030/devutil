@@ -44,7 +44,7 @@
 > Not support yet!!
 
 ### Install boost (Optional, required by /test/http/ut)
-> Note. boost must be installed bo compile and run ut
+> Note. boost must be installed to compile and run ut
 
 - Download [boost_1_64_0.tar.gz](https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.gz)
 - 
@@ -99,7 +99,7 @@ Note: must install lksctp-tools-devel, or sctp.h may be not found!
 # ./build_arm.sh
 ```
 
-> Note: dao/, sctp/ and test/ are not compiled by default. Please modify build_arm.sh to enable any of them. And NOTE that boost and gtest are required by test/, postgresql lib are required by dao/, lksctp-tools is required by sctp/
+> Note: dao/, sctp/ and test/ are not compiled by default. Please modify build_arm.sh to enable any of them. And NOTE that boost and gtest are required by test/, postgresql lib is required by dao/, lksctp-tools is required by sctp/
 
 ---
 ## Test
