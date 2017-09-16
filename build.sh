@@ -8,7 +8,7 @@ export PLATFORM_AR=ar
 export GTEST_SUPPORT=TRUE
 export SCTP_SUPPORT=TRUE
 export DB_SUPPORT=FALSE
-export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:/usr/local/log4cplusarm/include:/usr/local/boostx86/include
+export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:/usr/local/log4cplusx86/include:/usr/local/boostx86/include
 
 
 export PROJBASE=$(cd `dirname "${BASH_SOURCE[0]}"` && pwd)

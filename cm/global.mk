@@ -6,6 +6,7 @@ AR = $(PLATFORM_AR)
 # For debug load, DON'T define NDEBUG 
 #CFLAGS = -Wall -g -O2 -DNDEBUG -fPIC
 CFLAGS = -Wall -g -O2 -fPIC
+CFLAGS += -DDEBUG_CM
 
 LFLAGS = -lrt
 

@@ -1,6 +1,6 @@
 # Target  name
 TARGET=
-LIBA = liblog.a
+LIBA = 
 
 # Directories
 OBJDIR = obj
@@ -22,20 +22,15 @@ OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
 
 include ../global.mk
 
-all: $(LIBA)
-
 # Targets
-$(LIBA): buildrepo $(OBJS)
+all: buildrepo $(OBJS)
 	$(AR) x $(LIBS) 
 	@mv *.o $(OBJDIR)
-	$(AR) q $@ $(OBJDIR)/*.o
-	@mkdir -p $(LIBDIR)
-	@mv $(LIBA) $(LIBDIR)
 	@mkdir -p $(INCDIR)
 	@cp $(SRCDIR)/*.h $(INCDIR)
 
 clean:
-	rm -rf $(LIBDIR) $(INCDIR) $(OBJDIR) $(SRCDIR)/*.o
+	rm -rf $(INCDIR) $(OBJDIR) $(SRCDIR)/*.o
 
 install:
 	# nothing to do

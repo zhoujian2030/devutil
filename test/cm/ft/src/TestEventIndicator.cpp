@@ -5,6 +5,7 @@
  *      Author: z.j
  */
 
+#include "TestCommon.h"
 #include "DemoThread.h"
 #include "SubscriberThread.h"
 #include "CPPLogger.h"
@@ -13,7 +14,7 @@
 using namespace std;
 using namespace cm;
 
-int main(int argc, char* argv[]) {
+int TestEventMain(int argc, char* argv[]) {
 #if 0
     log4cplus::Logger logger = log4cplus::Logger::getInstance("CMTEST");
     CPPLogger::initConsoleLog(logger);

@@ -11,7 +11,7 @@ BINDIR = bin
 # gtest include
 INCGTEST = -I$(PROJBASE)/test/lib/gtest/include
 INC += $(INCGTEST) -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/thread/inc -I$(PROJBASE)/cm/util/inc -I$(PROJBASE)/cm/log/inc
-# MUST place libnet.a ahead of liblog.a because libnet depends on liblog.a
+# MUST place libnet.a ahead of libcm.a because libnet depends on libcm.a
 LIBS = $(PROJBASE)/cm/lib/libcm.a 
 
 LIBAGTEST = $(PROJBASE)/test/lib/gtest/lib/libgtest.a $(PROJBASE)/test/lib/gtest/lib/libgtest_main.a

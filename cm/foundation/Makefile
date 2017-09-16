@@ -15,7 +15,6 @@ SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)
 OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
 
 include ../global.mk
-CFLAGS += -DDEBUG_CM
 
 all: buildrepo $(OBJS)
 	@mkdir -p $(INCDIR)

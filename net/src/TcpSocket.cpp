@@ -34,7 +34,6 @@ TcpSocket::TcpSocket(std::string remoteIp, unsigned short remotePort)
 TcpSocket::TcpSocket(int socket, Socket::InetAddressPort& theRemoteAddrPort)
 : Socket(socket, SOCK_STREAM),
   m_tcpState(TCP_CONNECTED), 
-  m_reactor(Reactor::getInstance()), 
   m_socketListener(0) 
 {
     memcpy(&m_remoteAddrAndPort, &theRemoteAddrPort, sizeof(theRemoteAddrPort));
@@ -55,7 +54,8 @@ void TcpSocket::addSocketListener(TcpSocketListener* socketListener) {
     if (socketListener != 0) {
         if (m_socketListener == 0) {
             // if previous listener is null, it means the socket is blocking mode currently
-            makeNonBlocking();
+            makeNonBlocking();           
+            m_reactor = Reactor::getInstance(); 
         }
     } else {
         if (m_socketListener != 0) {
@@ -231,7 +231,9 @@ void TcpSocket::close() {
         // sync mode
         // TODO
         if (m_tcpState != TCP_CLOSED) {
-            m_reactor->removeHandlers(this);
+            if (m_reactor) {
+                m_reactor->removeHandlers(this);
+            }
             Socket::close();
             m_tcpState = TCP_CLOSED;   
         }   

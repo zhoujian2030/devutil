@@ -7,8 +7,8 @@ SRCDIR = src
 
 # Libraries
 INC += -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/log/inc
-# /usr/local/lib/liblog4cplus.a is included in liblog.a
-LIBS = $(PROJBASE)/cm/log/lib/liblog.a
+# /usr/local/lib/liblog4cplus.a is included in libcm.a
+LIBS = $(PROJBASE)/cm/lib/libcm.a
 
 # Files and folders
 SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)

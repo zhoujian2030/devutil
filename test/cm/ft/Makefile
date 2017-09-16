@@ -8,7 +8,7 @@ BINDIR = bin
 
 # Libraries
 INC += -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/thread/inc -I$(PROJBASE)/cm/log/inc
-# MUST place libnet.a ahead of liblog.a because libnet depends on liblog.a
+# MUST place libnet.a ahead of libcm.a because libnet depends on libcm.a
 LIBS = $(PROJBASE)/cm/lib/libcm.a
 
 # Files and folders

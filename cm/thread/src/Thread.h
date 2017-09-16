@@ -77,6 +77,13 @@ namespace cm {
         // sleep milliseconds
         static void sleep(int milli);
 
+        // get the thread schedule policy, return -1 if error
+        int getSchedulePolicy();
+
+        // get the thread priority if schedule policy is SCHED_FIFO/SCHED_RR
+        // return -1 if error
+        int getPriority();
+
     protected:
         Thread(std::string theThreadName);
 
@@ -156,6 +163,24 @@ namespace cm {
     inline bool Thread::isWatchdogTimerExpired() const {
         // TODO
         return false;
+    }
+
+    // ---------------------------
+    inline int Thread::getSchedulePolicy() {
+        int policy;
+        if (pthread_attr_getschedpolicy(&m_threadAttributes, &policy) == 0) {
+            return policy;
+        }
+        return -1;
+    }
+
+    // ---------------------------
+    inline int Thread::getPriority() {
+        struct sched_param param;
+        if (pthread_attr_getschedparam(&m_threadAttributes, &param) == 0) {
+            return param.__sched_priority;
+        }
+        return -1;
     }
 }
 
