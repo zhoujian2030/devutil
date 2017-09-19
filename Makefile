@@ -8,6 +8,7 @@ SUBDIRS = cm \
 	dao \
 	ads \
 	http \
+	tel \
 	sample \
 	test 
 else
@@ -17,6 +18,7 @@ SUBDIRS = cm \
 	cpp \
 	ads \
 	http \
+	tel \
 	sample \
 	test 
 endif

@@ -25,6 +25,11 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
                 
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	$(CC) $(INC) $(CFLAGS)  -c $< -o $@
-	
-%.o: %.cc
-	$(CXX) $(INC) $(CFLAGS)  -c $<
+
+.%.d: %.cc
+	$(CC) $(INC) -MM $< > $@
+	@$(CC) $(INC) -MM $< | sed s/"^"/"\."/  |  sed s/"^\. "/" "/  | \
+                sed s/"\.o"/"\.d"/  >> $@
+
+$(OBJDIR)/%.o: $(SRCDIR)/%.cc
+	$(CC) $(INC) $(CFLAGS)  -c $< -o $@
