@@ -11,6 +11,7 @@
 #include <pthread.h>
 #include <time.h>
 #include <string>
+#include <limits.h>
 
 namespace cm {
 
@@ -84,6 +85,9 @@ namespace cm {
         // return -1 if error
         int getPriority();
 
+        void setStackSize(unsigned int stackSize);
+        unsigned int getStackSize();
+
     protected:
         Thread(std::string theThreadName);
 
@@ -110,6 +114,8 @@ namespace cm {
         long m_exitStatus;
 
         volatile time_t m_watchdogTime;
+
+        unsigned int m_stackSize;
     };
 
     // --------------------------
@@ -182,6 +188,7 @@ namespace cm {
         }
         return -1;
     }
+
 }
 
 

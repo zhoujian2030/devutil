@@ -17,13 +17,15 @@ m_isRunning(false),
 m_threadHandle(0),
 m_isJoinable(true),
 m_exitStatus(0),
-m_watchdogTime(0)
+m_watchdogTime(0),
+m_stackSize(10240*1024)
 {
-
+    pthread_attr_init(&m_threadAttributes);
 }
 
 Thread::~Thread()
 {
+    pthread_attr_destroy(&m_threadAttributes);
     terminate();
     // TODO
 }
@@ -34,11 +36,7 @@ Thread::~Thread()
 bool Thread::start(bool isJoinable) {
     if (!m_isRunning) {
         m_isJoinable = isJoinable;
-        int result = pthread_attr_init(&m_threadAttributes);
-        if (0 != result) {
-            std::cout << "pthread_attr_init error: " << result << std::endl;
-            return false;
-        }
+        int result;
 
         // Other value is PTHREAD_SCOPE_PROCESS
         // Only need to set this attribute for real-time thread??
@@ -61,6 +59,32 @@ bool Thread::start(bool isJoinable) {
     }
 
     return true;
+}
+
+// -----------------------------------------------
+void Thread::setStackSize(unsigned int stackSize) {
+    if (!m_isRunning) {
+        if (stackSize < PTHREAD_STACK_MIN) {
+            m_stackSize = PTHREAD_STACK_MIN;
+        } else {
+            m_stackSize = stackSize;
+        }
+
+        size_t curStackSize;
+        pthread_attr_getstacksize (&m_threadAttributes, &curStackSize);
+        if (curStackSize != m_stackSize) {
+            pthread_attr_setstacksize (&m_threadAttributes, m_stackSize);
+            std::cout << "set stack size: " << m_stackSize << std::endl;
+        }
+    }
+}
+
+// -----------------------------------------------
+unsigned int Thread::getStackSize() {
+    size_t curStackSize;
+    pthread_attr_getstacksize (&m_threadAttributes, &curStackSize);
+    std::cout << "current stack size: " << curStackSize << std::endl;
+    return curStackSize;
 }
 
 // -----------------------------------------------
