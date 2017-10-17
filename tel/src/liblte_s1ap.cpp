@@ -12,16 +12,20 @@
 /*******************************************************************************
                               LOGGING
 *******************************************************************************/
-
+#ifdef OS_LINUX
 static log_handler_t log_handler;
 static void *callback_ctx = NULL;
+#endif
 
 void liblte_log_register_handler(void *ctx, log_handler_t handler) {
+#ifdef OS_LINUX
   log_handler  = handler;
   callback_ctx = ctx;
+#endif
 }
 
 static void liblte_log_print(const char *format, ...) {
+#ifdef OS_LINUX
   va_list   args;
   va_start(args, format);
   if (log_handler) {
@@ -36,6 +40,7 @@ static void liblte_log_print(const char *format, ...) {
     vprintf(format, args);
   }
   va_end(args);
+#endif
 }
 
 /*******************************************************************************
@@ -3374,7 +3379,8 @@ LIBLTE_ERROR_ENUM liblte_s1ap_pack_pdcp_sn(
     // Integer - ie->PDCP_SN
     // lb:0, ub:4095
     liblte_align_up_zero(ptr, 8);
-    liblte_value_2_bits(0, ptr, (1*8)-12);
+//    liblte_value_2_bits(0, ptr, (1*8)-12);
+    printf("[%s], TODO, change by j.zhou to comment out liblte_value_2_bits(0, ptr, (1*8)-12)\n", __func__);
     liblte_value_2_bits(ie->PDCP_SN, ptr, 12);
     liblte_align_up_zero(ptr, 8);
     err = LIBLTE_SUCCESS;
@@ -3773,7 +3779,8 @@ LIBLTE_ERROR_ENUM liblte_s1ap_pack_rnc_id(
     // Integer - ie->RNC_ID
     // lb:0, ub:4095
     liblte_align_up_zero(ptr, 8);
-    liblte_value_2_bits(0, ptr, (1*8)-12);
+//    liblte_value_2_bits(0, ptr, (1*8)-12);
+    printf("[%s], TODO, change by j.zhou to comment out liblte_value_2_bits(0, ptr, (1*8)-12)\n", __func__);
     liblte_value_2_bits(ie->RNC_ID, ptr, 12);
     liblte_align_up_zero(ptr, 8);
     err = LIBLTE_SUCCESS;
@@ -4338,7 +4345,8 @@ LIBLTE_ERROR_ENUM liblte_s1ap_pack_time_ue_stayedincell(
     // Integer - ie->Time_UE_StayedInCell
     // lb:0, ub:4095
     liblte_align_up_zero(ptr, 8);
-    liblte_value_2_bits(0, ptr, (1*8)-12);
+//    liblte_value_2_bits(0, ptr, (1*8)-12);
+    printf("[%s], TODO, change by j.zhou to comment out liblte_value_2_bits(0, ptr, (1*8)-12)\n", __func__);
     liblte_value_2_bits(ie->Time_UE_StayedInCell, ptr, 12);
     liblte_align_up_zero(ptr, 8);
     err = LIBLTE_SUCCESS;
@@ -5460,7 +5468,8 @@ LIBLTE_ERROR_ENUM liblte_s1ap_pack_eutranroundtripdelayestimationinfo(
     // Integer - ie->EUTRANRoundTripDelayEstimationInfo
     // lb:0, ub:2047
     liblte_align_up_zero(ptr, 8);
-    liblte_value_2_bits(0, ptr, (1*8)-11);
+//    liblte_value_2_bits(0, ptr, (1*8)-11);
+    printf("[%s], TODO, change by j.zhou to comment out liblte_value_2_bits(0, ptr, (1*8)-11)\n", __func__);
     liblte_value_2_bits(ie->EUTRANRoundTripDelayEstimationInfo, ptr, 11);
     liblte_align_up_zero(ptr, 8);
     err = LIBLTE_SUCCESS;
@@ -6327,7 +6336,8 @@ LIBLTE_ERROR_ENUM liblte_s1ap_pack_pdcp_snextended(
     // Integer - ie->PDCP_SNExtended
     // lb:0, ub:32767
     liblte_align_up_zero(ptr, 8);
-    liblte_value_2_bits(0, ptr, (1*8)-15);
+//    liblte_value_2_bits(0, ptr, (1*8)-15);
+    printf("[%s], TODO, change by j.zhou to comment out liblte_value_2_bits(0, ptr, (1*8)-15)\n", __func__);
     liblte_value_2_bits(ie->PDCP_SNExtended, ptr, 15);
     liblte_align_up_zero(ptr, 8);
     err = LIBLTE_SUCCESS;
@@ -6614,7 +6624,8 @@ LIBLTE_ERROR_ENUM liblte_s1ap_pack_repetitionperiod(
     // Integer - ie->RepetitionPeriod
     // lb:0, ub:4095
     liblte_align_up_zero(ptr, 8);
-    liblte_value_2_bits(0, ptr, (1*8)-12);
+//    liblte_value_2_bits(0, ptr, (1*8)-12);
+    printf("[%s], TODO, change by j.zhou to comment out liblte_value_2_bits(0, ptr, (1*8)-12)\n", __func__);
     liblte_value_2_bits(ie->RepetitionPeriod, ptr, 12);
     liblte_align_up_zero(ptr, 8);
     err = LIBLTE_SUCCESS;
@@ -20323,8 +20334,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_allocationandretentionpriority_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -20336,7 +20345,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_allocationandretentionpriority_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -20386,8 +20395,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_cancelledcellineai_item_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -20399,7 +20406,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_cancelledcellineai_item_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -20449,8 +20456,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_cancelledcellintai_item_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -20462,7 +20467,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_cancelledcellintai_item_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -20512,8 +20517,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_cellid_broadcast_item_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -20525,7 +20528,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_cellid_broadcast_item_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -20575,8 +20578,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_cellid_cancelled_item_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -20588,7 +20589,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_cellid_cancelled_item_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -20638,7 +20639,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_cellbasedmdt_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
+//    uint32_t n_ie;
 
     // Set booleans
 
@@ -20651,7 +20652,8 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_cellbasedmdt_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+//    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -20701,8 +20703,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_cdma2000onexsrvccinfo_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -20714,7 +20714,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_cdma2000onexsrvccinfo_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -20764,8 +20764,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_celltype_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -20777,7 +20775,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_celltype_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -20827,8 +20825,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_cgi_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -20840,7 +20836,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_cgi_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -20890,8 +20886,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_csg_idlist_item_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -20903,7 +20897,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_csg_idlist_item_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -20953,8 +20947,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_countvalue_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -20966,7 +20958,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_countvalue_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -21016,8 +21008,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_countvalueextended_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -21029,7 +21019,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_countvalueextended_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -21079,8 +21069,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_criticalitydiagnostics_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -21092,7 +21080,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_criticalitydiagnostics_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -21142,8 +21130,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_criticalitydiagnostics_ie_item_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -21155,7 +21141,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_criticalitydiagnostics_ie_item_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -21205,8 +21191,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_emergencyareaid_broadcast_item_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -21218,7 +21202,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_emergencyareaid_broadcast_item_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -21268,8 +21252,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_emergencyareaid_cancelled_item_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -21281,7 +21263,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_emergencyareaid_cancelled_item_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -21332,8 +21314,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_completedcellineai_item_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -21345,7 +21325,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_completedcellineai_item_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -21395,8 +21375,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_geran_cell_id_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -21408,7 +21386,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_geran_cell_id_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -21458,8 +21436,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_globalenb_id_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -21471,7 +21447,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_globalenb_id_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -21521,8 +21497,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_enb_statustransfer_transparentcontainer_ext
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -21534,7 +21508,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_enb_statustransfer_transparentcontainer_ext
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -21584,8 +21558,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_e_rabinformationlistitem_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -21597,7 +21569,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_e_rabinformationlistitem_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -21647,8 +21619,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_e_rabitem_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -21660,7 +21630,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_e_rabitem_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -21710,7 +21680,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_e_rabqosparameters_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
+//    uint32_t n_ie;
 
     // Set booleans
 
@@ -21723,7 +21693,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_e_rabqosparameters_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -21773,8 +21743,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_eutran_cgi_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -21786,7 +21754,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_eutran_cgi_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -21836,8 +21804,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_forbiddentas_item_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -21849,7 +21815,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_forbiddentas_item_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -21899,8 +21865,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_forbiddenlas_item_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -21912,7 +21876,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_forbiddenlas_item_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -21962,8 +21926,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_gbr_qosinformation_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -21975,7 +21937,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_gbr_qosinformation_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -22025,8 +21987,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_gummei_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -22038,7 +21998,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_gummei_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -22088,8 +22048,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_handoverrestrictionlist_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -22101,7 +22059,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_handoverrestrictionlist_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -22151,8 +22109,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_lai_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -22164,7 +22120,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_lai_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -22214,8 +22170,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_loggedmdt_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -22227,7 +22181,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_loggedmdt_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -22277,8 +22231,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_m3configuration_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -22290,7 +22242,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_m3configuration_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -22340,8 +22292,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_m4configuration_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -22353,7 +22303,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_m4configuration_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -22403,8 +22353,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_m5configuration_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -22416,7 +22364,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_m5configuration_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -22466,8 +22414,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_m1periodicreporting_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -22479,7 +22425,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_m1periodicreporting_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -22529,8 +22475,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_requesttype_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -22542,7 +22486,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_requesttype_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -22592,8 +22536,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_rimtransfer_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -22605,7 +22547,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_rimtransfer_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -22655,8 +22597,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_securitycontext_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -22668,7 +22608,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_securitycontext_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -22718,8 +22658,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_sourceenb_id_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -22731,7 +22669,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_sourceenb_id_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -22781,8 +22719,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_servedgummeisitem_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -22794,7 +22730,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_servedgummeisitem_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -22844,8 +22780,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_supportedtas_item_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -22857,7 +22791,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_supportedtas_item_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -22907,8 +22841,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_timesynchronizationinfo_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -22920,7 +22852,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_timesynchronizationinfo_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -22970,8 +22902,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_s_tmsi_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -22983,7 +22913,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_s_tmsi_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -23033,8 +22963,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_taibasedmdt_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -23046,7 +22974,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_taibasedmdt_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -23096,8 +23024,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_tai_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -23109,7 +23035,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_tai_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -23159,8 +23085,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_tai_broadcast_item_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -23172,7 +23096,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_tai_broadcast_item_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -23222,8 +23146,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_tai_cancelled_item_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -23235,7 +23157,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_tai_cancelled_item_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -23285,8 +23207,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_tabasedmdt_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -23298,7 +23218,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_tabasedmdt_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -23348,8 +23268,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_completedcellintai_item_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -23361,7 +23279,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_completedcellintai_item_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -23411,8 +23329,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_targetenb_id_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -23424,7 +23340,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_targetenb_id_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -23474,8 +23390,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_targetrnc_id_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -23487,7 +23401,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_targetrnc_id_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -23537,8 +23451,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_targetenb_tosourceenb_transparentcontainer_
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -23550,7 +23462,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_targetenb_tosourceenb_transparentcontainer_
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -23600,8 +23512,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_m1thresholdeventa2_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -23613,7 +23523,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_m1thresholdeventa2_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -23663,8 +23573,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_tunnel_information_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -23676,7 +23584,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_tunnel_information_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -23726,8 +23634,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_ueaggregate_maximumbitrates_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -23739,7 +23645,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_ueaggregate_maximumbitrates_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -23789,8 +23695,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_ue_s1ap_id_pair_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -23802,7 +23706,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_ue_s1ap_id_pair_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -23852,8 +23756,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_ue_associatedlogicals1_connectionitemext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -23865,7 +23767,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_ue_associatedlogicals1_connectionitemext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -23915,8 +23817,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_uesecuritycapabilities_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -23928,7 +23828,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_uesecuritycapabilities_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -23978,8 +23878,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_userlocationinformation_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -23991,7 +23889,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_userlocationinformation_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -24041,8 +23939,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_enbx2exttla_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -24054,7 +23950,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_enbx2exttla_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -25915,8 +25811,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_e_rabdataforwardingitem_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -25928,7 +25822,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_e_rabdataforwardingitem_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -26250,8 +26144,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_e_rabadmitteditem_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -26263,7 +26155,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_e_rabadmitteditem_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -26313,8 +26205,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_e_rabfailedtosetupitemhoreqackext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -26326,7 +26216,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_e_rabfailedtosetupitemhoreqackext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -26742,7 +26632,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_e_rabtobeswitcheddlitem_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
+//    uint32_t n_ie;
 
     // Set booleans
 
@@ -26755,7 +26645,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_e_rabtobeswitcheddlitem_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -26805,8 +26695,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_e_rabtobeswitchedulitem_ext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -26818,7 +26706,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_e_rabtobeswitchedulitem_ext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -27456,8 +27344,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_e_rabsetupitembearersuresext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -27469,7 +27355,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_e_rabsetupitembearersuresext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -27622,8 +27508,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_e_rabmodifyitembearermodresext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -27635,7 +27519,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_e_rabmodifyitembearermodresext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -27882,8 +27766,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_e_rabreleaseitembearerrelcompext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -27895,7 +27777,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_e_rabreleaseitembearerrelcompext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -28245,8 +28127,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_e_rabsetupitemctxtsuresext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -28258,7 +28138,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_e_rabsetupitemctxtsuresext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -28477,8 +28357,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_taiitemext(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -28490,7 +28368,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_taiitemext(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -35801,8 +35679,6 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_privatemessage(
   if(msg != NULL &&
      ptr != NULL)
   {
-    uint32_t n_ie;
-
     // Set booleans
 
     // Extension
@@ -35814,7 +35690,7 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_privatemessage(
     }
 
     // No. of ProtocolIE-Container
-    n_ie = liblte_bits_2_value(ptr, 16);
+    liblte_bits_2_value(ptr, 16);
 
 
     err = LIBLTE_SUCCESS;
@@ -42949,12 +42825,12 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_initiatingmessage(
     liblte_align_up(ptr, 8);
 
     // Length
-    uint32_t len = 0;
+//    uint32_t len = 0;
     if(0 == liblte_bits_2_value(ptr, 1)) {
-      len = liblte_bits_2_value(ptr, 7);
+      liblte_bits_2_value(ptr, 7);
     } else {
       if(0 == liblte_bits_2_value(ptr, 1)) {
-        len = liblte_bits_2_value(ptr, 14);
+        liblte_bits_2_value(ptr, 14);
       } else {
         // FIXME: Unlikely to have more than 16K of octets
       }
@@ -43313,12 +43189,12 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_unsuccessfuloutcome(
     liblte_align_up(ptr, 8);
 
     // Length
-    uint32_t len = 0;
+//    uint32_t len = 0;
     if(0 == liblte_bits_2_value(ptr, 1)) {
-      len = liblte_bits_2_value(ptr, 7);
+      liblte_bits_2_value(ptr, 7);
     } else {
       if(0 == liblte_bits_2_value(ptr, 1)) {
-        len = liblte_bits_2_value(ptr, 14);
+        liblte_bits_2_value(ptr, 14);
       } else {
         // FIXME: Unlikely to have more than 16K of octets
       }
@@ -43503,12 +43379,12 @@ LIBLTE_ERROR_ENUM liblte_s1ap_unpack_successfuloutcome(
     liblte_align_up(ptr, 8);
 
     // Length
-    uint32_t len = 0;
+//    uint32_t len = 0;
     if(0 == liblte_bits_2_value(ptr, 1)) {
-      len = liblte_bits_2_value(ptr, 7);
+      liblte_bits_2_value(ptr, 7);
     } else {
       if(0 == liblte_bits_2_value(ptr, 1)) {
-        len = liblte_bits_2_value(ptr, 14);
+        liblte_bits_2_value(ptr, 14);
       } else {
         // FIXME: Unlikely to have more than 16K of octets
       }

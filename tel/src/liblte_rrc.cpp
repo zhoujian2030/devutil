@@ -88,15 +88,20 @@ LIBLTE_BIT_MSG_STRUCT global_msg;
 /*********************************************************************
     Functions for external logging 
 *********************************************************************/
+#ifdef OS_LINUX
 static log_handler_t log_handler; 
-static void *callback_ctx = NULL; 
+static void *callback_ctx = NULL;
+#endif
 
 void liblte_rrc_log_register_handler(void *ctx, log_handler_t handler) {
+#ifdef OS_LINUX
   log_handler  = handler; 
   callback_ctx = ctx; 
+#endif
 }
 
 static void liblte_rrc_log_print(const char *format, ...) {
+#ifdef OS_LINUX
   va_list   args;
   va_start(args, format);
   if (log_handler) {
@@ -105,12 +110,13 @@ static void liblte_rrc_log_print(const char *format, ...) {
       log_handler(callback_ctx, args_msg);
     }
     if (args_msg) {
-      free(args_msg); 
+      free(args_msg);
     }
   } else {
     vprintf(format, args);
   }
   va_end(args);
+#endif
 }
 
 /*********************************************************************
@@ -9425,7 +9431,6 @@ LIBLTE_ERROR_ENUM liblte_rrc_unpack_sys_info_block_type_5_ie(uint8              
     uint32            i;
     uint32            j;
     bool              ext_ind;
-    bool              inter_freq_carrier_freq_list_ext_ind;
     bool              q_offset_freq_opt;
     bool              inter_freq_neigh_cell_list_opt;
     bool              inter_freq_black_cell_list_opt;
@@ -9440,7 +9445,7 @@ LIBLTE_ERROR_ENUM liblte_rrc_unpack_sys_info_block_type_5_ie(uint8              
         for(i=0; i<sib5->inter_freq_carrier_freq_list_size; i++)
         {
             // Extension indicator
-            inter_freq_carrier_freq_list_ext_ind = liblte_bits_2_value(ie_ptr, 1);
+            liblte_bits_2_value(ie_ptr, 1);
 
             // Optional indicators
             sib5->inter_freq_carrier_freq_list[i].p_max_present            = liblte_bits_2_value(ie_ptr, 1);
@@ -9607,9 +9612,7 @@ LIBLTE_ERROR_ENUM liblte_rrc_unpack_sys_info_block_type_6_ie(uint8              
     uint32            i;
     bool              ext_ind;
     bool              carrier_freq_list_utra_fdd_opt;
-    bool              carrier_freq_list_utra_fdd_ext_ind;
     bool              carrier_freq_list_utra_tdd_opt;
-    bool              carrier_freq_list_utra_tdd_ext_ind;
 
     if(ie_ptr != NULL &&
        sib6   != NULL)
@@ -9628,7 +9631,7 @@ LIBLTE_ERROR_ENUM liblte_rrc_unpack_sys_info_block_type_6_ie(uint8              
             for(i=0; i<sib6->carrier_freq_list_utra_fdd_size; i++)
             {
                 // Extension indicator
-                carrier_freq_list_utra_fdd_ext_ind = liblte_bits_2_value(ie_ptr, 1);
+                liblte_bits_2_value(ie_ptr, 1);
 
                 // Optional indicator
                 sib6->carrier_freq_list_utra_fdd[i].cell_resel_prio_present = liblte_bits_2_value(ie_ptr, 1);
@@ -9653,7 +9656,7 @@ LIBLTE_ERROR_ENUM liblte_rrc_unpack_sys_info_block_type_6_ie(uint8              
             for(i=0; i<sib6->carrier_freq_list_utra_tdd_size; i++)
             {
                 // Extension indicator
-                carrier_freq_list_utra_tdd_ext_ind = liblte_bits_2_value(ie_ptr, 1);
+                liblte_bits_2_value(ie_ptr, 1);
 
                 // Optional indicator
                 sib6->carrier_freq_list_utra_tdd[i].cell_resel_prio_present = liblte_bits_2_value(ie_ptr, 1);
@@ -9764,7 +9767,6 @@ LIBLTE_ERROR_ENUM liblte_rrc_unpack_sys_info_block_type_7_ie(uint8              
     uint32            i;
     bool              ext_ind;
     bool              carrier_freqs_info_list_opt;
-    bool              carrier_freqs_info_list_ext_ind;
 
     if(ie_ptr != NULL &&
        sib7   != NULL)
@@ -9787,7 +9789,7 @@ LIBLTE_ERROR_ENUM liblte_rrc_unpack_sys_info_block_type_7_ie(uint8              
             for(i=0; i<sib7->carrier_freqs_info_list_size; i++)
             {
                 // Extension indicator
-                carrier_freqs_info_list_ext_ind = liblte_bits_2_value(ie_ptr, 1);
+                liblte_bits_2_value(ie_ptr, 1);
 
                 liblte_rrc_unpack_carrier_freqs_geran_ie(ie_ptr, &sib7->carrier_freqs_info_list[i].carrier_freqs);
 
@@ -10303,7 +10305,6 @@ LIBLTE_ERROR_ENUM liblte_rrc_unpack_sys_info_block_type_13_ie(uint8             
     LIBLTE_ERROR_ENUM err = LIBLTE_ERROR_INVALID_INPUTS;
     uint32            i;
     bool              ext_ind;
-    bool              non_crit_ext_present;
 
     if(ie_ptr != NULL &&
        sib13  != NULL)
@@ -10312,7 +10313,7 @@ LIBLTE_ERROR_ENUM liblte_rrc_unpack_sys_info_block_type_13_ie(uint8             
         ext_ind = liblte_bits_2_value(ie_ptr, 1);
 
         // Optional indicators
-        non_crit_ext_present = liblte_bits_2_value(ie_ptr, 1);
+        liblte_bits_2_value(ie_ptr, 1);
 
         sib13->mbsfn_area_info_list_r9_size = liblte_bits_2_value(ie_ptr, 3) + 1;
         for(i=0; i<sib13->mbsfn_area_info_list_r9_size; i++)
@@ -10620,17 +10621,17 @@ LIBLTE_ERROR_ENUM liblte_rrc_unpack_ue_capability_information_msg(LIBLTE_BIT_MSG
             ue_capability_info->ue_capability_rat[i].rat_type = (LIBLTE_RRC_RAT_TYPE_ENUM)liblte_bits_2_value(&msg_ptr, 3);
 
             //Octet string
-            uint32 n_bytes = 0;
+//            uint32 n_bytes = 0;
             if(0 == liblte_bits_2_value(&msg_ptr, 1))
             {
-                n_bytes = liblte_bits_2_value(&msg_ptr, 7);
+                liblte_bits_2_value(&msg_ptr, 7);
             }else{
                 if(0 == liblte_bits_2_value(&msg_ptr, 1))
                 {
-                    n_bytes = liblte_bits_2_value(&msg_ptr, 14);
+                    liblte_bits_2_value(&msg_ptr, 14);
                 }else{
                     // FIXME: Unlikely to have more than 16K of octets
-                    n_bytes = 0;
+//                    n_bytes = 0;
                 }
             }
 
@@ -10842,7 +10843,6 @@ LIBLTE_ERROR_ENUM liblte_rrc_unpack_sys_info_block_type_1_msg(LIBLTE_BIT_MSG_STR
     bool               non_crit_ext_opt;
     bool               csg_id_opt;
     bool               q_rx_lev_min_offset_opt;
-    bool               extension;
 
     if(msg         != NULL &&
        sib1        != NULL &&
@@ -10906,7 +10906,7 @@ LIBLTE_ERROR_ENUM liblte_rrc_unpack_sys_info_block_type_1_msg(LIBLTE_BIT_MSG_STR
             sib1->sched_info[i].N_sib_mapping_info = liblte_bits_2_value(&msg_ptr, 5);
             for(j=0; j<sib1->sched_info[i].N_sib_mapping_info; j++)
             {
-                extension                                        = liblte_bits_2_value(&msg_ptr, 1);
+                liblte_bits_2_value(&msg_ptr, 1);
                 sib1->sched_info[i].sib_mapping_info[j].sib_type = (LIBLTE_RRC_SIB_TYPE_ENUM)liblte_bits_2_value(&msg_ptr, 4);
             }
         }
@@ -11075,7 +11075,7 @@ LIBLTE_ERROR_ENUM liblte_rrc_unpack_sys_info_msg(LIBLTE_BIT_MSG_STRUCT          
     uint8             *msg_ptr = msg->msg;
     uint8             *head_ptr;
     uint32             i;
-    uint32             length_determinant_octets;
+//    uint32             length_determinant_octets;
     uint8              non_crit_ext_opt;
 
     if(msg  != NULL &&
@@ -11139,14 +11139,14 @@ LIBLTE_ERROR_ENUM liblte_rrc_unpack_sys_info_msg(LIBLTE_BIT_MSG_STRUCT          
                     }
                 }else{
                     sibs->sibs[i].sib_type    = (LIBLTE_RRC_SYS_INFO_BLOCK_TYPE_ENUM)(liblte_bits_2_value(&msg_ptr, 7) + 10);
-                    length_determinant_octets = 0;
+//                    length_determinant_octets = 0;
                     if(0 == liblte_bits_2_value(&msg_ptr, 1))
                     {
-                        length_determinant_octets = liblte_bits_2_value(&msg_ptr, 7);
+                        liblte_bits_2_value(&msg_ptr, 7);
                     }else{
                         if(0 == liblte_bits_2_value(&msg_ptr, 1))
                         {
-                            length_determinant_octets = liblte_bits_2_value(&msg_ptr, 14);
+                            liblte_bits_2_value(&msg_ptr, 14);
                         }else{
                             printf("ERROR: Not handling fragmented length determinants\n");
                         }

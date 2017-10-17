@@ -18,6 +18,7 @@ OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
 #DEPOBJS := $(PROJBASE)/cm/obj/*.o
 
 include ../cm/global.mk
+CFLAGS += -DOS_LINUX
 
 all: $(LIBA)
 

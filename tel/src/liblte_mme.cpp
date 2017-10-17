@@ -358,14 +358,12 @@ LIBLTE_ERROR_ENUM liblte_mme_unpack_mobile_id_ie(uint8                       **i
 {
     LIBLTE_ERROR_ENUM  err = LIBLTE_ERROR_INVALID_INPUTS;
     uint8             *id;
-    uint32             length;
     uint32             i;
     bool               odd = false;
 
     if(ie_ptr    != NULL &&
        mobile_id != NULL)
     {
-        length   = **ie_ptr;
         *ie_ptr += 1;
 
         mobile_id->type_of_id = **ie_ptr & 0x07;
@@ -1455,13 +1453,11 @@ LIBLTE_ERROR_ENUM liblte_mme_unpack_eps_mobile_id_ie(uint8                      
 {
     LIBLTE_ERROR_ENUM  err = LIBLTE_ERROR_INVALID_INPUTS;
     uint8             *id;
-    uint32             length;
     uint32             i;
 
     if(ie_ptr        != NULL &&
        eps_mobile_id != NULL)
     {
-        length   = **ie_ptr;
         *ie_ptr += 1;
 
         eps_mobile_id->type_of_id = **ie_ptr & 0x07;
