@@ -8,6 +8,7 @@
 #include "TestUdpSocket.h"
 #include "SysctlUtil.h"
 #include <iostream>
+#include "NetLogger.h"
 
 using namespace net;
 using namespace cm;
@@ -38,11 +39,14 @@ TEST_F(TestUdpSocket, BlockingIO_NormalTest) {
     cout << "<<<<< server recv data: " << m_buffer->getData() << endl;
 
     // close
-    delete m_udpServerSocket;
-    delete m_udpClientSocket;
+    m_udpServerSocket->close();
+    m_udpClientSocket->close();
     ASSERT_EQ(m_udpClientSocket->send(m_buffer->getStartOfDataPointer(), m_buffer->getLength(), serverAddress), -1);
     ASSERT_EQ(m_udpServerSocket->receive(m_buffer->getEndOfDataPointer(), m_buffer->getRemainBufferSize(), remoteAddress), -1);
     cout << "<<<<< close socket and return error from send or receive" << endl;
+
+    delete m_udpServerSocket;
+    delete m_udpClientSocket;
 
     delete m_buffer;
 }
@@ -88,9 +92,15 @@ TEST_F(TestUdpSocket, NonBlockingIO_NormalTest) {
     m_buffer->increaseDataLength(expectLength);
     cout << "<<<<< server recv data: " << m_buffer->getData() << endl;
 
-    delete m_udpServerSocket;
-    delete m_udpClientSocket;
+    // close
+    m_udpServerSocket->close();
+    m_udpClientSocket->close();
     ASSERT_EQ(m_udpClientSocket->send(m_buffer->getStartOfDataPointer(), m_buffer->getLength(), serverAddress), -1);
     ASSERT_EQ(m_udpServerSocket->receive(m_buffer->getEndOfDataPointer(), m_buffer->getRemainBufferSize(), remoteAddress), -1);
     cout << "<<<<< close socket and return error from send or receive" << endl;
+
+    delete m_udpServerSocket;
+    delete m_udpClientSocket;
+
+    delete m_buffer;
 }

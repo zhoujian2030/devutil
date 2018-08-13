@@ -1,5 +1,6 @@
-LIBA = libcm.a
-LIBDIR = lib
+# LIBNAME = libcm
+# LIBDIR = lib
+# DEPDIR = .d
 
 SUBDIRS = log \
 	foundation \
@@ -37,18 +38,13 @@ $(INSTALLDIRS):
 
 .PHONY: all install clean
 
-OBJS = log/obj/* foundation/obj/* thread/obj/* mq/obj/* util/obj/*
-
 .PHONY: $(POSTBUILD)
 $(POSTBUILD): 
-	$(AR) q $(LIBA) $(OBJS)
-	@mkdir -p $(LIBDIR)
-	@mv $(LIBA) $(LIBDIR)
-	@sh ./postbuild.sh libcm
+	$(MAKE) -f build_libcm.mk
 
 .PHONY: $(POSTCLEAN)
 $(POSTCLEAN):
-	rm -rf $(LIBDIR)
+	$(MAKE) -f build_libcm.mk clean
 
 # specify the dependency here
 thread: log

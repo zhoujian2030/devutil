@@ -16,12 +16,12 @@ class TestUdpSocket : public TestSuite {
 protected:
     virtual void SetUp() {
         std::cout << "TestUdpSocket::SetUp()" << std::endl;
-        m_buffer = new cm::DataBuffer();
+        // m_buffer = new cm::DataBuffer();
     }
     
     virtual void TearDown() {
         std::cout << "TestUdpSocket::TearDown()" << std::endl;
-        delete m_buffer;
+        // delete m_buffer;
     }
 
     cm::DataBuffer* m_buffer;

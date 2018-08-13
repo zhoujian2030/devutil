@@ -1,42 +1,31 @@
-# Target  name
-TARGET = logtest 
+# Target name
+TARGET = log
 
 # Directories
 OBJDIR = obj
 SRCDIR = src
+INCDIR = inc
+DEPDIR = dep
+BINDIR = bin
+DEPDIR = .d
 
-# Libraries
-INC += -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/log/inc
-# /usr/local/lib/liblog4cplus.a is included in libcm.a
-LIBS = $(PROJBASE)/cm/lib/libcm.a
+include $(PROJBASE)/cm/global.mk
+include $(PROJBASE)/cm/filter_code.mk
+include $(PROJBASE)/cm/bin_rules.mk
+include $(PROJBASE)/test/gtest_rules.mk
 
-# Files and folders
-SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)
-OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
+# include
+INC += -I$(INCDIR) -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/log/inc
 
-include ../../cm/global.mk
+# platform libs dependency 
+LIBS += $(PROJBASE)/cm/lib/libcm.a
+LIBS += $(LIBSA_LOG4CPLUS)
 
-all: $(TARGET)
+# compile flags
 
-# use static lib (*.a) by adding -lrt xxx.a in end of the line
-$(TARGET): buildrepo $(OBJS)
-	$(CXX) $(OBJS) -o $@ -lrt $(LIBS)
-	@mv $(TARGET) $(OBJDIR)
+# link flags
+LDFLAGS += -pthread
 
-clean:
-	rm -rf ./bin/* $(OBJDIR) $(SRCDIR)/*.o
+# link c or cpp target
+LD := $(CXX)
 
-install:
-	mv $(OBJDIR)/$(TARGET) ./bin
-	
-buildrepo:
-	@$(call make-repo)
-
-# Create obj directory structure
-define make-repo
-	mkdir -p $(OBJDIR)
-	for dir in $(SRCDIRS); \
-	do \
-		mkdir -p $(OBJDIR)/$$dir; \
-	done
-endef

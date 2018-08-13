@@ -34,6 +34,7 @@ TcpSocket::TcpSocket(std::string remoteIp, unsigned short remotePort)
 TcpSocket::TcpSocket(int socket, Socket::InetAddressPort& theRemoteAddrPort)
 : Socket(socket, SOCK_STREAM),
   m_tcpState(TCP_CONNECTED), 
+  m_reactor(0),
   m_socketListener(0) 
 {
     memcpy(&m_remoteAddrAndPort, &theRemoteAddrPort, sizeof(theRemoteAddrPort));
@@ -119,6 +120,7 @@ int TcpSocket::send(const char* theBuffer, int numOfBytesToSend) {
                 if (numberOfBytesSent >= numOfBytesToSend) {
                     m_lock->unlock();
                     m_socketListener->handleSendResult(this, numberOfBytesSent);
+                    LOG4CPLUS_DEBUG(_NET_LOOGER_NAME_, "numberOfBytesSent = " << numberOfBytesSent);
                     return numberOfBytesSent;
                 }
 

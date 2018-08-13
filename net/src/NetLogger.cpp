@@ -24,7 +24,7 @@ void NetLogger::initConsoleLog() {
     }
 
     CPPLogger::initConsoleLog(logger);
-    CPPLogger::setLogLevel(logger, INFO);
+    CPPLogger::setLogLevel(logger, DEBUG);
     s_isInited = true;
     m_lock.unlock();
 }

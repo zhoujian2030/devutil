@@ -32,6 +32,5 @@
 # others
 .vscode
 
-inc
 obj
 bin

@@ -1,50 +1,30 @@
-# Target  name
-TARGET = teltest
+# Target name
+TARGET = tel
 
 # Directories
 OBJDIR = obj
 SRCDIR = src
+INCDIR = inc
 DEPDIR = dep
 BINDIR = bin
-
-# Libraries
-# gtest include
-INCGTEST = -I$(PROJBASE)/test/lib/gtest/include
-INC += $(INCGTEST) -I$(PROJBASE)/tel/inc
-# MUST place libnet.a ahead of libcm.a because libnet depends on libcm.a
-LIBS = $(PROJBASE)/tel/lib/libtel.a 
-
-LIBAGTEST = $(PROJBASE)/test/lib/gtest/lib/libgtest.a $(PROJBASE)/test/lib/gtest/lib/libgtest_main.a
-LIBSOGTEST = -L$(PROJBASE)/test/lib/gtest/lib -lgtest -lgtest_main
-
-# Files and folders
-SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)
-OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
+DEPDIR = .d
 
 include $(PROJBASE)/cm/global.mk
+include $(PROJBASE)/cm/filter_code.mk
+include $(PROJBASE)/cm/bin_rules.mk
+include $(PROJBASE)/test/gtest_rules.mk
 
-all: $(TARGET)
+# include
+INC += -I$(INCDIR) -I$(PROJBASE)/tel/inc
 
-# Targets
-$(TARGET): buildrepo $(OBJS)
-	$(CXX) $(OBJS) -o $@ -lrt -pthread $(LIBAGTEST) $(LIBS)
-	@mv $(TARGET) $(OBJDIR)
+# platform libs dependency 
+LIBS += $(PROJBASE)/tel/lib/libtel.a 
+LIBS += $(LIBAGTEST)
 
-clean:
-	rm -rf $(BINDIR) $(OBJDIR) $(SRCDIR)/*.o $(DEPDIR)
+# compile flags
 
-install:
-	mkdir -p $(BINDIR)
-	cp $(OBJDIR)/$(TARGET) $(BINDIR)
-	
-buildrepo:
-	@$(call make-repo)
+# link flags
 
-# Create obj directory structure
-define make-repo
-	mkdir -p $(OBJDIR)
-	for dir in $(SRCDIRS); \
-	do \
-		mkdir -p $(OBJDIR)/$$dir; \
-	done
-endef
+# link c or cpp target
+LD := $(CXX)
+

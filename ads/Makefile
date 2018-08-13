@@ -1,48 +1,32 @@
-# Target  name
-TARGET = ads 
+# Target name
+TARGET = ads
 
 # Directories
 OBJDIR = obj
 SRCDIR = src
-BINDIR = bin
+INCDIR = inc
+LIBDIR = lib
+DEPDIR = .d
 
-# Libraries
-INC += -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/log/inc
+include $(PROJBASE)/cm/global.mk
+include $(PROJBASE)/cm/filter_code.mk
+include $(PROJBASE)/cm/bin_rules.mk
+
+# include
+INC += -I$(INCDIR) -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/log/inc
+
+# platform dependency
+ifeq ($(PLATFORM), arm)
+LIBS += $(PROJBASE)/cm/lib/libcm_arm.a
+else
 LIBS += $(PROJBASE)/cm/lib/libcm.a
+endif
+LIBS += $(LIBSA_LOG4CPLUS)
 
-# Files and folders
-#SRCS    = $(shell find $(SRCDIR) -name '*.cpp')
-#SRCDIRS = $(shell find . -name '*.cpp' | dirname {} | sort | uniq | sed 's/\/$(SRCDIR)//g' )
-#OBJS   := $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRCS))
-SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)
-OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
+# compile flags
 
-include ../cm/global.mk
+# link flags
 
-all: $(TARGET)
-exe: $(TARGET)
+# link c or cpp target
+LD := $(CXX)
 
-# Targets
-$(TARGET): buildrepo $(OBJS)
-#	@echo "SRCS = $(SRCS)"
-	$(CXX) $(OBJS) -o $@ -lrt $(LIBS)
-	@mv $(TARGET) $(OBJDIR)
-
-clean:
-	rm -rf ./bin/* $(OBJDIR) $(SRCDIR)/*.o
-
-install:
-	mkdir -p $(BINDIR)
-	mv $(OBJDIR)/$(TARGET) $(BINDIR)
-	
-buildrepo:
-	@$(call make-repo)
-
-# Create obj directory structure
-define make-repo
-	mkdir -p $(OBJDIR)
-	for dir in $(SRCDIRS); \
-	do \
-		mkdir -p $(OBJDIR)/$$dir; \
-	done
-endef

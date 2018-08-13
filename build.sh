@@ -21,6 +21,11 @@ if [[ $COMMAND = "clean" ]]; then
 elif [[ $COMMAND = "install" ]]; then
     make install
 else
+    if [ ! -d "$PROJBASE/test/lib/gtest/lib/" ]; then  
+        cd $PROJBASE/test/lib/gtest
+        sh ./build.sh
+        cd -
+    fi
     make
 fi
 

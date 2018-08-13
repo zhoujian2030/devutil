@@ -6,7 +6,7 @@ if [ $# == 1 ]; then
     libname="$1"
     echo "lib name is" $libname
 else
-    libname=libcm
+    libname=libtel
 fi
 
 if [ "$PLATFORM" == "arm" ]; then

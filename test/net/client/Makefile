@@ -1,45 +1,32 @@
-# Target  name
+# Target name
 TARGET = netclient
 
 # Directories
 OBJDIR = obj
 SRCDIR = src
+INCDIR = inc
 DEPDIR = dep
 BINDIR = bin
-
-# Libraries
-INC += -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/thread/inc -I$(PROJBASE)/cm/log/inc -I$(PROJBASE)/net/inc
-# MUST place libnet.a ahead of libcm.a because libnet depends on libcm.a
-LIBS = $(PROJBASE)/net/lib/libnet.a $(PROJBASE)/cm/lib/libcm.a
-
-# Files and folders
-SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)
-OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
+DEPDIR = .d
 
 include $(PROJBASE)/cm/global.mk
+include $(PROJBASE)/cm/filter_code.mk
+include $(PROJBASE)/cm/bin_rules.mk
+include $(PROJBASE)/test/gtest_rules.mk
 
-all: $(TARGET)
+# include
+INC += -I$(INCDIR) -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/thread/inc -I$(PROJBASE)/cm/log/inc -I$(PROJBASE)/net/inc
 
-# Targets
-$(TARGET): buildrepo $(OBJS)
-	$(CXX) $(OBJS) -o $@ -lrt -pthread $(LIBS)
-	@mv $(TARGET) $(OBJDIR)
+# platform libs dependency 
+LIBS += $(PROJBASE)/net/lib/libnet.a $(PROJBASE)/cm/lib/libcm.a
+LIBS += $(LIBSA_LOG4CPLUS)
 
-clean:
-	rm -rf $(BINDIR) $(OBJDIR) $(SRCDIR)/*.o $(DEPDIR)
+# compile flags
 
-install:
-	mkdir -p $(BINDIR)
-	cp $(OBJDIR)/$(TARGET) $(BINDIR)
-	
-buildrepo:
-	@$(call make-repo)
+# link flags
+LDFLAGS += -pthread
 
-# Create obj directory structure
-define make-repo
-	mkdir -p $(OBJDIR)
-	for dir in $(SRCDIRS); \
-	do \
-		mkdir -p $(OBJDIR)/$$dir; \
-	done
-endef
+# link c or cpp target
+LD := $(CXX)
+
+

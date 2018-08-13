@@ -5,12 +5,12 @@ PTHREAD_TGT = pthreadtest
 # Directories
 OBJDIR = obj
 SRCDIR = src
-DEPDIR = dep
+DEPDIR = .d
 BINDIR = bin
 
 # Libraries
-INC += -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/thread/inc -I$(PROJBASE)/ipc/src
-LIBS = $(PROJBASE)/cm/lib/libcm.a
+INC += -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/thread/inc -I$(PROJBASE)/ipc/inc
+LIBS = $(PROJBASE)/cm/lib/libcm.a /usr/local/log4cplusx86/lib/liblog4cplus.a
 
 # Files and folders
 SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)
@@ -53,3 +53,4 @@ define make-repo
 		mkdir -p $(OBJDIR)/$$dir; \
 	done
 endef
+

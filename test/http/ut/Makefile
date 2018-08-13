@@ -1,53 +1,36 @@
-# Target  name
-TARGET = testHttp
+# Target name
+TARGET = http
 
 # Directories
 OBJDIR = obj
 SRCDIR = src
+INCDIR = inc
 DEPDIR = dep
 BINDIR = bin
+DEPDIR = .d
 
-# Libraries
-# gtest include
-INCGTEST = -I$(PROJBASE)/test/lib/gtest/include
-INC += $(INCGTEST) -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/thread/inc -I$(PROJBASE)/cm/util/inc -I$(PROJBASE)/cm/log/inc -I$(PROJBASE)/net/inc -I$(PROJBASE)/http/inc
-# MUST place libnet.a ahead of libcm.a because libnet depends on libcm.a
-LIBS = $(PROJBASE)/http/lib/libhttp.a $(PROJBASE)/net/lib/libnet.a $(PROJBASE)/cm/lib/libcm.a 
+include $(PROJBASE)/cm/global.mk
+include $(PROJBASE)/cm/filter_code.mk
+include $(PROJBASE)/cm/bin_rules.mk
+include $(PROJBASE)/test/gtest_rules.mk
 
-LIBAGTEST = $(PROJBASE)/test/lib/gtest/lib/libgtest.a $(PROJBASE)/test/lib/gtest/lib/libgtest_main.a
-LIBSOGTEST = -L$(PROJBASE)/test/lib/gtest/lib -lgtest -lgtest_main
+# include
+INC += -I$(INCDIR) -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/thread/inc -I$(PROJBASE)/cm/util/inc -I$(PROJBASE)/cm/log/inc -I$(PROJBASE)/net/inc -I$(PROJBASE)/http/inc
 
+# platform libs dependency 
 LIBABOOST = /usr/local/boostx86/lib/libboost_system.a
 LIBSOBOOST = -L/usr/local//boostx86/lib -lboost_system
 
-# Files and folders
-SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)
-OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
+LIBS += $(PROJBASE)/http/lib/libhttp.a $(PROJBASE)/net/lib/libnet.a $(PROJBASE)/cm/lib/libcm.a
+LIBS += $(LIBAGTEST)
+LIBS += $(LIBSA_LOG4CPLUS) $(LIBABOOST)
 
-include $(PROJBASE)/cm/global.mk
+# compile flags
 
-all: $(TARGET)
+# link flags
+LDFLAGS += -pthread
 
-# Targets
-$(TARGET): buildrepo $(OBJS)
-	$(CXX) $(OBJS) -o $@ -lrt -pthread $(LIBABOOST) $(LIBAGTEST) $(LIBS)
-	@mv $(TARGET) $(OBJDIR)
+# link c or cpp target
+LD := $(CXX)
 
-clean:
-	rm -rf $(BINDIR) $(OBJDIR) $(SRCDIR)/*.o $(DEPDIR)
 
-install:
-	mkdir -p $(BINDIR)
-	cp $(OBJDIR)/$(TARGET) $(BINDIR)
-	
-buildrepo:
-	@$(call make-repo)
-
-# Create obj directory structure
-define make-repo
-	mkdir -p $(OBJDIR)
-	for dir in $(SRCDIRS); \
-	do \
-		mkdir -p $(OBJDIR)/$$dir; \
-	done
-endef

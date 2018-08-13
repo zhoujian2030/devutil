@@ -1,46 +1,27 @@
-# Target  name
-TGT_VARIADIC = add-demo 
+# Target name
+TARGET = add_demo
 
 # Directories
 OBJDIR = obj
 SRCDIR = src
+INCDIR = inc
+LIBDIR = lib
+DEPDIR = .d
 
-# Libraries
-INC += -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/log/inc
-LIBS = 
+include $(PROJBASE)/cm/global.mk
+include $(PROJBASE)/cm/filter_code.mk
+include $(PROJBASE)/cm/bin_rules.mk
 
-# Files and folders
-#SRCS    = $(shell find $(SRCDIR) -name '*.cpp')
-#SRCDIRS = $(shell find . -name '*.cpp' | dirname {} | sort | uniq | sed 's/\/$(SRCDIR)//g' )
-#OBJS   := $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRCS))
-SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)
-OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
+# include
+INC += -I$(PROJBASE)/cm/foundation/inc
 
-include ../cm/global.mk
+# platform dependency
 
-all: $(TGT_VARIADIC)
-variadic: $(TGT_VARIADIC)
+# compile flags
 
-# Targets
-$(TGT_VARIADIC): buildrepo $(OBJS)
-#	@echo "SRCS = $(SRCS)"
-	$(CXX) $(OBJS) $(LIBS) -o $@
-	@mv $(TGT_VARIADIC) $(OBJDIR)
+# link flags
 
-clean:
-	rm -rf ./bin/* $(OBJDIR) $(SRCDIR)/*.o
+# link c or cpp target
+LD := $(CXX)
 
-install:
-	mv $(OBJDIR)/$(TGT_VARIADIC) ./bin
 	
-buildrepo:
-	@$(call make-repo)
-
-# Create obj directory structure
-define make-repo
-	mkdir -p $(OBJDIR)
-	for dir in $(SRCDIRS); \
-	do \
-		mkdir -p $(OBJDIR)/$$dir; \
-	done
-endef

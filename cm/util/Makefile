@@ -1,40 +1,19 @@
-# Target  name
-TARGET=
+# Target name
+LIBNAME =
 
 # Directories
 OBJDIR = obj
 SRCDIR = src
 INCDIR = inc
+LIBDIR = lib
+DEPDIR = .d
 
-# Libraries
-INC  = -I$(PROJBASE)/cm/log/inc 
-LIBS = 
+include $(PROJBASE)/cm/global.mk
+include $(PROJBASE)/cm/filter_code.mk
+include $(PROJBASE)/cm/obj_rules.mk
 
-# Files and folders
-SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)
-OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
+# include 
+INC += -I$(INCDIR) -I$(PROJBASE)/cm/log/inc
 
-include ../global.mk
 CFLAGS += -DDEBUG_CM
 
-all: buildrepo $(OBJS)
-	@mkdir -p $(INCDIR)
-	@cp $(SRCDIR)/*.h $(INCDIR)
-
-clean:
-	rm -rf $(INCDIR) $(OBJDIR) $(SRCDIR)/*.o
-
-install:
-	# nothing to do 
-	
-buildrepo:
-	@$(call make-repo)
-
-# Create obj directory structure
-define make-repo
-	mkdir -p $(OBJDIR)
-	for dir in $(SRCDIRS); \
-	do \
-		mkdir -p $(OBJDIR)/$$dir; \
-	done
-endef

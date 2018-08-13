@@ -1,44 +1,33 @@
-# Target  name
-TARGET = cmtest 
+# Target name
+TARGET = cm
 
 # Directories
 OBJDIR = obj
 SRCDIR = src
+INCDIR = inc
+DEPDIR = dep
 BINDIR = bin
-
-# Libraries
-INC += -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/thread/inc -I$(PROJBASE)/cm/log/inc
-# MUST place libnet.a ahead of libcm.a because libnet depends on libcm.a
-LIBS = $(PROJBASE)/cm/lib/libcm.a
-
-# Files and folders
-SRCS := $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*.c $(SRCDIR)/*.cc)
-OBJS := $(subst $(SRCDIR)/, $(OBJDIR)/, $(SRCS:.cpp=.o))
+DEPDIR = .d
 
 include $(PROJBASE)/cm/global.mk
+include $(PROJBASE)/cm/filter_code.mk
+include $(PROJBASE)/cm/bin_rules.mk
+include $(PROJBASE)/test/gtest_rules.mk
 
-all: $(TARGET)
+# include
+INC += -I$(INCDIR) -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/thread/inc -I$(PROJBASE)/cm/log/inc
 
-# Targets
-$(TARGET): buildrepo $(OBJS)
-	$(CXX) $(OBJS) $(DEPOBJS) -o $@ -lrt -pthread $(LIBS)
-	@mv $(TARGET) $(OBJDIR)
+# platform libs dependency 
+LIBS += $(PROJBASE)/cm/lib/libcm.a
+LIBS += $(LIBSA_LOG4CPLUS)
 
-clean:
-	rm -rf $(BINDIR) $(OBJDIR) $(SRCDIR)/*.o
+# compile flags
 
-install:
-	mkdir -p $(BINDIR)
-	cp $(OBJDIR)/$(TARGET) $(BINDIR)
-	
-buildrepo:
-	@$(call make-repo)
 
-# Create obj directory structure
-define make-repo
-	mkdir -p $(OBJDIR)
-	for dir in $(SRCDIRS); \
-	do \
-		mkdir -p $(OBJDIR)/$$dir; \
-	done
-endef
+# link flags
+LDFLAGS += -pthread
+
+# link c or cpp target
+LD := $(CXX)
+
+
