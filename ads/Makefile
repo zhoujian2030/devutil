@@ -13,7 +13,7 @@ include $(PROJBASE)/cm/filter_code.mk
 include $(PROJBASE)/cm/bin_rules.mk
 
 # include
-INC += -I$(INCDIR) -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/log/inc
+INC += -I$(INCDIR) -I$(PROJBASE)/cm/foundation/inc -I$(PROJBASE)/cm/clog/inc -I$(PROJBASE)/cm/3pp/inc
 
 # platform dependency
 ifeq ($(PLATFORM), arm)
@@ -24,6 +24,7 @@ endif
 LIBS += $(LIBSA_LOG4CPLUS)
 
 # compile flags
+CFLAGS += -Wno-write-strings
 
 # link flags
 

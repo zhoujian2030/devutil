@@ -6,11 +6,12 @@
  */
 
 #include "Sort.h"
-#include "AdsLogger.h"
+#include "logger.h"
 #include "Util.h"
 #include <iostream>
 #include <string.h>
 #include "NodeUtil.h"
+#include <assert.h>
 
 using namespace std;
 using namespace ads;
@@ -26,11 +27,20 @@ void testQuickSort(const int array[], int length);
 void testNode();
 
 int main(int argc, char* argv[]) {
-    AdsLogger::initConsoleLog();
+    // LoggerInit("./ads/resource/logger.conf");
 
-    // testSort(argc, argv);
+    LoggerConfig logConfig;
+    LoggerGetConfig(&logConfig);
+    logConfig.logType = SYNC_LOG;
+    logConfig.logLevel = DEBUG;
+    logConfig.logToConsoleFlag = 1;
+    logConfig.logToFileFlag = 0;
+    LoggerInitConfig(&logConfig);
     
-    testNode();
+    testSort(argc, argv);
+    
+    // testNode();
+
     // Knapsack knapsack;
     // knapsack.generateInput();
     // knapsack.calculate();

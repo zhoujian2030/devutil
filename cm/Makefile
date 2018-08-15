@@ -6,7 +6,9 @@ SUBDIRS = log \
 	foundation \
 	thread \
 	mq \
-	util
+	util \
+	3pp \
+	clog
 
 BUILDDIRS = $(SUBDIRS:%=build-%)
 INSTALLDIRS = $(SUBDIRS:%=install-%)

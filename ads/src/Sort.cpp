@@ -6,8 +6,8 @@
  */
 
 #include "Sort.h"
-#include "AdsLogger.h"
-
+#include "logger.h"
+#include "logModule.h"
 #include <iostream>
 
 #include <stdlib.h>
@@ -37,8 +37,8 @@ void Sort::insertionSort(int array[], int length) {
             array[j] = target2inserted;
         }
     } 
-
-    LOG4CPLUS_DEBUG(_ADS_LOOGER_NAME_, "n = " << n);  
+ 
+    LOG_MSG(LOG_MODULE_ADS, DEBUG, "n = %d", n);
 }
 
 // ----------------------------------------------
@@ -61,7 +61,7 @@ void Sort::selectionSort(int array[], int length) {
         }
     } 
 
-    LOG4CPLUS_DEBUG(_ADS_LOOGER_NAME_, "n = " << n);  
+    LOG_MSG(LOG_MODULE_ADS, DEBUG, "n = %d", n);
 }
 
 // -----------------------------------------------
@@ -85,7 +85,7 @@ void Sort::bubbleSort(int array[], int length) {
         }
     }
 
-    LOG4CPLUS_DEBUG(_ADS_LOOGER_NAME_, "n = " << n);
+    LOG_MSG(LOG_MODULE_ADS, DEBUG, "n = %d", n);
 }
 
 int gQuickN = 0;
@@ -93,7 +93,7 @@ int gQuickN = 0;
 void Sort::quickSort(int array[], int length) {  
     gQuickN = 0;
     doQuickSort(array, length);
-    LOG4CPLUS_DEBUG(_ADS_LOOGER_NAME_, "n = " << gQuickN);
+    LOG_MSG(LOG_MODULE_ADS, DEBUG, "gQuickN = %d", gQuickN);
 }
 
 // -------------------------------------------------

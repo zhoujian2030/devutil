@@ -5,7 +5,7 @@ DEPDIR = .d
 $(shell mkdir -p $(LIBDIR) >/dev/null)
 $(shell mkdir -p $(DEPDIR) >/dev/null)
 
-OBJS = log/obj/* foundation/obj/* thread/obj/* mq/obj/* util/obj/*
+OBJS = log/obj/* foundation/obj/* thread/obj/* mq/obj/* util/obj/* 3pp/obj/* clog/obj/*
 POST_BUILD=@sh ./postbuild.sh $(LIBNAME)
 LIBA = $(LIBDIR)/$(LIBNAME).a
 
