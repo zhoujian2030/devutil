@@ -3,7 +3,8 @@ SUBDIRS = log \
 	http \
 	str \
 	cm \
-	tel
+	tel \
+	ads
 
 BUILDDIRS = $(SUBDIRS:%=build-%)
 INSTALLDIRS = $(SUBDIRS:%=install-%)

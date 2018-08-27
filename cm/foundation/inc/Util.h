@@ -14,6 +14,7 @@
 class Util {
 public:
     static int s2i(std::string theString);
+    static std::string i2s(int number, int base = 10);
 
     // signal.h typedef void (*sighandler_t)(int);
     static int installSignalHandler(int signo, sighandler_t handler);

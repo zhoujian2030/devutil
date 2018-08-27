@@ -4,7 +4,7 @@
  *  Created on: Apr 16, 2016
  *      Author: z.j
  */
-
+#if 0
 #include "Sort.h"
 #include "logger.h"
 #include "Util.h"
@@ -214,3 +214,4 @@ void testQuickSort(const int array[], int length) {
 
     delete [] newArray;  
 }
+#endif

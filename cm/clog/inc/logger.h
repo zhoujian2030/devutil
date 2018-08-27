@@ -18,6 +18,7 @@ extern "C" {
 #include <pthread.h>
 #include "queue.h"
 #include "loggerConfig.h"
+#include "logModule.h"
 
 typedef struct {
 	unsigned char initFlag;
