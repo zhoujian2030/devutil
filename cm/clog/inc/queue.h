@@ -1,12 +1,12 @@
 /*
- * queue.h
+ * logQueue.h
  *
  *  Created on: June 5, 2018
  *      Author: j.zh
  */
 
-#ifndef QUEUE_H
-#define QUEUE_H
+#ifndef LOG_QUEUE_H
+#define LOG_QUEUE_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -15,7 +15,7 @@ extern "C" {
 #include <pthread.h>
 
 typedef struct _Node_ QNode;
-typedef struct _Queue_ Queue;
+typedef struct _Queue_ LogQueue;
 
 struct _Node_ {
     QNode *next;
@@ -28,14 +28,14 @@ struct _Queue_ {
     pthread_mutex_t mutex;
 } ; 
 
-void QueueInit(Queue* pQueue);
-void QueueDeInit(Queue* pQueue);
+void LogQueueInit(LogQueue* pQueue);
+void LogQueueDeInit(LogQueue* pQueue);
 
-unsigned int QueueCount(const Queue *pQueue);
+unsigned int LogQueueCount(const LogQueue *pQueue);
 
-void QueuePushNode(Queue *pQueue, QNode *pNode);
-void QueuePushNodeHead(Queue *pQueue, QNode *pNode);
-QNode* QueuePopNode(Queue *pQueue);
+void LogQueuePushNode(LogQueue *pQueue, QNode *pNode);
+void LogQueuePushNodeHead(LogQueue *pQueue, QNode *pNode);
+QNode* LogQueuePopNode(LogQueue *pQueue);
 
 
 #ifdef __cplusplus

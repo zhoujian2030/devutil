@@ -74,8 +74,8 @@ pthread_mutex_t gLoggerMutex;
 #define MAX_NUM_LOG_INFO_NODE       4096
 #define MAX_NUM_LOG_ITEM_TO_WRITE   32  // when count of gBusyLogInfoQueue reaches, notify logger
 LogInfo gLogInfoNodeArray[MAX_NUM_LOG_INFO_NODE];
-Queue gIdleLogInfoQueue;
-Queue gBusyLogInfoQueue;
+LogQueue gIdleLogInfoQueue;
+LogQueue gBusyLogInfoQueue;
 static void ProcessLogQueue();
 
 static void InitAsyncLogger();
@@ -236,12 +236,12 @@ static void InitAsyncLogger(LoggerConfig* pLoggerConfig)
             }
             ptr->next = (void*)gpWriteBuffer;
         } else {
-            QueueInit(&gIdleLogInfoQueue);
-            QueueInit(&gBusyLogInfoQueue);
+            LogQueueInit(&gIdleLogInfoQueue);
+            LogQueueInit(&gBusyLogInfoQueue);
             QNode* pNode;
             for (i=0; i<MAX_NUM_LOG_INFO_NODE; i++) {
                 pNode = &gLogInfoNodeArray[i].node;
-                QueuePushNode(&gIdleLogInfoQueue, pNode);
+                LogQueuePushNode(&gIdleLogInfoQueue, pNode);
             }
         }
 
@@ -305,7 +305,7 @@ void* LoggerEntryFunc(void* p)
         }
         
         // wait if current log buffer is not full
-        while (((gLoggerConfig_s.logType == AYNC_LOG_TYPE_2) && (!QueueCount(&gBusyLogInfoQueue))) ||
+        while (((gLoggerConfig_s.logType == AYNC_LOG_TYPE_2) && (!LogQueueCount(&gBusyLogInfoQueue))) ||
             ((gLoggerConfig_s.logType == AYNC_LOG_TYPE_1) && (gpReadBuffer->length == 0))) {
 
             if (gLoggerConfig_s.asyncWaitTime > 0) {
@@ -437,7 +437,7 @@ void LoggerWriteMsg(char* moduleId, unsigned int logLevel, const char *fileName,
             if (gLoggerConfig_s.logType == AYNC_LOG_TYPE_1) {
                 AsyncWriteMsg(moduleId, logLevel, fileName, funcName, fmt, args);
             } else {
-                LogInfo* pLogInfoNode = (LogInfo*)QueuePopNode(&gIdleLogInfoQueue);
+                LogInfo* pLogInfoNode = (LogInfo*)LogQueuePopNode(&gIdleLogInfoQueue);
                 if (pLogInfoNode == 0) {               
                     va_end(args);
                     pthread_mutex_lock(&gLoggerMutex);
@@ -488,7 +488,7 @@ void LoggerWriteMsg(char* moduleId, unsigned int logLevel, const char *fileName,
                 }
                 va_end(args);
 
-                QueuePushNode(&gBusyLogInfoQueue, &pLogInfoNode->node);
+                LogQueuePushNode(&gBusyLogInfoQueue, &pLogInfoNode->node);
             }
         } else {
             logPtr = logBuff;
@@ -682,12 +682,12 @@ static void ProcessLogQueue()
     int remainBufferSize = 4095;
     int offset = 0;
     int length = 0;
-    unsigned int count = QueueCount(&gBusyLogInfoQueue);
+    unsigned int count = LogQueueCount(&gBusyLogInfoQueue);
     LoggerGetTimestamp(timestamp);
 
     // printf("count = %d\n", count);
     while (count > 0) {
-        pLogInfoNode = (LogInfo*)QueuePopNode(&gBusyLogInfoQueue);
+        pLogInfoNode = (LogInfo*)LogQueuePopNode(&gBusyLogInfoQueue);
         if (pLogInfoNode == 0) {
             break;
         }
@@ -767,7 +767,7 @@ static void ProcessLogQueue()
         } else {
             length = strlen(pLogInfoNode->u.logMemInfo.logMem);
             if ((offset + length) >= 4096) {
-                QueuePushNodeHead(&gBusyLogInfoQueue, &pLogInfoNode->node);
+                LogQueuePushNodeHead(&gBusyLogInfoQueue, &pLogInfoNode->node);
                 break;
             } else {
                 memcpy(logPtr, pLogInfoNode->u.logMemInfo.logMem, length);
@@ -776,7 +776,7 @@ static void ProcessLogQueue()
             }
         }
 
-        QueuePushNode(&gIdleLogInfoQueue, &pLogInfoNode->node);
+        LogQueuePushNode(&gIdleLogInfoQueue, &pLogInfoNode->node);
         
         count--;
 
@@ -857,7 +857,7 @@ void LoggerWriteMem(unsigned int logLevel, unsigned char* pBuffer, unsigned int 
 
                 pthread_mutex_unlock(&gLoggerMutex);
             } else {
-                LogInfo* pLogInfoNode = (LogInfo*)QueuePopNode(&gIdleLogInfoQueue);
+                LogInfo* pLogInfoNode = (LogInfo*)LogQueuePopNode(&gIdleLogInfoQueue);
                 if (pLogInfoNode == 0) {   
                     pthread_mutex_lock(&gLoggerMutex);
                     pthread_cond_signal(&gLoggerCondition);
@@ -884,7 +884,7 @@ void LoggerWriteMem(unsigned int logLevel, unsigned char* pBuffer, unsigned int 
                 }
                 snprintf(logPtr + offset, remainBufferSize - offset, "\n");    
 
-                QueuePushNode(&gBusyLogInfoQueue, &pLogInfoNode->node);
+                LogQueuePushNode(&gBusyLogInfoQueue, &pLogInfoNode->node);
             }
         } else {
             char logBuff[MAX_LOG_ITEM_LENGTH] = {};

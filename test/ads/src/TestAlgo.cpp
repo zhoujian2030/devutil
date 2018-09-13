@@ -167,3 +167,26 @@ TEST_F(TestAlgo, findBinaryPalindromeDate)
     ASSERT_EQ(count, Algo::findBinaryPalindromeDate(beginDate, endDate));
 }
 
+unsigned char isValidSf(unsigned char sf) {
+    unsigned int bitMask = 0x0110;
+
+    unsigned char temp = (bitMask >> sf) & 0x01;
+    printf ("temp = %d\n", temp);
+
+    return temp;
+}
+
+
+TEST_F(TestAlgo, test) 
+{
+    ASSERT_EQ(0, isValidSf(0));
+    ASSERT_EQ(0, isValidSf(1));
+    ASSERT_EQ(0, isValidSf(2));
+    ASSERT_EQ(0, isValidSf(3));
+    ASSERT_EQ(1, isValidSf(4));
+    ASSERT_EQ(0, isValidSf(5));
+    ASSERT_EQ(0, isValidSf(6));
+    ASSERT_EQ(0, isValidSf(7));
+    ASSERT_EQ(1, isValidSf(8));
+    ASSERT_EQ(0, isValidSf(9));
+}

@@ -8,25 +8,25 @@
 #include "queue.h"
 #include "logger.h"
 
-static void PushTail(Queue* pQueue, QNode* pNode);
-static void PushHead(Queue* pQueue, QNode* pNode);
-static QNode* PopHead(Queue* pQueue);
-static unsigned int DeleteNode(Queue* pQueue, QNode* pNode);
+static void PushTail(LogQueue* pQueue, QNode* pNode);
+static void PushHead(LogQueue* pQueue, QNode* pNode);
+static QNode* PopHead(LogQueue* pQueue);
+static unsigned int DeleteNode(LogQueue* pQueue, QNode* pNode);
 
 // ----------------------------------
-void QueueInit(Queue* pQueue) 
+void LogQueueInit(LogQueue* pQueue) 
 {
     if (pQueue != 0) {
         pQueue->count = 0;
         pQueue->node.next = 0;
         pQueue->node.prev = 0;
         pthread_mutex_init(&pQueue->mutex, 0);
-        // printf("QueueInit success\n");
+        // printf("LogQueueInit success\n");
     }
 }
 
 // ----------------------------------
-void QueueDeInit(Queue* pQueue) 
+void LogQueueDeInit(LogQueue* pQueue) 
 {
     if (pQueue != 0) {
         pQueue->count = 0;
@@ -37,7 +37,7 @@ void QueueDeInit(Queue* pQueue)
 }
 
 // ----------------------------------
-unsigned int QueueCount(const Queue *pQueue) 
+unsigned int LogQueueCount(const LogQueue *pQueue) 
 {
     if (pQueue != 0) {
         return pQueue->count;
@@ -47,7 +47,7 @@ unsigned int QueueCount(const Queue *pQueue)
 }
 
 // ----------------------------------
-void QueuePushNode(Queue *pQueue, QNode *pNode)
+void LogQueuePushNode(LogQueue *pQueue, QNode *pNode)
 {
     if ((pQueue != 0) && (pNode != 0)) {
         pthread_mutex_lock(&pQueue->mutex);
@@ -57,7 +57,7 @@ void QueuePushNode(Queue *pQueue, QNode *pNode)
 }
 
 // ----------------------------------
-void QueuePushNodeHead(Queue *pQueue, QNode *pNode)
+void LogQueuePushNodeHead(LogQueue *pQueue, QNode *pNode)
 {
     if ((pQueue != 0) && (pNode != 0)) {
         pthread_mutex_lock(&pQueue->mutex);
@@ -67,7 +67,7 @@ void QueuePushNodeHead(Queue *pQueue, QNode *pNode)
 }
 
 // ----------------------------------
-QNode* QueuePopNode(Queue *pQueue)
+QNode* LogQueuePopNode(LogQueue *pQueue)
 {
     QNode* pNode = 0;    
     if (pQueue != 0)
@@ -81,7 +81,7 @@ QNode* QueuePopNode(Queue *pQueue)
 }
 
 // ----------------------------------
-static void PushTail(Queue* pQueue, QNode* pNode)
+static void PushTail(LogQueue* pQueue, QNode* pNode)
 {
     if(( pQueue->node.next == 0 )||(pQueue->count == 0)||( pQueue->node.prev == 0 )) {
         pQueue->node.next = pNode;
@@ -99,7 +99,7 @@ static void PushTail(Queue* pQueue, QNode* pNode)
 }
 
 // -----------------------------------
-static void PushHead(Queue* pQueue, QNode* pNode)
+static void PushHead(LogQueue* pQueue, QNode* pNode)
 {
 	if(( pQueue->node.next == 0 )||(pQueue->count == 0)||( pQueue->node.prev == 0 )) {
 		pQueue->node.next = pNode;
@@ -117,7 +117,7 @@ static void PushHead(Queue* pQueue, QNode* pNode)
 }
 
 // -----------------------------------
-static QNode* PopHead(Queue* pQueue)
+static QNode* PopHead(LogQueue* pQueue)
 {
 	QNode* pNode = 0;
 
@@ -130,7 +130,7 @@ static QNode* PopHead(Queue* pQueue)
 }
 
 // -----------------------------------
-static unsigned int DeleteNode(Queue* pQueue, QNode* pNode)
+static unsigned int DeleteNode(LogQueue* pQueue, QNode* pNode)
 {
     unsigned int ret = 0;
 
