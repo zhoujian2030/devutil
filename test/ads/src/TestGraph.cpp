@@ -208,7 +208,7 @@ TEST_F(TestGraph, dfs)
     bv4->data = (void*)vid4;
     ASSERT_EQ(0, graph_insert_vertex(graph, (void*)bv4));
     ASSERT_EQ(0, graph_insert_edge(graph, (void*)bv3, (void*)bv4));
-    ASSERT_EQ(0, graph_insert_edge(graph, (void*)bv0, (void*)bv4));
+    ASSERT_EQ(0, graph_insert_edge(graph, (void*)bv1, (void*)bv4));
 
     DfsVertex *bv5 = new DfsVertex;
     int *vid5 = new int;
@@ -228,7 +228,7 @@ TEST_F(TestGraph, dfs)
                 CS100      MA100      CS150
                 |        /  |
                \ /      /  \ /
-                CS200  /   MA200 
+                CS200--+-->MA200 
                 |     /     |
                \ /  \/_    \ /
                 CS300 ---->MA300
